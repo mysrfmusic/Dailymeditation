@@ -21,7 +21,10 @@ export const GitHubPagesModal: React.FC<GitHubPagesModalProps> = ({ isOpen, onCl
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - master
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -33,29 +36,40 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  build-and-deploy:
     environment:
       name: github-pages
       url: \${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up Node
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
+
       - name: Install dependencies
-        run: npm ci
-      - name: Build
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --legacy-peer-deps
+          else
+            npm install --legacy-peer-deps
+          fi
+
+      - name: Build static web app
         run: npm run build
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
@@ -127,7 +141,7 @@ jobs:
               </button>
             </div>
             <p className="text-amber-800/80 text-[11px] mt-1">
-              Add a file at <code className="bg-amber-100 px-1 py-0.5 rounded">.github/workflows/deploy.yml</code> with the workflow, then in your GitHub repository go to <strong>Settings → Pages → Source: GitHub Actions</strong>.
+              The workflow file <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">.github/workflows/deploy.yml</code> is already created and included in this repo. Simply push your code to GitHub, then in your repository settings go to <strong>Settings → Pages → Source: GitHub Actions</strong>.
             </p>
           </div>
 
