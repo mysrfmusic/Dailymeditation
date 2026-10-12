@@ -1,0 +1,6 @@
+{
+  "name": "Kriya Meditation Timer",
+  "description": "Sacred meditation routine and Kriya Yoga timer with customizable stages, bead counter, and procedural ambient soundscapes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

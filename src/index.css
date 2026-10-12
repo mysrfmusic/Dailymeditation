@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #f8fafc;
+    background-color: #0b132b;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+
+  button, input, [role="button"] {
+    touch-action: manipulation;
+  }
+
+  h1, h2, h3, .font-spiritual {
+    font-family: 'Cinzel', serif;
+  }
+}
+
+/* Spiritual Eye (Kutastha) - Radiant Golden Halo & Opal Sapphire Blue matching photo */
+.theme-spiritual-eye-bg {
+  background-color: #060e2a;
+  background-image: 
+    radial-gradient(circle at 50% 28%, rgba(255, 215, 0, 0.25) 0%, rgba(245, 158, 11, 0.12) 35%, transparent 68%),
+    radial-gradient(circle at 50% 28%, rgba(13, 31, 115, 0.8) 0%, rgba(9, 21, 79, 0.95) 55%, transparent 80%),
+    radial-gradient(circle at 10% 85%, rgba(255, 215, 0, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 85%, rgba(37, 99, 235, 0.15) 0%, transparent 45%),
+    url("data:image/svg+xml,%3Csvg width='70' height='70' viewBox='0 0 70 70' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffd700' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpolygon points='35,15 39,26 50,26 41,33 44,44 35,37 26,44 29,33 20,26 31,26'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Celestial Twilight (Deep Meditative Sapphire & Starlight) */
+.theme-celestial-bg {
+  background-color: #0b1329;
+  background-image: 
+    radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 10% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 90% 85%, rgba(217, 175, 59, 0.08) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2338bdf8' fill-opacity='0.04' fill-rule='evenodd'%3E%3Cpath d='M30 0c1.5 7.5 7.5 13.5 15 15-7.5 1.5-13.5 7.5-15 15-1.5-7.5-7.5-13.5-15-15 7.5-1.5 13.5-7.5 15-15zm0 60c1.5-7.5 7.5-13.5 15-15-7.5-1.5-13.5-7.5-15-15-1.5 7.5-7.5 13.5-15 15 7.5 1.5 13.5 7.5 15 15z' /%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Sacred Temple (Rich Sandalwood & Antique Gold) */
+.theme-temple-bg {
+  background-color: #1a080d;
+  background-image: 
+    radial-gradient(circle at 50% 25%, rgba(212, 175, 55, 0.15) 0%, transparent 60%),
+    radial-gradient(circle at 20% 70%, rgba(139, 26, 40, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(184, 115, 51, 0.15) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='70' height='70' viewBox='0 0 70 70' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4af37' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M35 5c2 10 10 18 20 20-10 2-18 10-20 20-2-10-10-18-20-20 10-2 18-10 20-20zm0 60c2-10 10-18 20-20-10-2-18-10-20-20-2 10-10 18-20 20 10 2 18 10 20 20z' /%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Lotus Dawn (Warm Rosewood & Gentle Sunrise) */
+.theme-dawn-bg {
+  background-color: #1f0f18;
+  background-image: 
+    radial-gradient(circle at 50% 20%, rgba(251, 113, 133, 0.14) 0%, transparent 60%),
+    radial-gradient(circle at 15% 80%, rgba(244, 63, 94, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 85% 75%, rgba(253, 164, 175, 0.08) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fb7185' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='30' cy='30' r='6' /%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Classic Saffron & Maroon (SRF App Screenshot Theme) */
+.spiritual-bg-pattern {
+  background-color: #f7e3a3;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(220, 165, 30, 0.18) 0%, transparent 60%),
+    radial-gradient(circle at 20% 20%, rgba(210, 150, 20, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(210, 150, 20, 0.12) 0%, transparent 40%),
+    url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d89b14' fill-opacity='0.16' fill-rule='evenodd'%3E%3Cpath d='M40 0c2 10 10 18 20 20-10 2-18 10-20 20-2-10-10-18-20-20 10-2 18-10 20-20zm0 80c2-10 10-18 20-20-10-2-18-10-20-20-2 10-10 18-20 20 10 2 18 10 20 20zM0 40c10-2 18-10 20-20 2 10 10 18 20 20-10 2-18 10-20 20-2-10-10-18-20-20zm80 0c-10-2-18-10-20-20-2 10-10 18-20 20 10 2 18 10 20 20 2-10 10-18 20-20zM40 45a5 5 0 1 0 0-10 5 5 0 0 0 0 10z' /%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Custom styled Range Slider */
+input[type=range] {
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  height: 6px;
+  outline: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  transition: transform 0.1s ease;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+
+input[type=range]::-webkit-slider-thumb:active {
+  transform: scale(0.95);
+}
+
+input[type=range]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
