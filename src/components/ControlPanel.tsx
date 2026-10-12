@@ -40,18 +40,19 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onSelectMediaPreset,
 }) => {
   const isKriyas = stage.id === 'kriyas';
-  const isBreathing = Boolean(stage.breathPattern);
   const isBreathing1 = stage.id === 'breathing_1';
   const isBreathing2 = stage.id === 'breathing_2';
+  const isPranayama = isBreathing1 || isBreathing2;
+  const isBreathing = isPranayama && Boolean(stage.breathPattern);
   const isKriyaCount = isKriyas && stage.isCountBased && stage.kriyaCount !== undefined;
   const isBreathCount = isBreathing && stage.isCountBased;
   const isPrayer = Boolean(stage.techniqueGuide.prayerText);
 
   // Current breath pattern & rounds
   const currentPattern = stage.breathPattern || {
-    inhale: isBreathing1 ? 6 : 8,
-    hold: isBreathing1 ? 6 : 8,
-    exhale: isBreathing1 ? 6 : 8,
+    inhale: isBreathing1 ? 6 : isBreathing2 ? 8 : 10,
+    hold: isBreathing1 ? 6 : isBreathing2 ? 8 : 3,
+    exhale: isBreathing1 ? 6 : isBreathing2 ? 8 : 10,
   };
   const currentRounds = stage.breathRounds ?? (isBreathing1 ? 3 : 6);
 
@@ -127,17 +128,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   };
 
   const totalCycleSec = currentPattern.inhale + currentPattern.hold + currentPattern.exhale;
-  const estimatedMins = Math.max(1, Math.round((currentRounds * totalCycleSec) / 60));
+  const targetCountForEst = isKriyaCount ? (stage.kriyaCount ?? 14) : currentRounds;
+  const estimatedMins = Math.max(1, Math.round((targetCountForEst * totalCycleSec) / 60));
 
   const primaryNumber = isKriyaCount
-    ? `${stage.kriyaCount}`
+    ? `${stage.kriyaCount ?? 14}`
     : isBreathCount
     ? `${currentRounds}`
     : `${stage.minutes}`;
 
   const secondaryTitle = stage.title;
   const tertiarySubtitle = isKriyaCount
-    ? `${stage.minutes} minutes`
+    ? `${stage.kriyaCount ?? 14} Kriyas (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins}m`
     : isBreathCount
     ? `${currentRounds} Count${currentRounds > 1 ? 's' : ''} (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins}m`
     : `${stage.minutes} minutes`;
@@ -455,6 +457,140 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
       )}
 
+      {/* SPECIALIZED KRIYA BREATH COUNT RATIO CONTROLS (10-3-10, 12-3-12, 15-3-15) */}
+      {isKriyas && (
+        <div className="mt-3.5 p-3 bg-black/25 rounded-2xl border border-white/15 space-y-2.5">
+          {/* Header & Reset Default */}
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold opacity-90 flex items-center gap-1.5">
+              <Wind className="w-3.5 h-3.5 text-amber-300" />
+              <span>Kriya Count Ratio</span>
+              <span className="text-[10px] opacity-75 font-normal">(Inhale · Hold · Exhale)</span>
+            </span>
+
+            {/* Quick Reset to default 10-3-10 */}
+            <button
+              type="button"
+              onClick={() => {
+                onUpdateBreathPattern?.({ inhale: 10, hold: 3, exhale: 10 });
+              }}
+              className="text-[11px] underline opacity-75 hover:opacity-100 flex items-center gap-1 cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" /> Reset (10·3·10)
+            </button>
+          </div>
+
+          {/* Quick presets for Kriya counts: 10-3-10, 12-3-12, 15-3-15 */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-0.5">
+            {[
+              { label: '10 · 3 · 10 (Default)', pattern: { inhale: 10, hold: 3, exhale: 10 } },
+              { label: '12 · 3 · 12', pattern: { inhale: 12, hold: 3, exhale: 12 } },
+              { label: '15 · 3 · 15', pattern: { inhale: 15, hold: 3, exhale: 15 } },
+            ].map((p, idx) => {
+              const isActive =
+                currentPattern.inhale === p.pattern.inhale &&
+                currentPattern.hold === p.pattern.hold &&
+                currentPattern.exhale === p.pattern.exhale;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => onUpdateBreathPattern?.(p.pattern)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-amber-300 text-slate-900 font-bold shadow-md ring-2 ring-amber-400/50'
+                      : 'bg-white/10 hover:bg-white/20 text-white/90'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Interactive Steppers for Inhale, Hold, Exhale counts */}
+          <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
+            {/* Inhale Stepper */}
+            <div className="bg-black/20 p-1.5 rounded-xl border border-white/10">
+              <span className="text-[10px] uppercase font-bold text-sky-300 block mb-1">
+                Inhale (Spine Up)
+              </span>
+              <div className="flex items-center justify-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleUpdateSingleBreathCount('inhale', -1)}
+                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
+                >
+                  −
+                </button>
+                <span className="font-extrabold text-sm tabular-nums w-6">
+                  {currentPattern.inhale}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateSingleBreathCount('inhale', 1)}
+                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Hold Stepper */}
+            <div className="bg-black/20 p-1.5 rounded-xl border border-white/10">
+              <span className="text-[10px] uppercase font-bold text-amber-300 block mb-1">
+                Hold (Kutastha)
+              </span>
+              <div className="flex items-center justify-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleUpdateSingleBreathCount('hold', -1)}
+                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
+                >
+                  −
+                </button>
+                <span className="font-extrabold text-sm tabular-nums w-6">
+                  {currentPattern.hold}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateSingleBreathCount('hold', 1)}
+                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Exhale Stepper */}
+            <div className="bg-black/20 p-1.5 rounded-xl border border-white/10">
+              <span className="text-[10px] uppercase font-bold text-emerald-300 block mb-1">
+                Exhale (Spine Down)
+              </span>
+              <div className="flex items-center justify-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleUpdateSingleBreathCount('exhale', -1)}
+                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
+                >
+                  −
+                </button>
+                <span className="font-extrabold text-sm tabular-nums w-6">
+                  {currentPattern.exhale}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateSingleBreathCount('exhale', 1)}
+                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Slider for count of rounds (for breathing) or duration (for others) */}
       <div className="mt-3.5 flex items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto px-1">
         {/* Minus Button */}
@@ -495,10 +631,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       {/* Target description text below slider */}
       <div className="mt-1 text-center text-xs opacity-75">
         {isBreathCount
-          ? `Target: ${currentRounds} breath rounds (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale})`
+          ? `Target: ${currentRounds} breath rounds (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins} min`
           : isKriyaCount
-          ? `Target: ${stage.kriyaCount ?? 14} Kriyas`
-          : `Duration: ${stage.minutes} minutes`}
+          ? `Target: ${stage.kriyaCount ?? 14} Kriyas (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins} min`
+          : `Duration: ${stage.minutes} minute${stage.minutes > 1 ? 's' : ''}`}
       </div>
 
       {/* Dedicated Cosmic Chant Picker when Chant stage is selected */}

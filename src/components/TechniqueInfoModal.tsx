@@ -42,7 +42,7 @@ export const TechniqueInfoModal: React.FC<TechniqueInfoModalProps> = ({
               </h2>
             </div>
             <p className="text-xs text-slate-300 mt-0.5">
-              {stage.subtitle} · Duration: {stage.isCountBased ? `${stage.kriyaCount} Kriyas (${stage.minutes}m)` : `${stage.minutes} minutes`}
+              {stage.subtitle} · {stage.isCountBased && stage.kriyaCount ? `${stage.kriyaCount} Kriyas (${stage.breathPattern ? `${stage.breathPattern.inhale}·${stage.breathPattern.hold}·${stage.breathPattern.exhale} · ` : ''}${stage.minutes}m)` : `${stage.minutes} minutes`}
             </p>
           </div>
           <button

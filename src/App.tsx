@@ -25,9 +25,9 @@ import { CustomMediaModal } from './components/CustomMediaModal';
 import { LotusIcon } from './components/Icons';
 import { Play, RotateCcw, Globe, Palette, Info } from 'lucide-react';
 
-const STORAGE_KEY = 'kriya_meditation_stages_v13';
-const INCREMENT_KEY = 'kriya_increment_step_v13';
-const THEME_KEY = 'kriya_app_theme_v13';
+const STORAGE_KEY = 'kriya_meditation_stages_v14';
+const INCREMENT_KEY = 'kriya_increment_step_v14';
+const THEME_KEY = 'kriya_app_theme_v14';
 
 export default function App() {
   // Theme state: defaults to spiritual_eye matching the uploaded Spiritual Eye photo
@@ -35,6 +35,7 @@ export default function App() {
     try {
       const saved =
         localStorage.getItem(THEME_KEY) ||
+        localStorage.getItem('kriya_app_theme_v13') ||
         localStorage.getItem('kriya_app_theme_v12') ||
         localStorage.getItem('kriya_app_theme_v11') ||
         localStorage.getItem('kriya_app_theme_v10') ||
@@ -48,9 +49,10 @@ export default function App() {
   // Load saved stages or defaults
   const [stages, setStages] = useState<Record<StageId, MeditationStageConfig>>(() => {
     try {
-      const isExistingV13 = Boolean(localStorage.getItem(STORAGE_KEY));
+      const isExistingV14 = Boolean(localStorage.getItem(STORAGE_KEY));
       const saved =
         localStorage.getItem(STORAGE_KEY) ||
+        localStorage.getItem('kriya_meditation_stages_v13') ||
         localStorage.getItem('kriya_meditation_stages_v12') ||
         localStorage.getItem('kriya_meditation_stages_v11') ||
         localStorage.getItem('kriya_meditation_stages_v10') ||
@@ -61,8 +63,19 @@ export default function App() {
         // Ensure new stages exist and presence stages are properly initialized to 2 minutes
         const merged = { ...INITIAL_STAGES, ...parsed };
 
-        // For v13: Apply requested default chant and 4 minutes for closing_prayer & world_prayer
-        if (!isExistingV13) {
+        // For v14: Apply chant 5 mins and kriyas 10-3-10
+        if (!isExistingV14) {
+          if (merged.chant) {
+            merged.chant = { ...merged.chant, minutes: 5 };
+          }
+          if (merged.kriyas) {
+            merged.kriyas = {
+              ...merged.kriyas,
+              breathPattern: { inhale: 10, hold: 3, exhale: 10 },
+              secondsPerKriya: 23,
+              minutes: 6,
+            };
+          }
           if (merged.closing_prayer) {
             merged.closing_prayer = { ...merged.closing_prayer, minutes: 4 };
           }
@@ -75,6 +88,13 @@ export default function App() {
             }
           });
         } else {
+          if (!merged.kriyas?.breathPattern) {
+            merged.kriyas = {
+              ...merged.kriyas,
+              breathPattern: { inhale: 10, hold: 3, exhale: 10 },
+              secondsPerKriya: 23,
+            };
+          }
           (['opening_prayer', 'chant', 'closing_prayer', 'world_prayer'] as StageId[]).forEach((id) => {
             if (!merged[id]?.customMedia && INITIAL_STAGES[id]?.customMedia) {
               merged[id] = { ...merged[id], customMedia: INITIAL_STAGES[id].customMedia };
@@ -93,7 +113,7 @@ export default function App() {
         }
 
         // Apply "Noble Silence + Bells" default to the requested stages on initial migration
-        if (!isExistingV13) {
+        if (!isExistingV14) {
           const nobleSilenceStages: StageId[] = [
             'chant',
             'hong_sau',
@@ -179,7 +199,8 @@ export default function App() {
       const current = prev[selectedStageId];
       let nextKriyaCount = current.kriyaCount;
       if (selectedStageId === 'kriyas' && current.isCountBased) {
-        nextKriyaCount = Math.max(2, Math.round((newMinutes * 60) / (current.secondsPerKriya || 30)));
+        const secPerKriya = current.secondsPerKriya || (current.breathPattern ? current.breathPattern.inhale + current.breathPattern.hold + current.breathPattern.exhale : 23);
+        nextKriyaCount = Math.max(2, Math.round((newMinutes * 60) / secPerKriya));
       }
       return {
         ...prev,
@@ -196,13 +217,15 @@ export default function App() {
   const handleUpdateKriyas = (newCount: number) => {
     setStages((prev) => {
       const current = prev['kriyas'];
-      const secPerKriya = current.secondsPerKriya || 30;
+      const pattern = current.breathPattern || { inhale: 10, hold: 3, exhale: 10 };
+      const secPerKriya = pattern.inhale + pattern.hold + pattern.exhale;
       const calculatedMins = Math.max(1, Math.round((newCount * secPerKriya) / 60));
       return {
         ...prev,
         kriyas: {
           ...current,
           kriyaCount: newCount,
+          secondsPerKriya: secPerKriya,
           minutes: calculatedMins,
         },
       };
@@ -223,10 +246,24 @@ export default function App() {
     });
   };
 
-  // Handler: Update breath pattern for breathing exercises
+  // Handler: Update breath pattern for breathing exercises and kriyas
   const handleUpdateBreathPattern = (pattern: BreathPattern) => {
     setStages((prev) => {
       const current = prev[selectedStageId];
+      if (selectedStageId === 'kriyas') {
+        const kCount = current.kriyaCount ?? 14;
+        const totalSec = pattern.inhale + pattern.hold + pattern.exhale;
+        const calculatedMins = Math.max(1, Math.round((kCount * totalSec) / 60));
+        return {
+          ...prev,
+          kriyas: {
+            ...current,
+            breathPattern: pattern,
+            secondsPerKriya: totalSec,
+            minutes: calculatedMins,
+          },
+        };
+      }
       const rounds = current.breathRounds ?? (selectedStageId === 'breathing_1' ? 3 : 6);
       const totalSec = pattern.inhale + pattern.hold + pattern.exhale;
       const calculatedMins = Math.max(1, Math.round((rounds * totalSec) / 60));

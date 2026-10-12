@@ -51,11 +51,20 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
 }) => {
   const currentStage = stages[activeStageId] || stages['kriyas'];
 
-  // Pranayama / Breathing Exercise state
-  const isBreathingStage = Boolean(currentStage.breathPattern);
-  const breathPattern = currentStage.breathPattern || { inhale: 6, hold: 6, exhale: 6 };
-  const targetRounds = isBreathingStage
-    ? currentStage.breathRounds ?? (currentStage.id === 'breathing_1' ? 3 : 6)
+  // Pranayama / Breathing Exercise & Kriya count state
+  const isKriyas = currentStage.id === 'kriyas';
+  const isPranayama = currentStage.id === 'breathing_1' || currentStage.id === 'breathing_2';
+  const isCountBasedKriya = isKriyas && currentStage.isCountBased !== false;
+  const isBreathingStage = isPranayama || isCountBasedKriya;
+  const breathPattern =
+    currentStage.breathPattern ||
+    (isKriyas
+      ? { inhale: 10, hold: 3, exhale: 10 }
+      : { inhale: 6, hold: 6, exhale: 6 });
+  const targetRounds = isKriyas
+    ? (currentStage.kriyaCount ?? 14)
+    : isBreathingStage
+    ? (currentStage.breathRounds ?? (currentStage.id === 'breathing_1' ? 3 : 6))
     : 0;
   const cycleTotal = breathPattern.inhale + breathPattern.hold + breathPattern.exhale;
 
@@ -68,10 +77,9 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
 
   // Kriyas bead counter state
-  const isKriyas = currentStage.id === 'kriyas';
-  const targetBeads = isKriyas && currentStage.isCountBased ? (currentStage.kriyaCount ?? 14) : 0;
+  const targetBeads = isKriyas && currentStage.isCountBased !== false ? (currentStage.kriyaCount ?? 14) : 0;
   const [completedBeads, setCompletedBeads] = useState<number>(0);
-  const [autoPacingBeads, setAutoPacingBeads] = useState<boolean>(false);
+  const [autoPacingBeads, setAutoPacingBeads] = useState<boolean>(true);
 
   // Accurate breath phase state and refs for 100% reliable transition gongs
   const [breathPhase, setBreathPhase] = useState<'Inhale' | 'Hold' | 'Exhale'>('Inhale');
@@ -273,6 +281,11 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
             roundRef.current = nextRound;
             setBreathRoundsCompleted(nextRound);
 
+            if (isKriyas) {
+              setCompletedBeads(nextRound);
+              soundEngine.playBeadClick();
+            }
+
             if (nextRound >= targetRounds) {
               handleStageCompletion();
             } else {
@@ -385,7 +398,21 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const handleAdvanceBead = () => {
     if (completedBeads < targetBeads) {
       soundEngine.playBeadClick();
-      setCompletedBeads((prev) => prev + 1);
+      const next = completedBeads + 1;
+      setCompletedBeads(next);
+      roundRef.current = next;
+      setBreathRoundsCompleted(next);
+      if (next >= targetBeads) {
+        handleStageCompletion();
+      } else {
+        currentPhaseRef.current = 'Inhale';
+        phaseCountRef.current = 1;
+        setBreathPhase('Inhale');
+        setBreathCountInPhase(1);
+        if (audioBreathCues) {
+          soundEngine.playBreathCue('inhale');
+        }
+      }
     }
   };
 
@@ -738,11 +765,11 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
           </div>
         )}
 
-        {/* Specialized Breathing Ratio Badge & Chime Toggle */}
+        {/* Specialized Breathing / Kriya Ratio Badge & Chime Toggle */}
         {isBreathingStage && (
           <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
             <span className="text-xs font-bold px-3 py-1 rounded-full bg-black/45 border border-[#ffd700]/50 text-[#ffd700]">
-              Ratio: {breathPattern.inhale} · {breathPattern.hold} · {breathPattern.exhale}
+              {isKriyas ? 'Kriya Count' : 'Ratio'}: {breathPattern.inhale} · {breathPattern.hold} · {breathPattern.exhale}
             </span>
             <button
               type="button"
@@ -829,7 +856,13 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                       : 'text-amber-300'
                   }`}
                 >
-                  {breathPhase}
+                  {isKriyas
+                    ? breathPhase === 'Inhale'
+                      ? 'Inhale · Spine Up'
+                      : breathPhase === 'Hold'
+                      ? 'Hold · Kutastha'
+                      : 'Exhale · Spine Down'
+                    : breathPhase}
                 </div>
 
                 {/* Big Live Count within Phase */}
@@ -839,7 +872,9 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
 
                 {/* Round indicator */}
                 <div className="text-[11px] font-bold text-[#ffd700] bg-black/60 px-2.5 py-0.5 rounded-full border border-[#ffd700]/40 shadow-sm">
-                  Round {Math.min(targetRounds, breathRoundsCompleted + 1)} of {targetRounds}
+                  {isKriyas
+                    ? `Kriya ${Math.min(targetRounds, Math.max(completedBeads, breathRoundsCompleted) + 1)} of ${targetRounds}`
+                    : `Round ${Math.min(targetRounds, breathRoundsCompleted + 1)} of ${targetRounds}`}
                 </div>
               </div>
             ) : (
@@ -880,21 +915,12 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
               className="flex-1 py-2 px-3 bg-gradient-to-r from-[#ffd700] to-[#f59e0b] hover:from-[#ffe033] hover:to-[#ffb703] active:scale-95 text-[#06103b] font-black rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50"
             >
               <MalaBeadsIcon className="w-5 h-5" />
-              <span>Next Kriya Bead ({completedBeads + 1}/{targetBeads})</span>
+              <span>Next Kriya Bead ({Math.min(targetBeads, completedBeads + 1)}/{targetBeads})</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setAutoPacingBeads(!autoPacingBeads)}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                autoPacingBeads
-                  ? 'bg-[#ffd700] text-[#06103b] border-white font-bold'
-                  : 'bg-white/10 text-white/80 border-white/20 hover:bg-white/20'
-              }`}
-              title="Automatically advance bead every 30 seconds"
-            >
-              {autoPacingBeads ? 'Pacing ON' : 'Pacing OFF'}
-            </button>
+            <span className="text-[11px] font-bold text-amber-200 px-2.5 py-2 rounded-xl bg-white/10 border border-white/15">
+              Paced ({breathPattern.inhale}·{breathPattern.hold}·{breathPattern.exhale})
+            </span>
           </div>
         )}
 
