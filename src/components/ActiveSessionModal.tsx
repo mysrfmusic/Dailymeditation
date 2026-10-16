@@ -7,7 +7,9 @@ import {
   detectMediaType,
   extractYouTubeStartTime,
   formatSecondsToTimestamp,
+  cleanAndCanonicalizeYouTubeUrl,
 } from '../utils/customMedia';
+import { backgroundKeepalive } from '../utils/backgroundKeepalive';
 import {
   Play,
   Pause,
@@ -55,19 +57,24 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const activeOrder = stageOrder && stageOrder.length > 0 ? stageOrder : STAGE_ORDER;
   const currentStage = stages[activeStageId] || stages['kriyas'] || Object.values(stages)[0];
 
-  // Pranayama / Breathing Exercise & Kriya count state
+  // Pranayama / Breathing Exercise & Kriya / 30-Counts state
   const isKriyas = currentStage.id === 'kriyas';
+  const isThirtyCounts =
+    currentStage.stageType === 'thirty_counts' || currentStage.id.startsWith('thirty_counts');
   const isBreathing1 = currentStage.id === 'breathing_1';
   const isBreathing2 = currentStage.id === 'breathing_2';
   const isPranayama = isBreathing1 || isBreathing2;
-  const isCountBasedKriya = isKriyas && currentStage.isCountBased !== false;
-  const isBreathingStage = isPranayama || isCountBasedKriya;
+  const isCountBasedStage =
+    (isKriyas || isThirtyCounts) && currentStage.isCountBased !== false;
+  const isBreathingStage = isPranayama || isCountBasedStage;
   const breathPattern =
     currentStage.breathPattern ||
-    (isKriyas
+    (isKriyas || isThirtyCounts
       ? { inhale: 10, hold: 3, exhale: 10 }
       : { inhale: 6, hold: 6, exhale: 6 });
-  const targetRounds = isKriyas
+  const targetRounds = isThirtyCounts
+    ? (currentStage.kriyaCount ?? 30)
+    : isKriyas
     ? (currentStage.kriyaCount ?? 14)
     : isBreathingStage
     ? (currentStage.breathRounds ?? (currentStage.id === 'breathing_1' ? 3 : 6))
@@ -81,9 +88,13 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const [secondsRemaining, setSecondsRemaining] = useState<number>(totalDurationSeconds);
   const [isRunning, setIsRunning] = useState<boolean>(true);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
+  const [isScreenAwake, setIsScreenAwake] = useState<boolean>(true);
+  const lastTimestampRef = useRef<number>(Date.now());
 
-  // Kriyas bead counter state
-  const targetBeads = isKriyas && currentStage.isCountBased !== false ? (currentStage.kriyaCount ?? 14) : 0;
+  // Kriyas / 30-Counts bead counter state
+  const targetBeads = isCountBasedStage
+    ? (currentStage.kriyaCount ?? (isThirtyCounts ? 30 : 14))
+    : 0;
   const [completedBeads, setCompletedBeads] = useState<number>(0);
   const [autoPacingBeads, setAutoPacingBeads] = useState<boolean>(true);
 
@@ -168,6 +179,23 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
       setShowPrayerOverlay(Boolean(currentStage.techniqueGuide.prayerText));
       setShowAffirmationOverlay(Boolean(currentStage.customMedia?.affirmationText || currentStage.techniqueGuide?.affirmationText));
 
+      // Start background keepalive & screen wake lock to prevent locktimeout sleep
+      backgroundKeepalive.requestWakeLock().then((active) => {
+        setIsScreenAwake(active);
+      });
+      backgroundKeepalive.startAudioKeepalive();
+      backgroundKeepalive.updateMediaSession(
+        currentStage.title,
+        currentStage.subtitle,
+        true,
+        {
+          onPlay: () => setIsRunning(true),
+          onPause: () => setIsRunning(false),
+          onNext: () => handleNextStage(),
+          onPrev: () => handlePreviousStage(),
+        }
+      );
+
       // Start soundscape (unless muted by custom media)
       if (!shouldMuteSoundscape) {
         soundEngine.setVolume(currentStage.soundscapeVolume ?? 0.65);
@@ -192,6 +220,8 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
       }
     } else {
       soundEngine.stopSoundscape();
+      backgroundKeepalive.releaseWakeLock();
+      backgroundKeepalive.stopAudioKeepalive();
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -199,6 +229,8 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
 
     return () => {
       soundEngine.stopSoundscape();
+      backgroundKeepalive.releaseWakeLock();
+      backgroundKeepalive.stopAudioKeepalive();
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -672,7 +704,16 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
             </span>
           ) : (
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#ffd700]/20 text-[#ffd700] border border-[#ffd700]/40">
-              Single Session
+              {isThirtyCounts ? '30 Counts Practice' : 'Single Session'}
+            </span>
+          )}
+          {isScreenAwake && (
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 flex items-center gap-1"
+              title="Screen Wake Lock active: display sleep and lock timeout prevented on mobile & PC"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Screen Awake 🔆</span>
             </span>
           )}
           <span className="text-xs text-amber-200/80 hidden sm:inline">
@@ -810,58 +851,54 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
               </div>
             </div>
 
-            {/* If YouTube: Embed iframe (visible if showVideo, or compact banner if Spiritual Eye Mode) */}
+            {/* If YouTube: Single responsive, reliable embed iframe with strict-origin policy */}
             {isYouTube && (
               <>
-                {showVideo ? (
-                  <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-black border border-white/20 shadow-md">
-                    <iframe
-                      key={activeStageId}
-                      ref={youtubeIframeRef}
-                      src={getYouTubeEmbedUrl(customMedia.url, true) || ''}
-                      title={customMedia.title || 'YouTube Player'}
-                      className="w-full h-full border-0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                      onLoad={() => {
-                        if (isRunning) {
-                          setTimeout(() => {
-                            try {
-                              youtubeIframeRef.current?.contentWindow?.postMessage(
-                                JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-                                '*'
-                              );
-                            } catch {}
-                          }, 500);
-                        }
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full py-2 px-3 bg-white/5 rounded-xl border border-white/10 flex items-center justify-between text-xs text-amber-200/90">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>Audio Playing in Spiritual Eye Mode</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowVideo(true)}
-                      className="text-[11px] text-amber-300 hover:text-white underline cursor-pointer"
-                    >
-                      View Video
-                    </button>
-                    <div className="w-1 h-1 opacity-0 overflow-hidden absolute pointer-events-none">
-                      <iframe
-                        key={`bg_${activeStageId}`}
-                        ref={youtubeIframeRef}
-                        src={getYouTubeEmbedUrl(customMedia.url, true) || ''}
-                        title={customMedia.title || 'YouTube Background Audio'}
-                        className="w-1 h-1 border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      />
-                    </div>
-                  </div>
-                )}
+                <div
+                  className={`relative w-full rounded-2xl overflow-hidden bg-black border border-amber-400/40 shadow-xl transition-all duration-300 ${
+                    showVideo ? 'aspect-video' : 'h-36 sm:h-44'
+                  }`}
+                >
+                  <iframe
+                    key={activeStageId}
+                    ref={youtubeIframeRef}
+                    src={getYouTubeEmbedUrl(customMedia.url, true) || ''}
+                    title={customMedia.title || 'YouTube Player'}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                    onLoad={() => {
+                      if (isRunning) {
+                        setTimeout(() => {
+                          try {
+                            youtubeIframeRef.current?.contentWindow?.postMessage(
+                              JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+                              '*'
+                            );
+                          } catch {}
+                        }, 500);
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="w-full flex items-center justify-between px-1 text-xs">
+                  <span className="text-[11px] text-amber-200/80 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Synchronized Audio & Video</span>
+                  </span>
+                  <a
+                    href={cleanAndCanonicalizeYouTubeUrl(customMedia.url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-bold text-amber-300 hover:text-white underline flex items-center gap-1 cursor-pointer"
+                    title="Open directly on YouTube app or browser"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    <span>Watch in YouTube App</span>
+                  </a>
+                </div>
 
                 {/* Mobile Autoplay Unlock Helper Button: Appears on touch devices when browser restricts auto-play */}
                 {mobileAutoplayBlocked && (
@@ -1036,7 +1073,9 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
 
                 {/* Round indicator */}
                 <div className="text-[11px] font-bold text-[#ffd700] bg-black/60 px-2.5 py-0.5 rounded-full border border-[#ffd700]/40 shadow-sm">
-                  {isKriyas
+                  {isThirtyCounts
+                    ? `Count ${Math.min(targetRounds, Math.max(completedBeads, breathRoundsCompleted) + 1)} of ${targetRounds}`
+                    : isKriyas
                     ? `Kriya ${Math.min(targetRounds, Math.max(completedBeads, breathRoundsCompleted) + 1)} of ${targetRounds}`
                     : `Round ${Math.min(targetRounds, breathRoundsCompleted + 1)} of ${targetRounds}`}
                 </div>
@@ -1071,11 +1110,11 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                   {timeString}
                 </div>
 
-                {/* For Kriyas */}
-                {isKriyas && targetBeads > 0 && (
+                {/* For Kriyas and 30 Counts */}
+                {(isKriyas || isThirtyCounts) && targetBeads > 0 && (
                   <div className="mt-2 flex flex-col items-center">
                     <span className="text-xs font-bold text-[#ffd700] bg-black/60 px-3 py-1 rounded-full border border-[#ffd700]/40">
-                      {completedBeads} / {targetBeads} Kriyas
+                      {completedBeads} / {targetBeads} {isThirtyCounts ? 'Counts' : 'Kriyas'}
                     </span>
                     <span className="text-[10px] text-white/70 mt-0.5">
                       Tap button or Spacebar to count
@@ -1087,8 +1126,8 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
           </div>
         </div>
 
-        {/* Specialized Mala Beads Interactive Tap Bar (For Kriyas) */}
-        {isKriyas && targetBeads > 0 && !isCompleted && (
+        {/* Specialized Mala Beads Interactive Tap Bar (For Kriyas & 30-Counts) */}
+        {(isKriyas || isThirtyCounts) && targetBeads > 0 && !isCompleted && (
           <div className="w-full max-w-sm mb-3 p-2.5 bg-black/45 rounded-2xl border border-[#ffd700]/40 flex items-center justify-between gap-2">
             <button
               type="button"
@@ -1097,7 +1136,11 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
               className="flex-1 py-2 px-3 bg-gradient-to-r from-[#ffd700] to-[#f59e0b] hover:from-[#ffe033] hover:to-[#ffb703] active:scale-95 text-[#06103b] font-black rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50"
             >
               <MalaBeadsIcon className="w-5 h-5" />
-              <span>Next Kriya Bead ({Math.min(targetBeads, completedBeads + 1)}/{targetBeads})</span>
+              <span>
+                {isThirtyCounts
+                  ? `Next Count (${Math.min(targetBeads, completedBeads + 1)}/${targetBeads})`
+                  : `Next Kriya Bead (${Math.min(targetBeads, completedBeads + 1)}/${targetBeads})`}
+              </span>
             </button>
 
             <span className="text-[11px] font-bold text-amber-200 px-2.5 py-2 rounded-xl bg-white/10 border border-white/15">

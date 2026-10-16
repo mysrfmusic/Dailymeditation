@@ -23,6 +23,7 @@ import { GitHubPagesModal } from './components/GitHubPagesModal';
 import { ThemeSelectorModal } from './components/ThemeSelectorModal';
 import { CustomMediaModal } from './components/CustomMediaModal';
 import { ChantAffirmationTab } from './components/ChantAffirmationTab';
+import { ThirtyCountsCard } from './components/ThirtyCountsCard';
 import { LotusIcon } from './components/Icons';
 import { Play, RotateCcw, Globe, Palette, Info, Sparkles } from 'lucide-react';
 
@@ -391,6 +392,26 @@ export default function App() {
     setActivePlayerOpen(true);
   };
 
+  // Handler: Start independent 30 Counts practice
+  const handleStartIndependentThirtyCounts = (stageConfig: MeditationStageConfig) => {
+    setStages((prev) => ({
+      ...prev,
+      [stageConfig.id]: stageConfig,
+    }));
+    setSelectedStageId(stageConfig.id);
+    setIsSequenceMode(false);
+    setActivePlayerOpen(true);
+  };
+
+  // Handler: Add 30 Counts to routine sequence
+  const handleAddThirtyCountsToRoutine = (stageConfig: MeditationStageConfig) => {
+    setStages((prev) => ({
+      ...prev,
+      [stageConfig.id]: stageConfig,
+    }));
+    setSequenceOrder((prev) => [...prev, stageConfig.id]);
+  };
+
   return (
     <div
       className={`min-h-screen ${activeThemeConfig.bgClass} flex flex-col justify-between antialiased transition-colors duration-300`}
@@ -500,6 +521,14 @@ export default function App() {
               </span>
             </button>
           </div>
+
+          {/* Independent 30 Counts Practice Card */}
+          <ThirtyCountsCard
+            theme={activeThemeConfig}
+            onStartIndependent={handleStartIndependentThirtyCounts}
+            onAddToRoutine={handleAddThirtyCountsToRoutine}
+            isInRoutine={sequenceOrder.some((id) => id.startsWith('thirty_counts'))}
+          />
 
           {/* Sacred Stages Grid (Mapped to sequenceOrder) */}
           <section

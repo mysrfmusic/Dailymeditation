@@ -5,6 +5,8 @@ import {
   StageMediaPreset,
   AFFIRMATION_PRESETS,
   SACRED_VOICE_PRESETS,
+  cleanAndCanonicalizeYouTubeUrl,
+  fetchYouTubeVideoMetadata,
 } from '../utils/customMedia';
 import {
   createChantStage,
@@ -60,6 +62,7 @@ export const ChantAffirmationTab: React.FC<ChantAffirmationTabProps> = ({
   const [customPlayUntilFinished, setCustomPlayUntilFinished] = useState<boolean>(true);
   const [customText, setCustomText] = useState<string>('');
   const [addedSuccessMessage, setAddedSuccessMessage] = useState<string | null>(null);
+  const [isResolvingUrl, setIsResolvingUrl] = useState<boolean>(false);
 
   // Drag and drop state
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
@@ -72,6 +75,26 @@ export const ChantAffirmationTab: React.FC<ChantAffirmationTabProps> = ({
     setTimeout(() => {
       setAddedSuccessMessage(null);
     }, 2800);
+  };
+
+  const handleAutoCorrectUrl = async () => {
+    if (!customUrl.trim()) return;
+    setIsResolvingUrl(true);
+    try {
+      const canonical = cleanAndCanonicalizeYouTubeUrl(customUrl.trim());
+      setCustomUrl(canonical);
+      const meta = await fetchYouTubeVideoMetadata(canonical);
+      if (meta.title) {
+        setCustomTitle(meta.title);
+        showNotification(`Corrected link & fetched: "${meta.title}"`);
+      } else {
+        showNotification('Cleaned link to standard YouTube format!');
+      }
+    } catch {
+      showNotification('Cleaned link to standard YouTube format.');
+    } finally {
+      setIsResolvingUrl(false);
+    }
   };
 
   const handleAddPresetChant = (preset: StageMediaPreset, minutes: number = 5) => {
@@ -117,6 +140,7 @@ export const ChantAffirmationTab: React.FC<ChantAffirmationTabProps> = ({
     e.preventDefault();
     if (!customUrl.trim()) return;
 
+    const sanitizedUrl = cleanAndCanonicalizeYouTubeUrl(customUrl.trim());
     const uniqueId = `${customType}_${Date.now()}`;
     const title =
       customTitle.trim() ||
@@ -128,11 +152,11 @@ export const ChantAffirmationTab: React.FC<ChantAffirmationTabProps> = ({
 
     let newStage: MeditationStageConfig;
     if (customType === 'chant') {
-      newStage = createChantStage(uniqueId, title, customUrl.trim(), customMinutes);
+      newStage = createChantStage(uniqueId, title, sanitizedUrl, customMinutes);
     } else if (customType === 'sacred_voices') {
-      newStage = createSacredVoicesStage(uniqueId, title, customUrl.trim(), customMinutes, customText || undefined);
+      newStage = createSacredVoicesStage(uniqueId, title, sanitizedUrl, customMinutes, customText || undefined);
     } else {
-      newStage = createAffirmationStage(uniqueId, title, customUrl.trim(), customMinutes, customText || undefined);
+      newStage = createAffirmationStage(uniqueId, title, sanitizedUrl, customMinutes, customText || undefined);
     }
 
     newStage.playUntilFinished = customPlayUntilFinished;
@@ -499,6 +523,28 @@ export const ChantAffirmationTab: React.FC<ChantAffirmationTabProps> = ({
                     placeholder="https://youtu.be/... or https://youtube.com/watch?v=..."
                     className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
                   />
+                  {customUrl.trim() && (
+                    <div className="flex items-center justify-between gap-2 mt-1.5">
+                      <button
+                        type="button"
+                        onClick={handleAutoCorrectUrl}
+                        disabled={isResolvingUrl}
+                        className="px-2 py-0.5 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-400/30 text-[11px] font-bold flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                      >
+                        <Sparkles className="w-3 h-3 text-amber-300" />
+                        <span>{isResolvingUrl ? 'Resolving...' : '✨ Auto-Correct Link & Fetch Title'}</span>
+                      </button>
+
+                      <a
+                        href={cleanAndCanonicalizeYouTubeUrl(customUrl.trim())}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-slate-400 hover:text-white underline"
+                      >
+                        Test / Open Link
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* Optional Affirmation or Sacred Words Text */}

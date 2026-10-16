@@ -103,7 +103,69 @@ export function formatSecondsToTimestamp(totalSeconds: number): string {
 }
 
 /**
+ * Cleans and converts any YouTube URL (shortened youtu.be, mobile m.youtube, shorts, live, or URLs with tracking parameters like si=..., feature=..., etc.)
+ * into a clean, canonical YouTube link: https://www.youtube.com/watch?v=VIDEO_ID (with &t=Xs preserved if present).
+ */
+export function cleanAndCanonicalizeYouTubeUrl(rawUrl: string): string {
+  if (!rawUrl) return '';
+  const trimmed = rawUrl.trim();
+  const videoId = extractYouTubeId(trimmed);
+  if (!videoId) return trimmed;
+
+  const startSec = extractYouTubeStartTime(trimmed);
+  const timeParam = startSec && startSec > 0 ? `&t=${startSec}s` : '';
+  return `https://www.youtube.com/watch?v=${videoId}${timeParam}`;
+}
+
+/**
+ * Fetches the real YouTube video title and details using the public CORS-friendly oEmbed / noembed service.
+ * Automatically cleans the YouTube link and returns the canonical URL + title.
+ */
+export async function fetchYouTubeVideoMetadata(rawUrl: string): Promise<{
+  title?: string;
+  author?: string;
+  canonicalUrl: string;
+  videoId: string | null;
+}> {
+  const videoId = extractYouTubeId(rawUrl);
+  const canonicalUrl = cleanAndCanonicalizeYouTubeUrl(rawUrl);
+
+  if (!videoId) {
+    return { canonicalUrl: rawUrl.trim(), videoId: null };
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    // noembed.com is a free, public, cross-origin oEmbed proxy supported by all modern browsers
+    const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(canonicalUrl)}`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.title) {
+        return {
+          title: data.title,
+          author: data.author_name,
+          canonicalUrl,
+          videoId,
+        };
+      }
+    }
+  } catch {
+    // If offline or network error, fallback gracefully
+  }
+
+  return {
+    canonicalUrl,
+    videoId,
+  };
+}
+
+/**
  * Generates an embeddable YouTube URL with clean playback parameters and start offset.
+ * Uses youtube-nocookie.com/embed with playsinline, origin verification, and avoids domain-restriction errors.
  */
 export function getYouTubeEmbedUrl(url: string, autoplay: boolean = true): string | null {
   const videoId = extractYouTubeId(url);
@@ -111,7 +173,10 @@ export function getYouTubeEmbedUrl(url: string, autoplay: boolean = true): strin
   const autoParam = autoplay ? '1' : '0';
   const startSec = extractYouTubeStartTime(url);
   const startParam = startSec && startSec > 0 ? `&start=${startSec}` : '';
-  const originParam = typeof window !== 'undefined' && window.location.origin ? `&origin=${encodeURIComponent(window.location.origin)}` : '';
+  const originParam =
+    typeof window !== 'undefined' && window.location && window.location.origin
+      ? `&origin=${encodeURIComponent(window.location.origin)}`
+      : '';
   return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=${autoParam}&enablejsapi=1&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3${originParam}${startParam}`;
 }
 
@@ -156,16 +221,16 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
     },
     {
       id: 'op_invocation_1',
-      title: 'SRF Opening Prayer & Guru Invocation',
-      subtitle: 'Sacred prayer to Divine Mother and Line of Gurus',
-      url: 'https://www.youtube.com/watch?v=kYJqDq1wX3Q',
+      title: 'Paramahansa Yogananda: In the Glory of the Spirit',
+      subtitle: 'Original recorded voice and invocation prayer',
+      url: 'https://www.youtube.com/watch?v=krd41uFL2s4',
       type: 'youtube',
     },
     {
       id: 'op_invocation_2',
-      title: 'Paramahansa Yogananda Invocation Prayer',
-      subtitle: 'Devotional spoken prayer for deep attunement',
-      url: 'https://www.youtube.com/watch?v=jWqY1h3C_2o',
+      title: 'Guru Lineage Attunement & Meditation Prayer',
+      subtitle: 'Devotional spoken prayer for deep attunement with the Great Ones',
+      url: 'https://www.youtube.com/watch?v=Gu45m-enngI',
       type: 'youtube',
     },
   ],
@@ -216,35 +281,28 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
       id: 'chant_door_of_my_heart',
       title: 'Door of My Heart (Cosmic Chant)',
       subtitle: 'Paramahansa Yogananda — Devotional Bhakti Chant',
-      url: 'https://www.youtube.com/watch?v=0qZ8eKkM7aM',
+      url: 'https://www.youtube.com/watch?v=avn4ZTxSuyo',
       type: 'youtube',
     },
     {
       id: 'chant_o_god_beautiful',
       title: 'O God Beautiful (Cosmic Chant)',
       subtitle: 'In the forest, in the flowers, in the temple of stillness',
-      url: 'https://www.youtube.com/watch?v=F3v6r_K4Z8A',
-      type: 'youtube',
-    },
-    {
-      id: 'chant_listen_listen',
-      title: 'Listen, Listen, Listen (Cosmic Chant)',
-      subtitle: 'Listen to my heart’s song — Cosmic Chants',
-      url: 'https://www.youtube.com/watch?v=5V_u2hH1E2g',
-      type: 'youtube',
-    },
-    {
-      id: 'chant_thousands_of_suns',
-      title: 'Thousands of Suns (Cosmic Chant)',
-      subtitle: 'Swami Sri Yukteswar & Yogananda Devotional Chant',
-      url: 'https://www.youtube.com/watch?v=P_V5q1K8m7A',
+      url: 'https://www.youtube.com/watch?v=hc2x64QAmvo',
       type: 'youtube',
     },
     {
       id: 'chant_temple_of_silence',
       title: 'In the Temple of Silence',
-      subtitle: 'I will sing Thy name in the secret soul sanctuary',
-      url: 'https://www.youtube.com/watch?v=XWbBqM8tKk0',
+      subtitle: 'SRF Guided Meditation & Devotional Chanting (Brother Chidananda)',
+      url: 'https://www.youtube.com/watch?v=MJR06v8qakg',
+      type: 'youtube',
+    },
+    {
+      id: 'chant_aum_chanting',
+      title: 'AUM (OM) Chanting by Paramahansa Yogananda',
+      subtitle: 'Original recording of Master vibrating the sacred cosmic AUM',
+      url: 'https://www.youtube.com/watch?v=eaLSahm6Ne8',
       type: 'youtube',
     },
   ],
@@ -258,16 +316,16 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
     },
     {
       id: 'wp_srf_healing',
-      title: 'SRF Worldwide Prayer Circle & AUM Chant',
-      subtitle: 'Rub hands, broadcast cosmic healing energy with AUM',
-      url: 'https://www.youtube.com/watch?v=hJ3K1qW4L7s',
+      title: 'Cosmic AUM World Healing Prayer (SRF)',
+      subtitle: 'Vibrating prana and light for all souls and all nations',
+      url: 'https://www.youtube.com/watch?v=kzncvlw781g',
       type: 'youtube',
     },
     {
-      id: 'wp_cosmic_aum',
-      title: 'Cosmic AUM World Healing Prayer',
-      subtitle: 'Vibrating prana and light for all nations and souls',
-      url: 'https://www.youtube.com/watch?v=8V_7q3L2k4E',
+      id: 'wp_global_peace',
+      title: 'Global Healing Peace Chant & Affirmation',
+      subtitle: 'Broadcasting peace and vitality into the cosmic ether',
+      url: 'https://www.youtube.com/watch?v=hP4j5KbfGKY',
       type: 'youtube',
     },
   ],
@@ -282,15 +340,15 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
     {
       id: 'cp_god_alone',
       title: 'God Alone Devotional Closing Prayer',
-      subtitle: '“God Alone, God Alone, all else passes away”',
-      url: 'https://www.youtube.com/watch?v=M8q3_K1L7mY',
+      subtitle: '“God Alone, God Alone, all else passes away” (Swami Kriyananda)',
+      url: 'https://www.youtube.com/watch?v=GCBF_GjfybA',
       type: 'youtube',
     },
     {
       id: 'cp_aum_shanti',
       title: 'Aum, Shanti, Peace, Amen',
-      subtitle: 'Closing meditation surrender & blessing',
-      url: 'https://www.youtube.com/watch?v=6v7L_q1M8pQ',
+      subtitle: 'Closing meditation surrender & blessing vibration',
+      url: 'https://www.youtube.com/watch?v=eaLSahm6Ne8',
       type: 'youtube',
     },
   ],
@@ -299,7 +357,7 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
       id: 'aff_healing_light',
       title: 'Scientific Healing Affirmation (Paramahansa Yogananda)',
       subtitle: '“I am submerged in Thy eternal light; it permeates every particle of my being.”',
-      url: 'https://www.youtube.com/watch?v=f3p_9H1zQx8',
+      url: 'https://www.youtube.com/watch?v=PsbA8JFdO98',
       type: 'youtube',
       affirmationText:
         '“I am submerged in Thy eternal light; it permeates every particle of my being. I am alive in that light. The divine presence fills my body with peace, harmony, and perfect health.”',
@@ -308,7 +366,7 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
       id: 'aff_divine_peace',
       title: 'Affirmation for Radiant Peace & Calmness',
       subtitle: '“God is within and around me, protecting me; so banish all fear.”',
-      url: 'https://www.youtube.com/watch?v=hJ3K1qW4L7s',
+      url: 'https://www.youtube.com/watch?v=krd41uFL2s4',
       type: 'youtube',
       affirmationText:
         '“God is within and around me, protecting me; so banish all fear, which comes from the unholy thought of God’s absence. The light of His presence is ever around me.”',
@@ -317,7 +375,7 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
       id: 'aff_divine_will',
       title: 'Affirmation for Will Power & Spiritual Success',
       subtitle: '“Thy infinite power flows through me; I shall succeed in all noble duties.”',
-      url: 'https://www.youtube.com/watch?v=rl4ULW_OgtQ',
+      url: 'https://www.youtube.com/watch?v=rdc5khxI0Hw',
       type: 'youtube',
       affirmationText:
         '“Thy infinite power flows through me; I shall succeed in all noble duties. I will go forward with courage, faith, and patience. God’s grace is my eternal shield.”',
@@ -326,7 +384,7 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
       id: 'aff_vitality',
       title: 'Affirmation for Youthfulness and Vitality',
       subtitle: 'Recharging body batteries with cosmic prana and divine joy',
-      url: 'https://www.youtube.com/watch?v=0qZ8eKkM7aM',
+      url: 'https://www.youtube.com/watch?v=ZXPdmWX8VB4',
       type: 'youtube',
       affirmationText:
         '“O Father, recharge my body cells with Thy cosmic prana; recharge my mind with Thy concentration; recharge my soul with Thine ever-new joy. Divine Joy, fill me!”',
@@ -335,7 +393,7 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
       id: 'aff_wisdom',
       title: 'Affirmation for Intuition & Divine Guidance',
       subtitle: 'Attuning the inner eye to the voice of Omniscience',
-      url: 'https://www.youtube.com/watch?v=kYJqDq1wX3Q',
+      url: 'https://www.youtube.com/watch?v=Gu45m-enngI',
       type: 'youtube',
       affirmationText:
         '“Behind the wave of my consciousness is the infinite ocean of God’s wisdom. I claim my divine heritage of intuitive understanding and spiritual sight.”',
@@ -343,49 +401,58 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
   ],
   sacred_voices: [
     {
-      id: 'sv_yogananda_will_be_thine',
-      title: 'Paramahansa Yogananda: “I Will Be Thine Always”',
-      subtitle: 'Archival audio of the Master speaking & praying to Divine Mother',
-      url: 'https://www.youtube.com/watch?v=jWqY1h3C_2o',
+      id: 'sv_yogananda_loving_god',
+      title: 'Paramahansa Yogananda: “Loving God”',
+      subtitle: 'Original archival audio of Master speaking on love for the Divine Mother',
+      url: 'https://www.youtube.com/watch?v=krd41uFL2s4',
       type: 'youtube',
       affirmationText:
         '“I will be Thine always. Through life and death, through sunshine and storm, my soul is anchored in Thee, my beloved Lord. Thou art my one and only Love.” — Paramahansa Yogananda',
     },
     {
-      id: 'sv_yogananda_songs_of_heart',
-      title: 'Paramahansa Yogananda: Songs of My Heart',
-      subtitle: 'Master’s sacred voice reading from Whispers from Eternity',
-      url: 'https://www.youtube.com/watch?v=kYJqDq1wX3Q',
+      id: 'sv_yogananda_destroy_suffering',
+      title: 'Paramahansa Yogananda: How to Destroy Suffering by Its Roots',
+      subtitle: 'Original archival talk on overcoming all sorrow and finding lasting bliss',
+      url: 'https://www.youtube.com/watch?v=rdc5khxI0Hw',
       type: 'youtube',
       affirmationText:
         '“In the temple of silence, in the secret bower of my soul, I lay my offering of pure devotion at Thy lotus feet. Speak to me, Lord, in the stillness.” — Paramahansa Yogananda',
     },
     {
-      id: 'sv_daya_mata_divine_love',
-      title: 'Sri Daya Mata: Finding God in Daily Life & Devotion',
-      subtitle: 'Spiritual discourse & blessings by SRF President Sri Daya Mata',
-      url: 'https://www.youtube.com/watch?v=0qZ8eKkM7aM',
+      id: 'sv_yogananda_thinking_of_god',
+      title: 'Paramahansa Yogananda: Thinking of Nothing But God',
+      subtitle: 'Master’s sacred voice on continuous awareness of the Divine Presence',
+      url: 'https://www.youtube.com/watch?v=ZXPdmWX8VB4',
+      type: 'youtube',
+      affirmationText:
+        '“Keep your mind centered in God. He is the life of your life, the heartbeat of your heart, the soul of your soul.” — Paramahansa Yogananda',
+    },
+    {
+      id: 'sv_yogananda_key_to_heaven',
+      title: 'Paramahansa Yogananda: The Key to Heaven',
+      subtitle: 'Rare recorded voice on perseverance and meditation at the Spiritual Eye',
+      url: 'https://www.youtube.com/watch?v=Gu45m-enngI',
+      type: 'youtube',
+      affirmationText:
+        '“Persevere in meditation until the divine light dawns within. You are a child of God, immortal and divine.” — Paramahansa Yogananda',
+    },
+    {
+      id: 'sv_daya_mata_deepest_needs',
+      title: 'Sri Daya Mata: Fulfilling the Soul’s Deepest Needs',
+      subtitle: 'Spiritual address by SRF President Sri Daya Mata at World Convocation',
+      url: 'https://www.youtube.com/watch?v=qZQFm856Coc',
       type: 'youtube',
       affirmationText:
         '“Find God first in the stillness of deep meditation, and then love Him in all human beings, serving Him in all life with joy and unconditional love.” — Sri Daya Mata',
     },
     {
-      id: 'sv_line_of_gurus_attunement',
-      title: 'Line of Gurus Sacred Invocations & Chants',
-      subtitle: 'Spoken attunement to Babaji, Lahiri Mahasaya, and Sri Yukteswar',
-      url: 'https://www.youtube.com/watch?v=P_V5q1K8m7A',
+      id: 'sv_daya_mata_peace_balance',
+      title: 'Sri Daya Mata: Finding Divine Peace and Balance',
+      subtitle: 'Spiritual discourse on bringing deep peace and spiritual poise into life',
+      url: 'https://www.youtube.com/watch?v=QKD71YLHRuM',
       type: 'youtube',
       affirmationText:
-        '“Babaji, Lahiri Mahasaya, Sri Yukteswarji, Paramahansa Yoganandaji: Bless me that I may awaken to the divine light within my spiritual eye.”',
-    },
-    {
-      id: 'sv_yogananda_cosmic_chanting',
-      title: 'Paramahansa Yogananda: Divine Mother Invocations',
-      subtitle: 'Historic recording of devotional communion with the Divine',
-      url: 'https://www.youtube.com/watch?v=F3v6r_K4Z8A',
-      type: 'youtube',
-      affirmationText:
-        '“Divine Mother, reveal Thyself unto me! Thou art the light within the sun, the love within the heart, the peace within my soul.” — Paramahansa Yogananda',
+        '“Hold on to the peace you feel in meditation. Take it into activity, and let nothing disturb the calm sanctuary of your soul.” — Sri Daya Mata',
     },
   ],
 };

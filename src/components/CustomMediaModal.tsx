@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { MeditationStageConfig, StageId, CustomMediaConfig } from '../types/meditation';
 import {
   STAGE_MEDIA_PRESETS,
+  StageMediaPreset,
   detectMediaType,
   getYouTubeEmbedUrl,
   extractYouTubeId,
   extractYouTubeStartTime,
   formatSecondsToTimestamp,
+  cleanAndCanonicalizeYouTubeUrl,
+  fetchYouTubeVideoMetadata,
 } from '../utils/customMedia';
 import {
   X,
@@ -55,6 +58,8 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
   const [playUntilFinished, setPlayUntilFinished] = useState<boolean>(true);
   const [previewActive, setPreviewActive] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [isResolvingUrl, setIsResolvingUrl] = useState<boolean>(false);
+  const [urlResolvedMessage, setUrlResolvedMessage] = useState<string | null>(null);
 
   // Sync state whenever modal opens or active stage changes
   useEffect(() => {
@@ -165,15 +170,37 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
     setPreviewActive(true);
   };
 
+  const handleAutoCorrectAndFetchTitle = async () => {
+    if (!urlInput.trim()) return;
+    setIsResolvingUrl(true);
+    try {
+      const canonical = cleanAndCanonicalizeYouTubeUrl(urlInput.trim());
+      setUrlInput(canonical);
+      const meta = await fetchYouTubeVideoMetadata(canonical);
+      if (meta.title) {
+        setTitleInput(meta.title);
+        setUrlResolvedMessage(`Corrected link & fetched title: "${meta.title}"`);
+      } else {
+        setUrlResolvedMessage('Link cleaned and converted to canonical YouTube format!');
+      }
+    } catch {
+      setUrlResolvedMessage('Link formatted to canonical YouTube URL.');
+    } finally {
+      setIsResolvingUrl(false);
+      setTimeout(() => setUrlResolvedMessage(null), 3000);
+    }
+  };
+
   const handleSave = () => {
     if (!urlInput.trim()) {
       // Clear media
       onSaveMedia(selectedStageId, undefined);
     } else {
       const type = detectMediaType(urlInput);
+      const sanitizedUrl = type === 'youtube' ? cleanAndCanonicalizeYouTubeUrl(urlInput.trim()) : urlInput.trim();
       const config: CustomMediaConfig = {
         enabled: isEnabled,
-        url: urlInput.trim(),
+        url: sanitizedUrl,
         title: titleInput.trim() || (type === 'youtube' ? 'YouTube Chant/Prayer' : 'Custom Audio'),
         affirmationText: affirmationTextInput.trim() || undefined,
         type: type === 'youtube' ? 'youtube' : 'mp3',
@@ -353,6 +380,50 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
               Supports standard YouTube links (<code className="text-amber-300">youtube.com/watch?v=...</code>,{' '}
               <code className="text-amber-300">youtu.be/...</code>), Shorts, and direct MP3 audio URLs.
             </p>
+
+            {/* Auto-Correct & Title Fetch Action */}
+            {urlInput.trim() && (
+              <div className="flex flex-wrap items-center justify-between gap-2 mt-2 pt-1.5 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={handleAutoCorrectAndFetchTitle}
+                  disabled={isResolvingUrl}
+                  className="px-2.5 py-1 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-400/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                  title="Clean URL parameters and fetch exact video title"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <span>{isResolvingUrl ? 'Resolving Title...' : '✨ Auto-Correct Link & Fetch Title'}</span>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewActive(!previewActive)}
+                    className="text-xs text-sky-300 hover:text-white underline cursor-pointer flex items-center gap-1"
+                  >
+                    <Play className="w-3 h-3" />
+                    <span>{previewActive ? 'Hide Player' : 'Test / Preview Video'}</span>
+                  </button>
+
+                  <a
+                    href={cleanAndCanonicalizeYouTubeUrl(urlInput.trim())}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-slate-400 hover:text-amber-300 flex items-center gap-1 underline"
+                    title="Open directly on YouTube"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    <span>Open in YouTube</span>
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {urlResolvedMessage && (
+              <div className="mt-1.5 text-[11px] font-semibold text-emerald-300 bg-emerald-950/60 border border-emerald-500/40 py-1 px-2.5 rounded-lg animate-in fade-in">
+                ✓ {urlResolvedMessage}
+              </div>
+            )}
           </div>
 
           {/* Title / Label Input */}
@@ -496,7 +567,8 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
                         src={embedUrl}
                         title="YouTube Preview Player"
                         className="w-full h-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerPolicy="strict-origin-when-cross-origin"
                         allowFullScreen
                       />
                     </div>

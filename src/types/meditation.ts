@@ -60,7 +60,7 @@ export interface MeditationStageConfig {
   summary: string;
   customMedia?: CustomMediaConfig;
   playUntilFinished?: boolean; // Play till music is over (for Chants, Affirmations, Prayers)
-  stageType?: 'standard' | 'chant' | 'affirmation' | 'sacred_voices';
+  stageType?: 'standard' | 'chant' | 'affirmation' | 'sacred_voices' | 'thirty_counts';
   isCustomAdded?: boolean;
   techniqueGuide: {
     purpose: string;

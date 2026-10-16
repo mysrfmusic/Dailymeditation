@@ -542,3 +542,69 @@ export function createSacredVoicesStage(
     },
   };
 }
+
+export function createThirtyCountsStage(
+  id: string = 'thirty_counts',
+  mode: 'recharging' | 'pranayama' | 'japa' = 'recharging',
+  breathPattern: { inhale: number; hold: number; exhale: number } = { inhale: 10, hold: 3, exhale: 10 }
+): MeditationStageConfig {
+  const isPranayama = mode === 'pranayama';
+  const secPerCount = isPranayama ? breathPattern.inhale + breathPattern.hold + breathPattern.exhale : 6;
+  const minutes = Math.max(2, Math.round((30 * secPerCount) / 60));
+
+  const titles = {
+    recharging: '30-Part Body Recharging',
+    pranayama: '30 Counts Pranayama',
+    japa: '30 Counts Sacred Japa',
+  };
+
+  const subtitles = {
+    recharging: '30 Body Parts Energization',
+    pranayama: '30 Breath Cycles Pranayama',
+    japa: '30 AUM Sacred Bead Japa',
+  };
+
+  return {
+    id,
+    title: titles[mode],
+    subtitle: subtitles[mode],
+    minutes,
+    isCountBased: true,
+    kriyaCount: 30,
+    secondsPerKriya: secPerCount,
+    breathPattern: isPranayama ? breathPattern : undefined,
+    soundscape: 'forest_sanctuary',
+    soundscapeVolume: 0.6,
+    bellAtStart: true,
+    bellAtEnd: true,
+    stageType: 'thirty_counts' as any,
+    isCustomAdded: true,
+    summary:
+      mode === 'recharging'
+        ? 'Paramahansa Yogananda’s 30-Part Body Recharging Energization: tensing with will, vibrating with prana, and relaxing across 30 body parts from feet to crown.'
+        : mode === 'pranayama'
+        ? '30 rhythmic Pranayama breath cycles to still the life current, calm the heart, and internalize consciousness.'
+        : '30 sacred counts of Japa with AUM vibration at the spiritual eye.',
+    techniqueGuide: {
+      purpose:
+        mode === 'recharging'
+          ? 'To charge the body with fresh cosmic vitality, directing life energy consciously to each of the 30 body parts.'
+          : 'To still the breath and heart through 30 sacred counts, drawing the mind into profound interiorization.',
+      posture: mode === 'recharging' ? 'Standing or seated upright, spine straight.' : 'Seated upright in meditation posture.',
+      instructions:
+        mode === 'recharging'
+          ? [
+              'Focus attention on each of the 30 body parts sequentially as the count advances.',
+              'Tense with willpower: low, medium, high; vibrate with cosmic energy.',
+              'Relax completely: high, medium, low, feeling the tingling peace and rejuvenation.',
+              'Keep the spiritual gaze focused at the Christ center between the eyebrows.',
+            ]
+          : [
+              'Follow the gentle count visualizer and chime for 30 cycles.',
+              'Breathe smoothly and deeply, feeling prana circulating in the spine.',
+              'Feel the stillness deepen with every single count.',
+            ],
+      sacredQuote: '“The greater the will, the greater the flow of energy.” — Paramahansa Yogananda',
+    },
+  };
+}

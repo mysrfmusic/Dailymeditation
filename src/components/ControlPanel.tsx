@@ -503,9 +503,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               {[
                 { count: 14, label: '14 Kriyas' },
                 { count: 24, label: '24 Kriyas' },
-                { count: 30, label: '30 Counts ✨' },
                 { count: 36, label: '36 Kriyas' },
                 { count: 72, label: '72 Kriyas' },
+                { count: 108, label: '108 Kriyas' },
               ].map((item) => {
                 const isSelected = (stage.kriyaCount ?? 14) === item.count;
                 return (
