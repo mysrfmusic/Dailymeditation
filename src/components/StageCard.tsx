@@ -33,12 +33,15 @@ export const StageCard: React.FC<StageCardProps> = ({
       : '';
 
   const displayTitle = isPresence ? 'Presence' : stage.title;
+  const isPlayUntil = Boolean(stage.playUntilFinished || stage.customMedia?.playUntilFinished);
 
   const displayValue =
     stage.isCountBased && stage.kriyaCount !== undefined
       ? `${stage.kriyaCount}`
       : stage.isCountBased && stage.breathRounds !== undefined
       ? `${stage.breathRounds}`
+      : isPlayUntil
+      ? `🎵`
       : `${stage.minutes}‘`;
 
   return (
@@ -110,6 +113,13 @@ export const StageCard: React.FC<StageCardProps> = ({
       {isBreathing && stage.breathPattern && (
         <span className="text-[10px] opacity-80 font-mono leading-none mt-0.5 px-1.5 py-0.5 rounded bg-black/20">
           {stage.breathPattern.inhale}·{stage.breathPattern.hold}·{stage.breathPattern.exhale}
+        </span>
+      )}
+
+      {/* For Play Until Music Finishes */}
+      {isPlayUntil && !isBreathing && !isPresence && (
+        <span className="text-[9px] font-semibold text-emerald-300 leading-none mt-0.5 px-1.5 py-0.5 rounded-full bg-black/30 border border-emerald-400/20">
+          Full Track
         </span>
       )}
     </button>

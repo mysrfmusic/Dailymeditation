@@ -69,6 +69,18 @@ export const TechniqueInfoModal: React.FC<TechniqueInfoModalProps> = ({
             </div>
           )}
 
+          {/* Sacred Affirmation Words (if stage has affirmationText) */}
+          {(stage.techniqueGuide.affirmationText || stage.customMedia?.affirmationText) && (
+            <div className="p-4 bg-gradient-to-br from-amber-500/20 via-slate-900 to-sky-950/40 border border-amber-400/50 rounded-2xl shadow-inner">
+              <div className="font-bold text-amber-300 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-amber-300" /> Sacred Words / Affirmation
+              </div>
+              <p className="leading-relaxed text-amber-100 italic text-sm sm:text-base font-serif">
+                "{stage.techniqueGuide.affirmationText || stage.customMedia?.affirmationText}"
+              </p>
+            </div>
+          )}
+
           {/* Summary / Purpose */}
           <div className="bg-slate-800/70 p-3.5 rounded-2xl border border-slate-700/60">
             <div className="font-bold text-amber-300 text-xs uppercase tracking-wider mb-1 flex items-center gap-1.5">

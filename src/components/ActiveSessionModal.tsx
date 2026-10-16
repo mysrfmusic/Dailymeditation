@@ -26,6 +26,7 @@ import {
   Music,
   Eye,
   Tv,
+  Sparkles,
 } from 'lucide-react';
 import { MalaBeadsIcon } from './Icons';
 import { SpiritualEyeGraphic } from './SpiritualEyeGraphic';
@@ -33,27 +34,32 @@ import { SpiritualEyeGraphic } from './SpiritualEyeGraphic';
 interface ActiveSessionModalProps {
   isOpen: boolean;
   activeStageId: StageId;
-  stages: Record<StageId, MeditationStageConfig>;
+  stages: Record<string, MeditationStageConfig>;
+  stageOrder?: string[];
   isSequenceMode: boolean;
   onClose: () => void;
-  onStageChange: (nextStageId: StageId) => void;
-  onOpenCustomMediaModal?: (stageId: StageId) => void;
+  onStageChange: (nextStageId: string) => void;
+  onOpenCustomMediaModal?: (stageId: string) => void;
 }
 
 export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   isOpen,
   activeStageId,
   stages,
+  stageOrder,
   isSequenceMode,
   onClose,
   onStageChange,
   onOpenCustomMediaModal,
 }) => {
-  const currentStage = stages[activeStageId] || stages['kriyas'];
+  const activeOrder = stageOrder && stageOrder.length > 0 ? stageOrder : STAGE_ORDER;
+  const currentStage = stages[activeStageId] || stages['kriyas'] || Object.values(stages)[0];
 
   // Pranayama / Breathing Exercise & Kriya count state
   const isKriyas = currentStage.id === 'kriyas';
-  const isPranayama = currentStage.id === 'breathing_1' || currentStage.id === 'breathing_2';
+  const isBreathing1 = currentStage.id === 'breathing_1';
+  const isBreathing2 = currentStage.id === 'breathing_2';
+  const isPranayama = isBreathing1 || isBreathing2;
   const isCountBasedKriya = isKriyas && currentStage.isCountBased !== false;
   const isBreathingStage = isPranayama || isCountBasedKriya;
   const breathPattern =
@@ -103,6 +109,23 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const isAudioFile = hasCustomMedia && mediaType === 'mp3';
   const shouldMuteSoundscape = Boolean(hasCustomMedia && (customMedia?.muteSoundscape ?? true));
 
+  const isChant = currentStage.stageType === 'chant' || currentStage.id === 'chant' || currentStage.id.startsWith('chant_');
+  const isAffirmation = currentStage.stageType === 'affirmation' || currentStage.id === 'affirmation' || currentStage.id.startsWith('affirmation_');
+  const isSacredVoice = currentStage.stageType === 'sacred_voices' || currentStage.id === 'sacred_voices' || currentStage.id.startsWith('sacred_voices_');
+  const isPlayUntilFinished = Boolean(
+    currentStage.playUntilFinished ??
+    (currentStage.customMedia?.playUntilFinished ?? ((isChant || isAffirmation || isSacredVoice) && hasCustomMedia))
+  );
+
+  // Affirmation / Sacred Words text
+  const affirmationText = currentStage.customMedia?.affirmationText || currentStage.techniqueGuide?.affirmationText;
+  const hasAffirmation = Boolean(affirmationText);
+  const [showAffirmationOverlay, setShowAffirmationOverlay] = useState<boolean>(true);
+
+  const [trackElapsedSeconds, setTrackElapsedSeconds] = useState<number>(0);
+  const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(false);
+  const [mobileAutoplayBlocked, setMobileAutoplayBlocked] = useState<boolean>(false);
+
   const [showVideo, setShowVideo] = useState<boolean>(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const youtubeIframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -124,8 +147,10 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
         ? Math.max(1, targetRounds * cycleTotal)
         : (currentStage.minutes || 1) * 60;
       setSecondsRemaining(dur);
+      setTrackElapsedSeconds(0);
       setIsRunning(true);
       setIsCompleted(false);
+      setIsVideoPlaying(false);
       setCompletedBeads(0);
       setBreathRoundsCompleted(0);
       setBreathPhase('Inhale');
@@ -141,6 +166,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
       setVolume(currentStage.soundscapeVolume ?? 0.65);
       intervalBellTimerRef.current = 0;
       setShowPrayerOverlay(Boolean(currentStage.techniqueGuide.prayerText));
+      setShowAffirmationOverlay(Boolean(currentStage.customMedia?.affirmationText || currentStage.techniqueGuide?.affirmationText));
 
       // Start soundscape (unless muted by custom media)
       if (!shouldMuteSoundscape) {
@@ -179,6 +205,74 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
     };
   }, [isOpen, activeStageId]);
 
+  // YouTube Iframe event listener & mobile autoplay detection
+  useEffect(() => {
+    if (!isOpen || !isYouTube) return;
+
+    const handleMessage = (e: MessageEvent) => {
+      try {
+        const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+        if (!data) return;
+
+        let playerState: number | undefined;
+        if (data.event === 'onStateChange') {
+          playerState = data.info;
+        } else if (data.event === 'infoDelivery' && data.info?.playerState !== undefined) {
+          playerState = data.info.playerState;
+        }
+
+        if (playerState === 1) {
+          // Video is actively playing!
+          setIsVideoPlaying(true);
+          setMobileAutoplayBlocked(false);
+        } else if (playerState === 2) {
+          // Paused
+          setIsVideoPlaying(false);
+        } else if (playerState === 0) {
+          // Video ended!
+          setIsVideoPlaying(false);
+          if (isPlayUntilFinished) {
+            handleStageCompletion();
+          }
+        }
+      } catch {}
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    // If on mobile/tablet or autoplay blocked, check if video is playing after short delay
+    const checkTimer = setTimeout(() => {
+      if (isRunning && !isVideoPlaying) {
+        setMobileAutoplayBlocked(true);
+      }
+    }, 1800);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      clearTimeout(checkTimer);
+    };
+  }, [isOpen, isYouTube, isRunning, isVideoPlaying, isPlayUntilFinished]);
+
+  const handleMobilePlayUnlock = () => {
+    if (youtubeIframeRef.current?.contentWindow) {
+      try {
+        youtubeIframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+          '*'
+        );
+        youtubeIframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+          '*'
+        );
+      } catch {}
+    }
+    if (audioRef.current) {
+      audioRef.current.play().catch(() => {});
+    }
+    setMobileAutoplayBlocked(false);
+    setIsVideoPlaying(true);
+  };
+
   // Sync custom media play/pause with timer running state
   useEffect(() => {
     if (!isOpen) return;
@@ -207,25 +301,30 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
     if (!isOpen || !isRunning || isCompleted) return;
 
     const timer = setInterval(() => {
-      // 1. Decrement overall time
-      setSecondsRemaining((prev) => {
-        if (prev <= 1 && !isBreathingStage) {
-          handleStageCompletion();
-          return 0;
-        }
-
-        // Interval bell check
-        const intervalMins = currentStage.intervalBellMinutes ?? 0;
-        if (intervalMins > 0) {
-          intervalBellTimerRef.current += 1;
-          if (intervalBellTimerRef.current >= intervalMins * 60) {
-            intervalBellTimerRef.current = 0;
-            soundEngine.playTempleBell(1);
+      // If playUntilFinished is active, track elapsed time instead of cutting off
+      if (isPlayUntilFinished) {
+        setTrackElapsedSeconds((prev) => prev + 1);
+      } else {
+        // 1. Decrement overall time
+        setSecondsRemaining((prev) => {
+          if (prev <= 1 && !isBreathingStage) {
+            handleStageCompletion();
+            return 0;
           }
-        }
 
-        return prev - 1;
-      });
+          // Interval bell check
+          const intervalMins = currentStage.intervalBellMinutes ?? 0;
+          if (intervalMins > 0) {
+            intervalBellTimerRef.current += 1;
+            if (intervalBellTimerRef.current >= intervalMins * 60) {
+              intervalBellTimerRef.current = 0;
+              soundEngine.playTempleBell(1);
+            }
+          }
+
+          return prev - 1;
+        });
+      }
 
       // 2. Breath Transition & Counting Engine (Guaranteed zero missing gongs)
       if (isBreathingStage) {
@@ -373,10 +472,10 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
     }
 
     if (isSequenceMode) {
-      const currentIndex = STAGE_ORDER.indexOf(activeStageId);
-      if (currentIndex < STAGE_ORDER.length - 1) {
+      const currentIndex = activeOrder.indexOf(activeStageId);
+      if (currentIndex < activeOrder.length - 1) {
         setTimeout(() => {
-          onStageChange(STAGE_ORDER[currentIndex + 1]);
+          onStageChange(activeOrder[currentIndex + 1]);
         }, 3500);
       }
     }
@@ -456,6 +555,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
 
   const handleReset = () => {
     setSecondsRemaining(totalDurationSeconds);
+    setTrackElapsedSeconds(0);
     setCompletedBeads(0);
     setBreathRoundsCompleted(0);
     currentPhaseRef.current = 'Inhale';
@@ -494,16 +594,16 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   };
 
   const handlePreviousStage = () => {
-    const currentIndex = STAGE_ORDER.indexOf(activeStageId);
+    const currentIndex = activeOrder.indexOf(activeStageId);
     if (currentIndex > 0) {
-      onStageChange(STAGE_ORDER[currentIndex - 1]);
+      onStageChange(activeOrder[currentIndex - 1]);
     }
   };
 
   const handleNextStage = () => {
-    const currentIndex = STAGE_ORDER.indexOf(activeStageId);
-    if (currentIndex < STAGE_ORDER.length - 1) {
-      onStageChange(STAGE_ORDER[currentIndex + 1]);
+    const currentIndex = activeOrder.indexOf(activeStageId);
+    if (currentIndex < activeOrder.length - 1) {
+      onStageChange(activeOrder[currentIndex + 1]);
     } else {
       handleStageCompletion();
     }
@@ -534,11 +634,13 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const secs = secondsRemaining % 60;
   const timeString = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
-  const currentStageIndex = STAGE_ORDER.indexOf(activeStageId);
+  const currentStageIndex = activeOrder.indexOf(activeStageId);
 
   // Overall progress percentage
   const progressPercent = isBreathingStage
     ? Math.min(100, (breathRoundsCompleted / Math.max(1, targetRounds)) * 100)
+    : isPlayUntilFinished
+    ? Math.min(100, (trackElapsedSeconds % 60) * 1.66)
     : ((totalDurationSeconds - secondsRemaining) / totalDurationSeconds) * 100;
 
   const currentSound = SOUNDSCAPES.find((s) => s.id === activeSoundscape) || SOUNDSCAPES[0];
@@ -566,7 +668,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
         <div className="flex items-center gap-2">
           {isSequenceMode ? (
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#ffd700]/20 text-[#ffd700] border border-[#ffd700]/40">
-              Stage {currentStageIndex + 1} of {STAGE_ORDER.length}
+              Stage {currentStageIndex + 1} of {activeOrder.length}
             </span>
           ) : (
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#ffd700]/20 text-[#ffd700] border border-[#ffd700]/40">
@@ -592,12 +694,12 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
       {/* Routine Progress bar (if in sequence mode) */}
       {isSequenceMode && (
         <div className="w-full max-w-xl mt-3 flex items-center gap-1 px-1">
-          {STAGE_ORDER.map((stageId, idx) => {
+          {activeOrder.map((stageId, idx) => {
             const isPast = idx < currentStageIndex;
             const isCurr = idx === currentStageIndex;
             return (
               <div
-                key={stageId}
+                key={`${stageId}_${idx}`}
                 className={`h-1.5 rounded-full flex-1 transition-all ${
                   isPast
                     ? 'bg-amber-400'
@@ -714,12 +816,25 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                 {showVideo ? (
                   <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-black border border-white/20 shadow-md">
                     <iframe
+                      key={activeStageId}
                       ref={youtubeIframeRef}
                       src={getYouTubeEmbedUrl(customMedia.url, true) || ''}
                       title={customMedia.title || 'YouTube Player'}
                       className="w-full h-full border-0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
+                      onLoad={() => {
+                        if (isRunning) {
+                          setTimeout(() => {
+                            try {
+                              youtubeIframeRef.current?.contentWindow?.postMessage(
+                                JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+                                '*'
+                              );
+                            } catch {}
+                          }, 500);
+                        }
+                      }}
                     />
                   </div>
                 ) : (
@@ -737,6 +852,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                     </button>
                     <div className="w-1 h-1 opacity-0 overflow-hidden absolute pointer-events-none">
                       <iframe
+                        key={`bg_${activeStageId}`}
                         ref={youtubeIframeRef}
                         src={getYouTubeEmbedUrl(customMedia.url, true) || ''}
                         title={customMedia.title || 'YouTube Background Audio'}
@@ -745,6 +861,18 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                       />
                     </div>
                   </div>
+                )}
+
+                {/* Mobile Autoplay Unlock Helper Button: Appears on touch devices when browser restricts auto-play */}
+                {mobileAutoplayBlocked && (
+                  <button
+                    type="button"
+                    onClick={handleMobilePlayUnlock}
+                    className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-xl animate-pulse cursor-pointer border border-amber-200"
+                  >
+                    <Play className="w-4 h-4 fill-current" />
+                    <span>Tap to Play Sacred Music (Mobile Audio Unlock)</span>
+                  </button>
                 )}
               </>
             )}
@@ -756,12 +884,48 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                   ref={audioRef}
                   src={customMedia.url}
                   autoPlay={isRunning}
-                  loop
+                  loop={!isPlayUntilFinished}
+                  onEnded={() => {
+                    if (isPlayUntilFinished) {
+                      handleStageCompletion();
+                    }
+                  }}
                   className="w-full h-8"
                   controls
                 />
               </div>
             )}
+          </div>
+        )}
+
+        {/* Sacred Affirmation & Guru Words Callout */}
+        {hasAffirmation && (
+          <div className="w-full max-w-sm mt-2 mb-1 px-1">
+            <div className="p-3 bg-gradient-to-br from-amber-500/20 via-black/75 to-sky-950/40 border border-amber-400/50 rounded-2xl text-xs sm:text-[13px] text-amber-100/95 leading-relaxed font-serif text-center shadow-xl backdrop-blur-md">
+              <div className="flex items-center justify-between text-[11px] font-sans font-bold text-amber-300 uppercase tracking-wider mb-1.5 px-0.5">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <span>{isSacredVoice ? 'Sacred Guru Words' : 'Sacred Affirmation'}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowAffirmationOverlay(!showAffirmationOverlay)}
+                  className="text-[10px] text-slate-300 hover:text-white underline normal-case font-normal cursor-pointer"
+                >
+                  {showAffirmationOverlay ? 'Minimize' : 'Show Words'}
+                </button>
+              </div>
+              {showAffirmationOverlay && (
+                <div className="space-y-1">
+                  <p className="italic text-amber-100 text-xs sm:text-[13px] drop-shadow-md leading-relaxed px-1">
+                    "{affirmationText}"
+                  </p>
+                  <span className="block text-[10px] text-amber-300/80 font-sans not-italic mt-1">
+                    Recite mentally at the Spiritual Eye with deep devotion
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -875,6 +1039,24 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                   {isKriyas
                     ? `Kriya ${Math.min(targetRounds, Math.max(completedBeads, breathRoundsCompleted) + 1)} of ${targetRounds}`
                     : `Round ${Math.min(targetRounds, breathRoundsCompleted + 1)} of ${targetRounds}`}
+                </div>
+              </div>
+            ) : isPlayUntilFinished ? (
+              <div className="flex flex-col items-center justify-center p-3 rounded-full bg-black/45 backdrop-blur-xs">
+                {/* Music-driven Mode */}
+                <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest font-bold text-amber-300 mb-1">
+                  <Music className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Sacred Music Playing</span>
+                </div>
+
+                <div className="text-4xl sm:text-5xl font-black tracking-tight text-white font-mono tabular-nums drop-shadow-md">
+                  {formatSecondsToTimestamp(trackElapsedSeconds)}
+                </div>
+
+                <div className="mt-2 text-center">
+                  <span className="text-[10px] text-emerald-300 font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 animate-pulse">
+                    Plays until music finishes · Auto-advancing
+                  </span>
                 </div>
               </div>
             ) : (

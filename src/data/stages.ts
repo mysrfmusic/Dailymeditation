@@ -58,6 +58,8 @@ export const INITIAL_STAGES: Record<StageId, MeditationStageConfig> = {
     title: 'Chant',
     subtitle: 'Devotional Chanting',
     minutes: 5,
+    stageType: 'chant',
+    playUntilFinished: true, // Plays till music is over!
     soundscape: 'silence',
     soundscapeVolume: 0.65,
     bellAtStart: true,
@@ -68,6 +70,7 @@ export const INITIAL_STAGES: Record<StageId, MeditationStageConfig> = {
       url: 'https://youtu.be/VVqTgKySMLA?si=ZTwKyzWsoQLfj2Hd',
       title: 'Wake, Yet Wake, O My Saint',
       muteSoundscape: true,
+      playUntilFinished: true,
     },
     summary: 'Cosmic Chants and devotional songs to open the heart and still restless thoughts.',
     techniqueGuide: {
@@ -414,3 +417,128 @@ export const STAGE_ORDER: StageId[] = [
   'closing_prayer',
   'world_prayer',
 ];
+
+export function createChantStage(
+  id: string,
+  title: string = 'Cosmic Chant',
+  url: string = 'https://youtu.be/VVqTgKySMLA?si=ZTwKyzWsoQLfj2Hd',
+  minutes: number = 5
+): MeditationStageConfig {
+  return {
+    id,
+    title,
+    subtitle: 'Devotional Cosmic Chant',
+    minutes,
+    stageType: 'chant',
+    playUntilFinished: true,
+    soundscape: 'silence',
+    soundscapeVolume: 0.65,
+    bellAtStart: true,
+    bellAtEnd: true,
+    isCustomAdded: true,
+    customMedia: {
+      enabled: true,
+      type: 'youtube',
+      url,
+      title,
+      muteSoundscape: true,
+      playUntilFinished: true,
+    },
+    summary: 'Cosmic chant to awaken deep divine love and devotion in the spiritual eye.',
+    techniqueGuide: {
+      purpose: 'To tune the feelings into deep spiritual love and dissolve restless thoughts.',
+      posture: 'Comfortable seated posture with spine upright.',
+      instructions: [
+        'Sing aloud with devotion, then softly, then silently.',
+        'Keep inner focus lifted to the spiritual eye.',
+        'Feel the words resounding in your heart and consciousness.',
+      ],
+      sacredQuote: '“To chant is to speak to God with the music of the soul.” — Paramahansa Yogananda',
+    },
+  };
+}
+
+export function createAffirmationStage(
+  id: string,
+  title: string = 'Healing Affirmation',
+  url: string = 'https://www.youtube.com/watch?v=f3p_9H1zQx8',
+  minutes: number = 4,
+  affirmationText: string = '“I am submerged in Thy eternal light; it permeates every particle of my being.”'
+): MeditationStageConfig {
+  return {
+    id,
+    title,
+    subtitle: 'Scientific Healing Affirmation',
+    minutes,
+    stageType: 'affirmation',
+    playUntilFinished: true,
+    soundscape: 'temple_chimes',
+    soundscapeVolume: 0.6,
+    bellAtStart: true,
+    bellAtEnd: true,
+    isCustomAdded: true,
+    customMedia: {
+      enabled: true,
+      type: 'youtube',
+      url,
+      title,
+      muteSoundscape: true,
+      playUntilFinished: true,
+    },
+    summary: 'Scientific healing affirmation by Paramahansa Yogananda to infuse body and mind with cosmic vitality.',
+    techniqueGuide: {
+      purpose: 'To transmute mental disease and physical weakness into vibrant health, willpower, and peace.',
+      posture: 'Erect spine, hands relaxed, eyes focused steadily at Kutastha.',
+      instructions: [
+        'Repeat first in a loud voice, firmly commanding attention.',
+        'Repeat progressively softer, then in a whisper, sending the thought into the subconscious.',
+        'Finally repeat silently in the superconscious at the spiritual eye until you feel divine conviction.',
+      ],
+      affirmationText,
+      sacredQuote: '“Words saturated with sincerity, conviction, faith, and intuition are like highly explosive vibration bombs.” — Paramahansa Yogananda',
+    },
+  };
+}
+
+export function createSacredVoicesStage(
+  id: string,
+  title: string = 'Sacred Voice of the Guru',
+  url: string = 'https://www.youtube.com/watch?v=jWqY1h3C_2o',
+  minutes: number = 6,
+  affirmationText: string = '“I will be Thine always. Through life and death, through sunshine and storm, my soul is anchored in Thee, my beloved Lord.” — Paramahansa Yogananda'
+): MeditationStageConfig {
+  return {
+    id,
+    title,
+    subtitle: 'Sacred Voice & Divine Talk',
+    minutes,
+    stageType: 'sacred_voices',
+    playUntilFinished: true,
+    soundscape: 'silence',
+    soundscapeVolume: 0.65,
+    bellAtStart: true,
+    bellAtEnd: true,
+    isCustomAdded: true,
+    customMedia: {
+      enabled: true,
+      type: 'youtube',
+      url,
+      title,
+      affirmationText,
+      muteSoundscape: true,
+      playUntilFinished: true,
+    },
+    summary: 'Historic archival voice recording of Paramahansa Yogananda or sacred monastic teachings to attune the consciousness directly with the Guru’s vibration.',
+    techniqueGuide: {
+      purpose: 'Direct attunement to the vibration and divine consciousness of Paramahansa Yogananda and the Great Ones.',
+      posture: 'Sitting tall with chest expanded and heart receptive.',
+      instructions: [
+        'Listen with deep receptivity, feeling the Guru’s spoken vibration entering through the medulla oblongata.',
+        'Absorb the spirit behind the words into your heart and spiritual eye.',
+        'Meditate on the sacred presence awakened by the Guru’s voice.',
+      ],
+      affirmationText,
+      sacredQuote: '“The voice of the Master carries not only words, but a living transmission of divine consciousness.” — Paramahansa Yogananda',
+    },
+  };
+}

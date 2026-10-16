@@ -22,12 +22,14 @@ import { ActiveSessionModal } from './components/ActiveSessionModal';
 import { GitHubPagesModal } from './components/GitHubPagesModal';
 import { ThemeSelectorModal } from './components/ThemeSelectorModal';
 import { CustomMediaModal } from './components/CustomMediaModal';
+import { ChantAffirmationTab } from './components/ChantAffirmationTab';
 import { LotusIcon } from './components/Icons';
-import { Play, RotateCcw, Globe, Palette, Info } from 'lucide-react';
+import { Play, RotateCcw, Globe, Palette, Info, Sparkles } from 'lucide-react';
 
-const STORAGE_KEY = 'kriya_meditation_stages_v14';
-const INCREMENT_KEY = 'kriya_increment_step_v14';
-const THEME_KEY = 'kriya_app_theme_v14';
+const STORAGE_KEY = 'kriya_meditation_stages_v15';
+const SEQUENCE_KEY = 'kriya_sequence_order_v15';
+const INCREMENT_KEY = 'kriya_increment_step_v15';
+const THEME_KEY = 'kriya_app_theme_v15';
 
 export default function App() {
   // Theme state: defaults to spiritual_eye matching the uploaded Spiritual Eye photo
@@ -35,38 +37,37 @@ export default function App() {
     try {
       const saved =
         localStorage.getItem(THEME_KEY) ||
+        localStorage.getItem('kriya_app_theme_v14') ||
         localStorage.getItem('kriya_app_theme_v13') ||
-        localStorage.getItem('kriya_app_theme_v12') ||
-        localStorage.getItem('kriya_app_theme_v11') ||
-        localStorage.getItem('kriya_app_theme_v10') ||
-        localStorage.getItem('kriya_app_theme_v9') ||
-        localStorage.getItem('kriya_app_theme_v8');
+        localStorage.getItem('kriya_app_theme_v12');
       if (saved && saved in THEMES) return saved as AppTheme;
     } catch {}
     return 'spiritual_eye';
   });
 
   // Load saved stages or defaults
-  const [stages, setStages] = useState<Record<StageId, MeditationStageConfig>>(() => {
+  const [stages, setStages] = useState<Record<string, MeditationStageConfig>>(() => {
     try {
-      const isExistingV14 = Boolean(localStorage.getItem(STORAGE_KEY));
+      const isExistingV15 = Boolean(localStorage.getItem(STORAGE_KEY));
       const saved =
         localStorage.getItem(STORAGE_KEY) ||
-        localStorage.getItem('kriya_meditation_stages_v13') ||
-        localStorage.getItem('kriya_meditation_stages_v12') ||
-        localStorage.getItem('kriya_meditation_stages_v11') ||
-        localStorage.getItem('kriya_meditation_stages_v10') ||
-        localStorage.getItem('kriya_meditation_stages_v9') ||
-        localStorage.getItem('kriya_meditation_stages_v8');
+        localStorage.getItem('kriya_meditation_stages_v14') ||
+        localStorage.getItem('kriya_meditation_stages_v13');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Ensure new stages exist and presence stages are properly initialized to 2 minutes
         const merged = { ...INITIAL_STAGES, ...parsed };
 
-        // For v14: Apply chant 5 mins and kriyas 10-3-10
-        if (!isExistingV14) {
+        if (!isExistingV15) {
           if (merged.chant) {
-            merged.chant = { ...merged.chant, minutes: 5 };
+            merged.chant = {
+              ...merged.chant,
+              minutes: 5,
+              stageType: 'chant',
+              playUntilFinished: true,
+              customMedia: merged.chant.customMedia
+                ? { ...merged.chant.customMedia, playUntilFinished: true }
+                : INITIAL_STAGES.chant.customMedia,
+            };
           }
           if (merged.kriyas) {
             merged.kriyas = {
@@ -76,63 +77,23 @@ export default function App() {
               minutes: 6,
             };
           }
-          if (merged.closing_prayer) {
-            merged.closing_prayer = { ...merged.closing_prayer, minutes: 4 };
-          }
-          if (merged.world_prayer) {
-            merged.world_prayer = { ...merged.world_prayer, minutes: 4 };
-          }
-          (['opening_prayer', 'chant', 'closing_prayer', 'world_prayer'] as StageId[]).forEach((id) => {
-            if (INITIAL_STAGES[id]?.customMedia) {
-              merged[id] = { ...merged[id], customMedia: INITIAL_STAGES[id].customMedia };
-            }
-          });
-        } else {
-          if (!merged.kriyas?.breathPattern) {
-            merged.kriyas = {
-              ...merged.kriyas,
-              breathPattern: { inhale: 10, hold: 3, exhale: 10 },
-              secondsPerKriya: 23,
-            };
-          }
-          (['opening_prayer', 'chant', 'closing_prayer', 'world_prayer'] as StageId[]).forEach((id) => {
-            if (!merged[id]?.customMedia && INITIAL_STAGES[id]?.customMedia) {
-              merged[id] = { ...merged[id], customMedia: INITIAL_STAGES[id].customMedia };
-            }
-          });
-        }
-
-        if (!merged.presence_hong_sau || merged.presence_hong_sau.minutes !== 2) {
-          merged.presence_hong_sau = { ...INITIAL_STAGES.presence_hong_sau, minutes: 2 };
-        }
-        if (!merged.presence_om || merged.presence_om.minutes !== 2) {
-          merged.presence_om = { ...INITIAL_STAGES.presence_om, minutes: 2 };
-        }
-        if (!merged.presence_kriya || merged.presence_kriya.minutes !== 2) {
-          merged.presence_kriya = { ...INITIAL_STAGES.presence_kriya, minutes: 2 };
-        }
-
-        // Apply "Noble Silence + Bells" default to the requested stages on initial migration
-        if (!isExistingV14) {
-          const nobleSilenceStages: StageId[] = [
-            'chant',
-            'hong_sau',
-            'presence_hong_sau',
-            'om',
-            'presence_om',
-            'kriyas',
-            'presence_kriya',
-          ];
-          nobleSilenceStages.forEach((id) => {
-            if (merged[id]) {
-              merged[id] = { ...merged[id], soundscape: 'silence', soundscapeVolume: 0.65 };
-            }
-          });
         }
         return merged;
       }
     } catch {}
     return INITIAL_STAGES;
+  });
+
+  // Sequence ordering (drag & drop reorderable, supports multiple Chants & Affirmations)
+  const [sequenceOrder, setSequenceOrder] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(SEQUENCE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return STAGE_ORDER;
   });
 
   // Selected stage in the grid (default: Kriyas)
@@ -150,7 +111,8 @@ export default function App() {
   // Modals state
   const [soundscapeModalOpen, setSoundscapeModalOpen] = useState<boolean>(false);
   const [customMediaModalOpen, setCustomMediaModalOpen] = useState<boolean>(false);
-  const [customMediaModalStageId, setCustomMediaModalStageId] = useState<StageId>('chant');
+  const [customMediaModalStageId, setCustomMediaModalStageId] = useState<string>('chant');
+  const [chantAffirmationModalOpen, setChantAffirmationModalOpen] = useState<boolean>(false);
   const [infoModalStage, setInfoModalStage] = useState<MeditationStageConfig | null>(null);
   const [ghPagesModalOpen, setGhPagesModalOpen] = useState<boolean>(false);
   const [themeModalOpen, setThemeModalOpen] = useState<boolean>(false);
@@ -168,6 +130,12 @@ export default function App() {
 
   useEffect(() => {
     try {
+      localStorage.setItem(SEQUENCE_KEY, JSON.stringify(sequenceOrder));
+    } catch {}
+  }, [sequenceOrder]);
+
+  useEffect(() => {
+    try {
       localStorage.setItem(INCREMENT_KEY, String(incrementStep));
     } catch {}
   }, [incrementStep]);
@@ -179,11 +147,11 @@ export default function App() {
   }, [currentTheme]);
 
   // Selected stage reference and active theme config
-  const selectedStage = stages[selectedStageId] || stages['kriyas'];
+  const selectedStage = stages[selectedStageId] || stages['kriyas'] || Object.values(stages)[0];
   const activeThemeConfig = THEMES[currentTheme] || THEMES['celestial_twilight'];
 
   // Calculate total routine duration in minutes
-  const totalRoutineMinutes = STAGE_ORDER.reduce((acc, id) => {
+  const totalRoutineMinutes = sequenceOrder.reduce((acc, id) => {
     const s = stages[id];
     return acc + (s?.minutes || 0);
   }, 0);
@@ -328,21 +296,85 @@ export default function App() {
 
   // Handler: Save customized YouTube / MP3 media settings
   const handleSaveCustomMedia = (stageId: StageId, mediaConfig: CustomMediaConfig | undefined) => {
+    setStages((prev) => {
+      const current = prev[stageId];
+      if (!current) return prev;
+      return {
+        ...prev,
+        [stageId]: {
+          ...current,
+          customMedia: mediaConfig,
+          techniqueGuide: {
+            ...current.techniqueGuide,
+            affirmationText: mediaConfig?.affirmationText ?? current.techniqueGuide?.affirmationText,
+          },
+        },
+      };
+    });
+  };
+
+  // Handler: Add a new stage to sequence (Chant, Affirmation, etc.)
+  const handleAddStage = (newStage: MeditationStageConfig, insertIndex?: number) => {
     setStages((prev) => ({
       ...prev,
-      [stageId]: {
-        ...prev[stageId],
-        customMedia: mediaConfig,
-      },
+      [newStage.id]: newStage,
     }));
+    setSequenceOrder((prev) => {
+      const next = [...prev];
+      if (insertIndex !== undefined && insertIndex >= 0 && insertIndex <= next.length) {
+        next.splice(insertIndex, 0, newStage.id);
+      } else {
+        next.push(newStage.id);
+      }
+      return next;
+    });
+    setSelectedStageId(newStage.id);
+  };
+
+  // Handler: Remove a custom added stage
+  const handleRemoveStage = (stageId: string) => {
+    setSequenceOrder((prev) => prev.filter((id) => id !== stageId));
+    setStages((prev) => {
+      const next = { ...prev };
+      delete next[stageId];
+      return next;
+    });
+    if (selectedStageId === stageId) {
+      setSelectedStageId('kriyas');
+    }
+  };
+
+  // Handler: Reorder sequence order (Drag & Drop or up/down arrows)
+  const handleReorderSequence = (newOrder: string[]) => {
+    setSequenceOrder(newOrder);
+  };
+
+  // Handler: Toggle play until music is finished for a stage
+  const handleTogglePlayUntilFinished = (stageId: string, val: boolean) => {
+    setStages((prev) => {
+      const current = prev[stageId];
+      if (!current) return prev;
+      return {
+        ...prev,
+        [stageId]: {
+          ...current,
+          playUntilFinished: val,
+          customMedia: current.customMedia
+            ? { ...current.customMedia, playUntilFinished: val }
+            : undefined,
+        },
+      };
+    });
   };
 
   // Handler: Reset all stages to default values
   const handleResetToDefaults = () => {
-    if (window.confirm('Reset all timer durations and soundscapes back to original defaults?')) {
+    if (window.confirm('Reset all timer durations, sequence, and soundscapes back to original defaults?')) {
       setStages(INITIAL_STAGES);
+      setSequenceOrder(STAGE_ORDER);
       setIncrementStep(5);
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(SEQUENCE_KEY);
     }
   };
 
@@ -355,7 +387,7 @@ export default function App() {
   // Handler: Start full sequence routine
   const handleStartFullRoutine = () => {
     setIsSequenceMode(true);
-    setSelectedStageId('exercises'); // start from stage 1
+    setSelectedStageId(sequenceOrder[0] || 'exercises'); // start from stage 1
     setActivePlayerOpen(true);
   };
 
@@ -378,7 +410,7 @@ export default function App() {
                 Kriya Meditation
               </span>
               <span className="text-[10px] sm:text-xs text-slate-300/80 font-medium hidden xs:block">
-                {STAGE_ORDER.length} Sacred Stages & Soundscapes
+                {sequenceOrder.length} Sacred Stages & Soundscapes
               </span>
             </div>
           </div>
@@ -395,10 +427,21 @@ export default function App() {
               type="button"
               onClick={handleStartFullRoutine}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-sm transition-all active:scale-95 cursor-pointer"
-              title={`Play through all ${STAGE_ORDER.length} stages in sequence with auto-advance`}
+              title={`Play through all ${sequenceOrder.length} stages in sequence with auto-advance`}
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>Full Routine</span>
+            </button>
+
+            {/* Chants & Affirmations Tab button */}
+            <button
+              type="button"
+              onClick={() => setChantAffirmationModalOpen(true)}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-400/40 shadow-sm transition-all cursor-pointer"
+              title="Open Cosmic Chants, Healing Affirmations & Sacred Voices Library"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span className="hidden sm:inline">Chants, Affirmations & Voices</span>
             </button>
 
             {/* Color & Style Theme Switcher */}
@@ -441,21 +484,42 @@ export default function App() {
       <main className="flex-1 flex flex-col items-center justify-start py-4 px-3 sm:px-6 w-full">
         {/* Main Phone / Container Frame */}
         <div className="w-full max-w-[440px] flex flex-col gap-3 sm:gap-4 mx-auto">
-          {/* Sacred Stages Grid */}
+          {/* Chants, Affirmations & Sacred Voices Sequence Tool Bar */}
+          <div className="w-full flex items-center justify-between gap-2 px-0.5">
+            <button
+              type="button"
+              onClick={() => setChantAffirmationModalOpen(true)}
+              className="w-full py-2 px-3.5 rounded-2xl bg-black/35 hover:bg-black/50 border border-amber-400/40 text-amber-200 text-xs font-bold flex items-center justify-between shadow-md transition-all active:scale-[0.98] cursor-pointer"
+            >
+              <span className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                <span>Chants, Affirmations & Sacred Voices</span>
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/25 text-amber-100 font-mono">
+                + Library & Routine ({sequenceOrder.length})
+              </span>
+            </button>
+          </div>
+
+          {/* Sacred Stages Grid (Mapped to sequenceOrder) */}
           <section
             aria-label="Meditation Stages Grid"
             className="grid grid-cols-3 gap-2 sm:gap-2.5 w-full"
           >
-            {STAGE_ORDER.map((stageId) => (
-              <StageCard
-                key={stageId}
-                stage={stages[stageId]}
-                isSelected={selectedStageId === stageId}
-                theme={activeThemeConfig}
-                onSelect={() => setSelectedStageId(stageId)}
-                onOpenInfo={() => setInfoModalStage(stages[stageId])}
-              />
-            ))}
+            {sequenceOrder.map((stageId) => {
+              const stage = stages[stageId];
+              if (!stage) return null;
+              return (
+                <StageCard
+                  key={stageId}
+                  stage={stage}
+                  isSelected={selectedStageId === stageId}
+                  theme={activeThemeConfig}
+                  onSelect={() => setSelectedStageId(stageId)}
+                  onOpenInfo={() => setInfoModalStage(stage)}
+                />
+              );
+            })}
           </section>
 
           {/* Lower Control Panel */}
@@ -484,8 +548,10 @@ export default function App() {
                   title: preset.title,
                   type: preset.type,
                   muteSoundscape: true,
+                  playUntilFinished: true,
                 });
               }}
+              onTogglePlayUntilFinished={(val) => handleTogglePlayUntilFinished(selectedStageId, val)}
             />
           </section>
 
@@ -532,9 +598,31 @@ export default function App() {
       <CustomMediaModal
         isOpen={customMediaModalOpen}
         stage={stages[customMediaModalStageId] || selectedStage}
-        stages={stages}
+        stages={stages as any}
         onClose={() => setCustomMediaModalOpen(false)}
         onSaveMedia={handleSaveCustomMedia}
+      />
+
+      {/* Chant & Affirmation Library and Drag & Drop Sequence Modal */}
+      <ChantAffirmationTab
+        isOpen={chantAffirmationModalOpen}
+        stages={stages}
+        sequenceOrder={sequenceOrder}
+        theme={activeThemeConfig}
+        onClose={() => setChantAffirmationModalOpen(false)}
+        onAddStage={handleAddStage}
+        onRemoveStage={handleRemoveStage}
+        onReorderSequence={handleReorderSequence}
+        onUpdateStageConfig={(stageId, updates) => {
+          setStages((prev) => ({
+            ...prev,
+            [stageId]: { ...prev[stageId], ...updates },
+          }));
+        }}
+        onSelectStage={(stageId) => {
+          setSelectedStageId(stageId);
+          setChantAffirmationModalOpen(false);
+        }}
       />
 
       {/* Technique & Prayer Guide Modal (i) */}
@@ -558,6 +646,7 @@ export default function App() {
         isOpen={activePlayerOpen}
         activeStageId={selectedStageId}
         stages={stages}
+        stageOrder={sequenceOrder}
         isSequenceMode={isSequenceMode}
         onClose={() => setActivePlayerOpen(false)}
         onStageChange={(nextStageId) => setSelectedStageId(nextStageId)}

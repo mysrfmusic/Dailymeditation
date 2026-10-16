@@ -21,6 +21,7 @@ interface ControlPanelProps {
   onOpenInfo: () => void;
   onOpenCustomMediaModal?: () => void;
   onSelectMediaPreset?: (preset: StageMediaPreset) => void;
+  onTogglePlayUntilFinished?: (val: boolean) => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -38,6 +39,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onOpenInfo,
   onOpenCustomMediaModal,
   onSelectMediaPreset,
+  onTogglePlayUntilFinished,
 }) => {
   const isKriyas = stage.id === 'kriyas';
   const isBreathing1 = stage.id === 'breathing_1';
@@ -47,6 +49,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   const isKriyaCount = isKriyas && stage.isCountBased && stage.kriyaCount !== undefined;
   const isBreathCount = isBreathing && stage.isCountBased;
   const isPrayer = Boolean(stage.techniqueGuide.prayerText);
+  const isChant = stage.stageType === 'chant' || stage.id === 'chant' || stage.id.startsWith('chant_');
+  const isAffirmation = stage.stageType === 'affirmation' || stage.id === 'affirmation' || stage.id.startsWith('affirmation_');
+  const isSacredVoice = stage.stageType === 'sacred_voices' || stage.id === 'sacred_voices' || stage.id.startsWith('sacred_voices_');
+  const isPlayUntilFinished = stage.playUntilFinished ?? (stage.customMedia?.playUntilFinished ?? (isChant || isAffirmation || isSacredVoice));
 
   // Current breath pattern & rounds
   const currentPattern = stage.breathPattern || {
@@ -142,7 +148,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     ? `${stage.kriyaCount ?? 14} Kriyas (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins}m`
     : isBreathCount
     ? `${currentRounds} Count${currentRounds > 1 ? 's' : ''} (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins}m`
-    : `${stage.minutes} minutes`;
+    : isPlayUntilFinished && (isChant || isAffirmation || stage.customMedia?.enabled)
+    ? '🎵 Plays until music finishes (Auto-advances)'
+    : `${stage.minutes} minute${stage.minutes > 1 ? 's' : ''}`;
 
   return (
     <div
@@ -457,9 +465,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
       )}
 
-      {/* SPECIALIZED KRIYA BREATH COUNT RATIO CONTROLS (10-3-10, 12-3-12, 15-3-15) */}
+      {/* SPECIALIZED KRIYA BREATH COUNT RATIO & PRESCRIBED COUNTS (8-3-8, 10-3-8, 12-3-12, 10-3-10, 15-3-15 & 30 Counts) */}
       {isKriyas && (
-        <div className="mt-3.5 p-3 bg-black/25 rounded-2xl border border-white/15 space-y-2.5">
+        <div className="mt-3.5 p-3 bg-black/25 rounded-2xl border border-white/15 space-y-3">
           {/* Header & Reset Default */}
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold opacity-90 flex items-center gap-1.5">
@@ -480,32 +488,77 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             </button>
           </div>
 
-          {/* Quick presets for Kriya counts: 10-3-10, 12-3-12, 15-3-15 */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-0.5">
-            {[
-              { label: '10 · 3 · 10 (Default)', pattern: { inhale: 10, hold: 3, exhale: 10 } },
-              { label: '12 · 3 · 12', pattern: { inhale: 12, hold: 3, exhale: 12 } },
-              { label: '15 · 3 · 15', pattern: { inhale: 15, hold: 3, exhale: 15 } },
-            ].map((p, idx) => {
-              const isActive =
-                currentPattern.inhale === p.pattern.inhale &&
-                currentPattern.hold === p.pattern.hold &&
-                currentPattern.exhale === p.pattern.exhale;
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => onUpdateBreathPattern?.(p.pattern)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-amber-300 text-slate-900 font-bold shadow-md ring-2 ring-amber-400/50'
-                      : 'bg-white/10 hover:bg-white/20 text-white/90'
-                  }`}
-                >
-                  {p.label}
-                </button>
-              );
-            })}
+          {/* Quick Presets for Prescribed Kriya Counts (including 30 Counts) */}
+          <div className="bg-black/20 p-2 rounded-xl border border-white/10">
+            <div className="flex items-center justify-between text-[11px] mb-1.5 px-0.5">
+              <span className="font-semibold text-amber-200/90 flex items-center gap-1">
+                <MalaBeadsIcon className="w-3 h-3 text-amber-300" />
+                <span>Prescribed Kriyas:</span>
+              </span>
+              <span className="font-bold text-amber-300">
+                {stage.kriyaCount ?? 14} Kriyas (~{estimatedMins} min)
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
+              {[
+                { count: 14, label: '14 Kriyas' },
+                { count: 24, label: '24 Kriyas' },
+                { count: 30, label: '30 Counts ✨' },
+                { count: 36, label: '36 Kriyas' },
+                { count: 72, label: '72 Kriyas' },
+              ].map((item) => {
+                const isSelected = (stage.kriyaCount ?? 14) === item.count;
+                return (
+                  <button
+                    key={item.count}
+                    type="button"
+                    onClick={() => onUpdateKriyas?.(item.count)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-amber-300 text-slate-900 font-bold shadow-md ring-2 ring-amber-400/50'
+                        : 'bg-white/10 hover:bg-white/20 text-white/90'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Quick presets for Kriya breath counts: 8-3-8, 10-3-8, 12-3-12, 10-3-10, 15-3-15 */}
+          <div>
+            <div className="text-[11px] font-semibold text-sky-200/90 mb-1 px-0.5">
+              Breath Ratio Presets:
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
+              {[
+                { label: '8 · 3 · 8', pattern: { inhale: 8, hold: 3, exhale: 8 } },
+                { label: '10 · 3 · 8', pattern: { inhale: 10, hold: 3, exhale: 8 } },
+                { label: '10 · 3 · 10 (Default)', pattern: { inhale: 10, hold: 3, exhale: 10 } },
+                { label: '12 · 3 · 12', pattern: { inhale: 12, hold: 3, exhale: 12 } },
+                { label: '15 · 3 · 15', pattern: { inhale: 15, hold: 3, exhale: 15 } },
+              ].map((p, idx) => {
+                const isActive =
+                  currentPattern.inhale === p.pattern.inhale &&
+                  currentPattern.hold === p.pattern.hold &&
+                  currentPattern.exhale === p.pattern.exhale;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => onUpdateBreathPattern?.(p.pattern)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-amber-300 text-slate-900 font-bold shadow-md ring-2 ring-amber-400/50'
+                        : 'bg-white/10 hover:bg-white/20 text-white/90'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Interactive Steppers for Inhale, Hold, Exhale counts */}
@@ -637,13 +690,19 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           : `Duration: ${stage.minutes} minute${stage.minutes > 1 ? 's' : ''}`}
       </div>
 
-      {/* Dedicated Cosmic Chant Picker when Chant stage is selected */}
-      {stage.id === 'chant' && (
-        <div className="mt-2.5 p-2.5 bg-black/40 rounded-2xl border border-amber-400/35 space-y-1.5 text-left">
+      {/* Dedicated Media Picker when Chant, Affirmation, or Sacred Voice stage is selected */}
+      {(isChant || isAffirmation || isSacredVoice) && (
+        <div className="mt-2.5 p-2.5 bg-black/40 rounded-2xl border border-amber-400/35 space-y-2 text-left">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
               <Youtube className="w-3.5 h-3.5 text-red-400" />
-              <span>Cosmic Chant:</span>
+              <span>
+                {isAffirmation
+                  ? 'Scientific Affirmation:'
+                  : isSacredVoice
+                  ? 'Sacred Voice Talk:'
+                  : 'Cosmic Chant:'}
+              </span>
             </span>
             {onOpenCustomMediaModal && (
               <button
@@ -662,32 +721,73 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               onChange={(e) => {
                 const targetUrl = e.target.value;
                 if (!targetUrl) return;
-                const matchedPreset = STAGE_MEDIA_PRESETS.chant?.find((p) => p.url === targetUrl);
+                const pool = isAffirmation
+                  ? (STAGE_MEDIA_PRESETS.affirmation || [])
+                  : isSacredVoice
+                  ? ((STAGE_MEDIA_PRESETS as any).sacred_voices || [])
+                  : (STAGE_MEDIA_PRESETS.chant || []);
+                const matchedPreset = pool.find((p: any) => p.url === targetUrl);
                 if (matchedPreset && onSelectMediaPreset) {
                   onSelectMediaPreset(matchedPreset);
                 }
               }}
-              aria-label="Select Cosmic Chant"
+              aria-label={
+                isAffirmation
+                  ? 'Select Scientific Affirmation'
+                  : isSacredVoice
+                  ? 'Select Sacred Voice'
+                  : 'Select Cosmic Chant'
+              }
               className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700/80 focus:border-amber-400 text-xs text-amber-200 font-medium rounded-xl outline-none cursor-pointer truncate"
             >
-              <optgroup label="✨ SRF Cosmic Chants (Paramahansa Yogananda)">
-                {STAGE_MEDIA_PRESETS.chant?.map((preset) => (
-                  <option key={preset.id} value={preset.url}>
-                    {preset.title}
-                  </option>
-                ))}
-              </optgroup>
+              {isAffirmation ? (
+                <optgroup label="✨ Scientific Healing Affirmations (Paramahansa Yogananda)">
+                  {STAGE_MEDIA_PRESETS.affirmation?.map((preset) => (
+                    <option key={preset.id} value={preset.url}>
+                      {preset.title}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : isSacredVoice ? (
+                <optgroup label="🎙️ Sacred Voices (Paramahansa Yogananda & Direct Disciples)">
+                  {((STAGE_MEDIA_PRESETS as any).sacred_voices || []).map((preset: any) => (
+                    <option key={preset.id} value={preset.url}>
+                      {preset.title}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : (
+                <optgroup label="✨ SRF Cosmic Chants (Paramahansa Yogananda)">
+                  {STAGE_MEDIA_PRESETS.chant?.map((preset) => (
+                    <option key={preset.id} value={preset.url}>
+                      {preset.title}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
 
-          <div className="flex items-center justify-between text-[10px] text-slate-300 px-0.5">
-            <span className="truncate max-w-[210px] text-slate-400">
-              {stage.customMedia?.title || 'Selected Chant'}
-            </span>
-            <span className="text-emerald-400 font-medium">
-              ✓ Ready for Playback
+          {/* Play till music is over toggle */}
+          <div className="pt-1 border-t border-white/10 flex items-center justify-between">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-amber-200">
+              <input
+                type="checkbox"
+                checked={isPlayUntilFinished}
+                onChange={(e) => onTogglePlayUntilFinished?.(e.target.checked)}
+                className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 border-white/30 bg-black/50 cursor-pointer"
+              />
+              <span>Play till music is over</span>
+            </label>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">
+              {isPlayUntilFinished ? '✓ Auto-Advance' : 'Fixed Time'}
             </span>
           </div>
+          <p className="text-[10px] text-slate-300/80 leading-tight">
+            {isPlayUntilFinished
+              ? 'Plays until the sacred track completes, then rings the bell and moves to next stage.'
+              : `Runs for ${stage.minutes} minutes regardless of track length.`}
+          </p>
         </div>
       )}
 

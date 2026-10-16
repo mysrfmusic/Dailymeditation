@@ -16,7 +16,8 @@ export type StageId =
   | 'jyoti_mudra'
   | 'meditation'
   | 'world_prayer'
-  | 'closing_prayer';
+  | 'closing_prayer'
+  | string;
 
 export type AppTheme =
   | 'spiritual_eye'
@@ -36,7 +37,9 @@ export interface CustomMediaConfig {
   type?: 'youtube' | 'mp3' | 'auto';
   url: string;
   title?: string;
+  affirmationText?: string; // Words of affirmation / sacred text to recite or reflect upon
   muteSoundscape?: boolean;
+  playUntilFinished?: boolean; // When true, plays until music ends instead of fixed timer
 }
 
 export interface MeditationStageConfig {
@@ -56,12 +59,16 @@ export interface MeditationStageConfig {
   intervalBellMinutes?: number; // 0 for off
   summary: string;
   customMedia?: CustomMediaConfig;
+  playUntilFinished?: boolean; // Play till music is over (for Chants, Affirmations, Prayers)
+  stageType?: 'standard' | 'chant' | 'affirmation' | 'sacred_voices';
+  isCustomAdded?: boolean;
   techniqueGuide: {
     purpose: string;
     posture: string;
     instructions: string[];
     sacredQuote?: string;
     prayerText?: string;
+    affirmationText?: string;
   };
 }
 

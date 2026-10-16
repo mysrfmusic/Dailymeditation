@@ -29,9 +29,11 @@ interface CustomMediaModalProps {
   onSaveMedia: (stageId: StageId, mediaConfig: CustomMediaConfig | undefined) => void;
 }
 
-const PRIMARY_MEDIA_STAGES: StageId[] = [
+const DEFAULT_MEDIA_STAGES: StageId[] = [
   'opening_prayer',
   'chant',
+  'affirmation',
+  'sacred_voices',
   'closing_prayer',
   'world_prayer',
 ];
@@ -46,8 +48,11 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
   const [selectedStageId, setSelectedStageId] = useState<StageId>('chant');
   const [urlInput, setUrlInput] = useState<string>('');
   const [titleInput, setTitleInput] = useState<string>('');
+  const [affirmationTextInput, setAffirmationTextInput] = useState<string>('');
+  const [presetCategory, setPresetCategory] = useState<'current' | 'chant' | 'affirmation' | 'sacred_voices' | 'prayers'>('current');
   const [isEnabled, setIsEnabled] = useState<boolean>(true);
   const [muteSoundscape, setMuteSoundscape] = useState<boolean>(true);
+  const [playUntilFinished, setPlayUntilFinished] = useState<boolean>(true);
   const [previewActive, setPreviewActive] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
@@ -61,24 +66,38 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
 
   const loadStageMedia = (targetStage: MeditationStageConfig) => {
     const media = targetStage.customMedia;
+    const isChantOrAffirmationOrVoice =
+      targetStage.stageType === 'chant' ||
+      targetStage.stageType === 'affirmation' ||
+      targetStage.stageType === 'sacred_voices' ||
+      targetStage.id === 'chant' ||
+      targetStage.id.startsWith('affirmation') ||
+      targetStage.id.startsWith('sacred_voices');
+
     if (media && media.url) {
       setUrlInput(media.url);
       setTitleInput(media.title || '');
+      setAffirmationTextInput(media.affirmationText || targetStage.techniqueGuide.affirmationText || '');
       setIsEnabled(media.enabled);
       setMuteSoundscape(media.muteSoundscape ?? true);
+      setPlayUntilFinished(media.playUntilFinished ?? targetStage.playUntilFinished ?? isChantOrAffirmationOrVoice);
     } else {
       // If no media set yet, check if there's a curated preset to suggest as a placeholder
-      const presets = STAGE_MEDIA_PRESETS[targetStage.id];
+      const stageKey = targetStage.stageType || targetStage.id;
+      const presets = (STAGE_MEDIA_PRESETS as any)[stageKey] || (STAGE_MEDIA_PRESETS as any)[targetStage.id];
       if (presets && presets.length > 0) {
         setUrlInput(presets[0].url);
         setTitleInput(presets[0].title);
+        setAffirmationTextInput(presets[0].affirmationText || targetStage.techniqueGuide.affirmationText || '');
         setIsEnabled(false); // default disabled until user confirms
       } else {
         setUrlInput('');
         setTitleInput('');
+        setAffirmationTextInput(targetStage.techniqueGuide.affirmationText || '');
         setIsEnabled(false);
       }
       setMuteSoundscape(true);
+      setPlayUntilFinished(true);
     }
     setPreviewActive(false);
     setSaveSuccess(false);
@@ -94,15 +113,54 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
 
   if (!isOpen) return null;
 
-  const currentActiveStage = stages[selectedStageId] || stage || stages['chant'];
+  const currentActiveStage = stages[selectedStageId] || stage || stages['chant'] || Object.values(stages)[0];
   const mediaType = detectMediaType(urlInput);
   const youtubeId = extractYouTubeId(urlInput);
   const embedUrl = getYouTubeEmbedUrl(urlInput, false);
-  const presetsForCurrent = STAGE_MEDIA_PRESETS[selectedStageId] || [];
 
-  const handleApplyPreset = (presetUrl: string, presetTitle: string) => {
-    setUrlInput(presetUrl);
-    setTitleInput(presetTitle);
+  // Build selectable stages: default keys + any custom added chant/affirmation/sacred_voices stages
+  const activeMediaStages = Array.from(
+    new Set([
+      ...DEFAULT_MEDIA_STAGES.filter((id) => Boolean(stages[id])),
+      ...Object.keys(stages).filter(
+        (id) =>
+          stages[id]?.stageType === 'chant' ||
+          stages[id]?.stageType === 'affirmation' ||
+          stages[id]?.stageType === 'sacred_voices' ||
+          stages[id]?.customMedia?.enabled ||
+          Boolean(stages[id]?.techniqueGuide?.affirmationText)
+      ),
+    ])
+  );
+
+  // Resolve presets based on selected preset category
+  const getPresetsToDisplay = (): StageMediaPreset[] => {
+    if (presetCategory === 'chant') return STAGE_MEDIA_PRESETS.chant || [];
+    if (presetCategory === 'affirmation') return (STAGE_MEDIA_PRESETS as any).affirmation || [];
+    if (presetCategory === 'sacred_voices') return (STAGE_MEDIA_PRESETS as any).sacred_voices || [];
+    if (presetCategory === 'prayers') {
+      return [
+        ...(STAGE_MEDIA_PRESETS.opening_prayer || []),
+        ...(STAGE_MEDIA_PRESETS.world_prayer || []),
+        ...(STAGE_MEDIA_PRESETS.closing_prayer || []),
+      ];
+    }
+    // 'current': tailored to selected stage
+    if (currentActiveStage.stageType === 'affirmation' || selectedStageId.startsWith('affirmation')) {
+      return (STAGE_MEDIA_PRESETS as any).affirmation || [];
+    }
+    if (currentActiveStage.stageType === 'sacred_voices' || selectedStageId.startsWith('sacred_voices')) {
+      return (STAGE_MEDIA_PRESETS as any).sacred_voices || [];
+    }
+    return (STAGE_MEDIA_PRESETS as any)[selectedStageId] || STAGE_MEDIA_PRESETS.chant || [];
+  };
+
+  const handleApplyPreset = (preset: StageMediaPreset) => {
+    setUrlInput(preset.url);
+    setTitleInput(preset.title);
+    if (preset.affirmationText) {
+      setAffirmationTextInput(preset.affirmationText);
+    }
     setIsEnabled(true);
     setPreviewActive(true);
   };
@@ -117,8 +175,10 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
         enabled: isEnabled,
         url: urlInput.trim(),
         title: titleInput.trim() || (type === 'youtube' ? 'YouTube Chant/Prayer' : 'Custom Audio'),
+        affirmationText: affirmationTextInput.trim() || undefined,
         type: type === 'youtube' ? 'youtube' : 'mp3',
         muteSoundscape,
+        playUntilFinished,
       };
       onSaveMedia(selectedStageId, config);
     }
@@ -132,6 +192,7 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
   const handleClear = () => {
     setUrlInput('');
     setTitleInput('');
+    setAffirmationTextInput('');
     setIsEnabled(false);
     onSaveMedia(selectedStageId, undefined);
     setPreviewActive(false);
@@ -178,9 +239,9 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
           <label className="text-[11px] uppercase tracking-wider font-bold text-amber-300 block mb-1.5">
             Select Stage to Customize:
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-            {PRIMARY_MEDIA_STAGES.map((id) => {
-              const stg = stages[id];
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1.5">
+            {activeMediaStages.map((id) => {
+              const stg = stages[id] || { title: id, customMedia: undefined };
               const isSelected = selectedStageId === id;
               const hasConfigured = Boolean(stg?.customMedia?.enabled && stg?.customMedia?.url);
               return (
@@ -188,21 +249,23 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
                   key={id}
                   type="button"
                   onClick={() => handleStageTabClick(id)}
-                  className={`px-2.5 py-2 rounded-xl text-xs font-semibold flex flex-col items-center justify-center text-center transition-all cursor-pointer border ${
+                  className={`px-2 py-1.5 rounded-xl text-xs font-semibold flex flex-col items-center justify-center text-center transition-all cursor-pointer border ${
                     isSelected
                       ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-md font-bold'
                       : 'bg-slate-800/80 text-slate-200 border-slate-700/70 hover:bg-slate-800'
                   }`}
                 >
                   <span className="truncate w-full">{stg?.title || id}</span>
-                  {hasConfigured && (
+                  {hasConfigured ? (
                     <span
-                      className={`text-[9px] px-1.5 py-0.2 rounded-full mt-0.5 font-bold ${
+                      className={`text-[8.5px] px-1.5 py-0.2 rounded-full mt-0.5 font-bold ${
                         isSelected ? 'bg-slate-950 text-amber-300' : 'bg-red-500/20 text-red-300'
                       }`}
                     >
                       ● Active Link
                     </span>
+                  ) : (
+                    <span className="text-[8px] opacity-60">Customizable</span>
                   )}
                 </button>
               );
@@ -307,6 +370,36 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
             />
           </div>
 
+          {/* Affirmation / Sacred Words Text (Displayed during playback) */}
+          <div className="p-3 bg-amber-500/10 border border-amber-400/30 rounded-xl space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label htmlFor="media-affirmation-text" className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>Sacred Affirmation / Prayer / Words (Displayed on Screen):</span>
+              </label>
+              {affirmationTextInput.trim() && (
+                <button
+                  type="button"
+                  onClick={() => setAffirmationTextInput('')}
+                  className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+                >
+                  Clear words
+                </button>
+              )}
+            </div>
+            <textarea
+              id="media-affirmation-text"
+              rows={3}
+              value={affirmationTextInput}
+              onChange={(e) => setAffirmationTextInput(e.target.value)}
+              placeholder="Enter affirmation or sacred words to recite while listening (e.g. “I am submerged in Thy eternal light; it permeates every particle of my being.”)..."
+              className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-xs text-amber-100 placeholder-slate-500 font-serif italic outline-none resize-none leading-relaxed"
+            />
+            <p className="text-[11px] text-amber-200/80">
+              ✨ These words appear in a radiant card during meditation so you can recite and meditate upon them while the music or talk plays.
+            </p>
+          </div>
+
           {/* Ambient Soundscape Mute Toggle */}
           <div className="flex items-center justify-between p-2.5 bg-slate-950/70 rounded-xl border border-slate-800 text-xs">
             <div className="flex items-center gap-2">
@@ -336,6 +429,34 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
               }`}
             >
               {muteSoundscape ? 'Muted' : 'Mixed'}
+            </button>
+          </div>
+
+          {/* Play Until Music Is Over Toggle */}
+          <div className="flex items-center justify-between p-2.5 bg-slate-950/70 rounded-xl border border-slate-800 text-xs">
+            <div className="flex items-center gap-2">
+              <Music className="w-4 h-4 text-emerald-300" />
+              <div>
+                <span className="font-semibold text-slate-200 block">
+                  Play Until Music Is Over (Recommended)
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  {playUntilFinished
+                    ? 'Track plays in full; auto-advances to next stage upon completion'
+                    : 'Fixed countdown timer determines stage duration'}
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPlayUntilFinished(!playUntilFinished)}
+              className={`px-2.5 py-1 rounded-lg font-bold text-[11px] border cursor-pointer ${
+                playUntilFinished
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                  : 'bg-slate-800 text-slate-300 border-slate-700'
+              }`}
+            >
+              {playUntilFinished ? 'Music Driven' : 'Fixed Timer'}
             </button>
           </div>
 
@@ -396,45 +517,81 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
             </div>
           )}
 
-          {/* Curated Sacred Presets */}
-          {presetsForCurrent.length > 0 && (
-            <div className="pt-2 border-t border-slate-800">
-              <div className="text-xs font-bold text-amber-300 mb-2 flex items-center gap-1.5">
+          {/* Curated Sacred Presets Library with Category Filter */}
+          <div className="pt-2 border-t border-slate-800 space-y-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+              <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>Recommended Sacred Presets for {currentActiveStage.title}:</span>
+                <span>Curated Sacred Presets Library:</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {presetsForCurrent.map((preset) => {
-                  const isCurrent = urlInput === preset.url;
-                  return (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => handleApplyPreset(preset.url, preset.title)}
-                      className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
-                        isCurrent
-                          ? 'bg-amber-400/20 border-amber-400/70 text-amber-200 shadow-sm'
-                          : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-200 hover:bg-slate-950'
-                      }`}
-                    >
+
+              {/* Category Pills */}
+              <div className="flex flex-wrap items-center gap-1">
+                {[
+                  { id: 'current', label: `For ${currentActiveStage.title}` },
+                  { id: 'chant', label: 'Chants' },
+                  { id: 'affirmation', label: 'Affirmations' },
+                  { id: 'sacred_voices', label: 'Sacred Voices' },
+                  { id: 'prayers', label: 'Prayers' },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setPresetCategory(cat.id as any)}
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all cursor-pointer border ${
+                      presetCategory === cat.id
+                        ? 'bg-amber-400 text-slate-950 border-amber-300 font-bold'
+                        : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:text-white'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-0.5">
+              {getPresetsToDisplay().map((preset) => {
+                const isCurrent = urlInput === preset.url;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handleApplyPreset(preset)}
+                    className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
+                      isCurrent
+                        ? 'bg-amber-400/20 border-amber-400/70 text-amber-200 shadow-sm'
+                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-200 hover:bg-slate-950'
+                    }`}
+                  >
+                    <div>
                       <div className="flex items-start justify-between gap-1">
                         <span className="font-bold text-xs truncate leading-snug">{preset.title}</span>
                         {preset.type === 'youtube' && (
                           <Youtube className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
                         )}
                       </div>
-                      <span className="text-[10px] text-slate-400 truncate mt-1">
+                      <span className="text-[10px] text-slate-400 line-clamp-2 mt-0.5">
                         {preset.subtitle}
                       </span>
-                      <div className="mt-1.5 flex items-center justify-between text-[10px] text-amber-300 font-semibold">
-                        <span>{isCurrent ? '✓ Currently Loaded' : '+ Use this preset'}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                      {preset.affirmationText && (
+                        <span className="text-[10px] text-amber-300/90 font-serif italic line-clamp-2 mt-1 block">
+                          “{preset.affirmationText.slice(0, 90)}...”
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] text-amber-300 font-semibold pt-1 border-t border-white/5">
+                      <span>{isCurrent ? '✓ Currently Loaded' : '+ Use preset & text'}</span>
+                      {preset.affirmationText && (
+                        <span className="text-[9px] text-emerald-400">Includes Affirmation</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Action Buttons */}

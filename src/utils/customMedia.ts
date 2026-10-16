@@ -6,6 +6,7 @@ export interface StageMediaPreset {
   subtitle: string;
   url: string;
   type: 'youtube' | 'mp3';
+  affirmationText?: string;
 }
 
 /**
@@ -110,7 +111,8 @@ export function getYouTubeEmbedUrl(url: string, autoplay: boolean = true): strin
   const autoParam = autoplay ? '1' : '0';
   const startSec = extractYouTubeStartTime(url);
   const startParam = startSec && startSec > 0 ? `&start=${startSec}` : '';
-  return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=${autoParam}&enablejsapi=1&rel=0&playsinline=1&modestbranding=1${startParam}`;
+  const originParam = typeof window !== 'undefined' && window.location.origin ? `&origin=${encodeURIComponent(window.location.origin)}` : '';
+  return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=${autoParam}&enablejsapi=1&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3${originParam}${startParam}`;
 }
 
 /**
@@ -292,4 +294,101 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
       type: 'youtube',
     },
   ],
+  affirmation: [
+    {
+      id: 'aff_healing_light',
+      title: 'Scientific Healing Affirmation (Paramahansa Yogananda)',
+      subtitle: '“I am submerged in Thy eternal light; it permeates every particle of my being.”',
+      url: 'https://www.youtube.com/watch?v=f3p_9H1zQx8',
+      type: 'youtube',
+      affirmationText:
+        '“I am submerged in Thy eternal light; it permeates every particle of my being. I am alive in that light. The divine presence fills my body with peace, harmony, and perfect health.”',
+    },
+    {
+      id: 'aff_divine_peace',
+      title: 'Affirmation for Radiant Peace & Calmness',
+      subtitle: '“God is within and around me, protecting me; so banish all fear.”',
+      url: 'https://www.youtube.com/watch?v=hJ3K1qW4L7s',
+      type: 'youtube',
+      affirmationText:
+        '“God is within and around me, protecting me; so banish all fear, which comes from the unholy thought of God’s absence. The light of His presence is ever around me.”',
+    },
+    {
+      id: 'aff_divine_will',
+      title: 'Affirmation for Will Power & Spiritual Success',
+      subtitle: '“Thy infinite power flows through me; I shall succeed in all noble duties.”',
+      url: 'https://www.youtube.com/watch?v=rl4ULW_OgtQ',
+      type: 'youtube',
+      affirmationText:
+        '“Thy infinite power flows through me; I shall succeed in all noble duties. I will go forward with courage, faith, and patience. God’s grace is my eternal shield.”',
+    },
+    {
+      id: 'aff_vitality',
+      title: 'Affirmation for Youthfulness and Vitality',
+      subtitle: 'Recharging body batteries with cosmic prana and divine joy',
+      url: 'https://www.youtube.com/watch?v=0qZ8eKkM7aM',
+      type: 'youtube',
+      affirmationText:
+        '“O Father, recharge my body cells with Thy cosmic prana; recharge my mind with Thy concentration; recharge my soul with Thine ever-new joy. Divine Joy, fill me!”',
+    },
+    {
+      id: 'aff_wisdom',
+      title: 'Affirmation for Intuition & Divine Guidance',
+      subtitle: 'Attuning the inner eye to the voice of Omniscience',
+      url: 'https://www.youtube.com/watch?v=kYJqDq1wX3Q',
+      type: 'youtube',
+      affirmationText:
+        '“Behind the wave of my consciousness is the infinite ocean of God’s wisdom. I claim my divine heritage of intuitive understanding and spiritual sight.”',
+    },
+  ],
+  sacred_voices: [
+    {
+      id: 'sv_yogananda_will_be_thine',
+      title: 'Paramahansa Yogananda: “I Will Be Thine Always”',
+      subtitle: 'Archival audio of the Master speaking & praying to Divine Mother',
+      url: 'https://www.youtube.com/watch?v=jWqY1h3C_2o',
+      type: 'youtube',
+      affirmationText:
+        '“I will be Thine always. Through life and death, through sunshine and storm, my soul is anchored in Thee, my beloved Lord. Thou art my one and only Love.” — Paramahansa Yogananda',
+    },
+    {
+      id: 'sv_yogananda_songs_of_heart',
+      title: 'Paramahansa Yogananda: Songs of My Heart',
+      subtitle: 'Master’s sacred voice reading from Whispers from Eternity',
+      url: 'https://www.youtube.com/watch?v=kYJqDq1wX3Q',
+      type: 'youtube',
+      affirmationText:
+        '“In the temple of silence, in the secret bower of my soul, I lay my offering of pure devotion at Thy lotus feet. Speak to me, Lord, in the stillness.” — Paramahansa Yogananda',
+    },
+    {
+      id: 'sv_daya_mata_divine_love',
+      title: 'Sri Daya Mata: Finding God in Daily Life & Devotion',
+      subtitle: 'Spiritual discourse & blessings by SRF President Sri Daya Mata',
+      url: 'https://www.youtube.com/watch?v=0qZ8eKkM7aM',
+      type: 'youtube',
+      affirmationText:
+        '“Find God first in the stillness of deep meditation, and then love Him in all human beings, serving Him in all life with joy and unconditional love.” — Sri Daya Mata',
+    },
+    {
+      id: 'sv_line_of_gurus_attunement',
+      title: 'Line of Gurus Sacred Invocations & Chants',
+      subtitle: 'Spoken attunement to Babaji, Lahiri Mahasaya, and Sri Yukteswar',
+      url: 'https://www.youtube.com/watch?v=P_V5q1K8m7A',
+      type: 'youtube',
+      affirmationText:
+        '“Babaji, Lahiri Mahasaya, Sri Yukteswarji, Paramahansa Yoganandaji: Bless me that I may awaken to the divine light within my spiritual eye.”',
+    },
+    {
+      id: 'sv_yogananda_cosmic_chanting',
+      title: 'Paramahansa Yogananda: Divine Mother Invocations',
+      subtitle: 'Historic recording of devotional communion with the Divine',
+      url: 'https://www.youtube.com/watch?v=F3v6r_K4Z8A',
+      type: 'youtube',
+      affirmationText:
+        '“Divine Mother, reveal Thyself unto me! Thou art the light within the sun, the love within the heart, the peace within my soul.” — Paramahansa Yogananda',
+    },
+  ],
 };
+
+export const AFFIRMATION_PRESETS = STAGE_MEDIA_PRESETS.affirmation || [];
+export const SACRED_VOICE_PRESETS = (STAGE_MEDIA_PRESETS as any).sacred_voices || [];
