@@ -26,7 +26,21 @@ import { CustomMediaModal } from './components/CustomMediaModal';
 import { ChantAffirmationTab } from './components/ChantAffirmationTab';
 import { ThirtyCountsCard } from './components/ThirtyCountsCard';
 import { LotusIcon } from './components/Icons';
-import { Play, RotateCcw, Globe, Palette, Info, Sparkles } from 'lucide-react';
+import {
+  Play,
+  RotateCcw,
+  Globe,
+  Palette,
+  Info,
+  Sparkles,
+  LayoutGrid,
+  ListOrdered,
+  ChevronRight,
+  Music,
+  ArrowLeft,
+  Youtube,
+  Zap,
+} from 'lucide-react';
 
 const STORAGE_KEY = 'kriya_meditation_stages_v16';
 const SEQUENCE_KEY = 'kriya_sequence_order_v16';
@@ -47,6 +61,12 @@ export default function App() {
     } catch {}
     return 'spiritual_eye';
   });
+
+  // View mode: 'routine' (main 17 stages flow) vs 'thirty_counts' (independent practice)
+  const [activeView, setActiveView] = useState<'routine' | 'thirty_counts'>('routine');
+
+  // Stages display layout mode: 'grid' vs 'list'
+  const [stageLayoutMode, setStageLayoutMode] = useState<'grid' | 'list'>('grid');
 
   // Load saved stages or defaults
   const [stages, setStages] = useState<Record<string, MeditationStageConfig>>(() => {
@@ -188,7 +208,11 @@ export default function App() {
       const current = prev[selectedStageId];
       let nextKriyaCount = current.kriyaCount;
       if (selectedStageId === 'kriyas' && current.isCountBased) {
-        const secPerKriya = current.secondsPerKriya || (current.breathPattern ? current.breathPattern.inhale + current.breathPattern.hold + current.breathPattern.exhale : 23);
+        const secPerKriya =
+          current.secondsPerKriya ||
+          (current.breathPattern
+            ? current.breathPattern.inhale + current.breathPattern.hold + current.breathPattern.exhale
+            : 23);
         nextKriyaCount = Math.max(2, Math.round((newMinutes * 60) / secPerKriya));
       }
       return {
@@ -240,7 +264,7 @@ export default function App() {
     setStages((prev) => {
       const current = prev[selectedStageId];
       if (selectedStageId === 'kriyas') {
-        const kCount = current.kriyaCount ?? 14;
+        const kCount = current.kriyaCount ?? 24;
         const totalSec = pattern.inhale + pattern.hold + pattern.exhale;
         const calculatedMins = Math.max(1, Math.round((kCount * totalSec) / 60));
         return {
@@ -412,7 +436,7 @@ export default function App() {
     backgroundKeepalive.requestWakeLock();
     backgroundKeepalive.startAudioKeepalive();
     setIsSequenceMode(true);
-    setSelectedStageId(sequenceOrder[0] || 'exercises'); // start from stage 1
+    setSelectedStageId(sequenceOrder[0] || 'exercises');
     setActivePlayerOpen(true);
   };
 
@@ -442,61 +466,66 @@ export default function App() {
     <div
       className={`min-h-screen ${activeThemeConfig.bgClass} flex flex-col justify-between antialiased transition-colors duration-300`}
     >
-      {/* Top Bar Header */}
+      {/* Top Bar Header following 3-Zone Contract */}
       <header
-        className={`w-full ${activeThemeConfig.headerBg} border-b sticky top-0 z-30 shadow-sm transition-colors duration-300`}
+        className={`w-full ${activeThemeConfig.headerBg} border-b border-white/10 sticky top-0 z-30 shadow-sm backdrop-blur-md transition-colors duration-300`}
       >
-        <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
-          {/* Brand Wordmark & Lotus */}
-          <div className="flex items-center gap-2">
-            <span className="p-1 rounded-full bg-white/10 text-amber-300">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          {/* Zone 1: Single text element Brand Wordmark & Lotus */}
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="p-1 rounded-full bg-amber-400/15 text-amber-300">
               <LotusIcon className="w-5 h-5 sm:w-6 sm:h-6" />
             </span>
-            <div className="leading-tight">
-              <span className="text-base sm:text-lg font-bold font-spiritual tracking-wide block text-slate-100">
-                Kriya Meditation
-              </span>
-              <span className="text-[10px] sm:text-xs text-slate-300/80 font-medium hidden xs:block">
-                {sequenceOrder.length} Sacred Stages & Soundscapes
-              </span>
-            </div>
+            <span className="text-base sm:text-lg font-bold font-spiritual tracking-wide text-slate-100 whitespace-nowrap">
+              Kriya Meditation
+            </span>
           </div>
 
-          {/* Header Action Tools */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
-            {/* Total Routine Tag */}
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-200 hidden md:inline">
-              Routine: {totalRoutineMinutes} min
-            </span>
-
-            {/* Play Full Routine button */}
+          {/* Zone 2: Navigation Segments / Workspace Modes */}
+          <nav className="flex items-center gap-1 p-1 bg-black/40 rounded-xl border border-white/10">
             <button
               type="button"
-              onClick={handleStartFullRoutine}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-sm transition-all active:scale-95 cursor-pointer"
-              title={`Play through all ${sequenceOrder.length} stages in sequence with auto-advance`}
+              onClick={() => setActiveView('routine')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                activeView === 'routine'
+                  ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                  : 'text-slate-300 hover:text-white'
+              }`}
             >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Full Routine</span>
+              Full Routine ({sequenceOrder.length})
             </button>
 
-            {/* Chants & Affirmations Tab button */}
+            <button
+              type="button"
+              onClick={() => setActiveView('thirty_counts')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
+                activeView === 'thirty_counts'
+                  ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>30 Counts</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setChantAffirmationModalOpen(true)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-400/40 shadow-sm transition-all cursor-pointer"
-              title="Open Cosmic Chants, Healing Affirmations & Sacred Voices Library"
+              className="px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap hidden sm:flex items-center gap-1"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden sm:inline">Chants, Affirmations & Voices</span>
+              <span>Chants & Library</span>
             </button>
+          </nav>
 
+          {/* Zone 3: 1 Primary CTA or Clean Utility Actions */}
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Color & Style Theme Switcher */}
             <button
               type="button"
               onClick={() => setThemeModalOpen(true)}
-              className="p-1.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-              title={`Switch Color & Theme (Current: ${activeThemeConfig.name})`}
+              className="p-2 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+              title={`Switch Theme (Current: ${activeThemeConfig.name})`}
               aria-label="Color and Theme"
             >
               <Palette className="w-4 h-4" />
@@ -506,9 +535,9 @@ export default function App() {
             <button
               type="button"
               onClick={() => setGhPagesModalOpen(true)}
-              className="p-1.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-              title="GitHub Pages deployment info"
-              aria-label="GitHub Pages details"
+              className="p-2 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+              title="GitHub Pages & Offline PWA details"
+              aria-label="App info"
             >
               <Globe className="w-4 h-4" />
             </button>
@@ -517,8 +546,8 @@ export default function App() {
             <button
               type="button"
               onClick={handleResetToDefaults}
-              className="p-1.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-              title="Reset to default times"
+              className="p-2 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+              title="Reset all settings to defaults"
               aria-label="Reset to defaults"
             >
               <RotateCcw className="w-4 h-4" />
@@ -528,148 +557,299 @@ export default function App() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col items-center justify-start py-4 px-3 sm:px-6 w-full">
-        {/* Main Phone / Container Frame */}
-        <div className="w-full max-w-[440px] flex flex-col gap-3 sm:gap-4 mx-auto">
-          {/* Chants, Affirmations & Sacred Voices Sequence Tool Bar */}
-          <div className="w-full flex items-center justify-between gap-2 px-0.5">
-            <button
-              type="button"
-              onClick={() => setChantAffirmationModalOpen(true)}
-              className="w-full py-2 px-3.5 rounded-2xl bg-black/35 hover:bg-black/50 border border-amber-400/40 text-amber-200 text-xs font-bold flex items-center justify-between shadow-md transition-all active:scale-[0.98] cursor-pointer"
-            >
-              <span className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>Chants, Affirmations & Sacred Voices</span>
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/25 text-amber-100 font-mono">
-                + Library & Routine ({sequenceOrder.length})
-              </span>
-            </button>
-          </div>
+      <main className="flex-1 flex flex-col items-center justify-start py-5 px-3 sm:px-6 w-full">
+        {/* VIEW 1: FULL SACRED ROUTINE (Responsive 2-Column on Desktop) */}
+        {activeView === 'routine' && (
+          <div className="w-full max-w-6xl flex flex-col gap-5 mx-auto">
+            {/* Sleek Hero Routine Header Banner using exact Theme styling */}
+            <div className={`w-full p-4 sm:p-5 ${activeThemeConfig.controlPanelBg} rounded-3xl shadow-xl backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-4 border`}>
+              <div className="text-center md:text-left">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs">
+                  <span className={`font-bold uppercase tracking-wider ${activeThemeConfig.textAccent} flex items-center gap-1`}>
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Sacred Kriya Routine</span>
+                  </span>
+                  <span aria-hidden="true" className="opacity-40">·</span>
+                  <span className={`font-semibold ${activeThemeConfig.textPrimary}`}>
+                    {sequenceOrder.length} Stages · {totalRoutineMinutes} min
+                  </span>
+                  <span aria-hidden="true" className="opacity-40">·</span>
+                  <span className={`${activeThemeConfig.textSecondary} hidden sm:inline`}>Temple Bells & Auto-Advance</span>
+                </div>
 
-          {/* Independent 30 Counts Practice Card */}
-          <ThirtyCountsCard
-            theme={activeThemeConfig}
-            onStartIndependent={handleStartIndependentThirtyCounts}
-            onAddToRoutine={handleAddThirtyCountsToRoutine}
-            isInRoutine={sequenceOrder.some((id) => id.startsWith('thirty_counts'))}
-          />
+                <h1 className={`text-xl sm:text-2xl font-bold font-spiritual ${activeThemeConfig.textPrimary} tracking-wide mt-1`}>
+                  Complete Meditation Practice
+                </h1>
+                <p className={`text-xs ${activeThemeConfig.textSecondary} mt-0.5`}>
+                  Tap any stage to customize duration, breath ratio, or audio track.
+                </p>
+              </div>
 
-          {/* Prominent Mobile-Friendly Full Routine Hero Card */}
-          <div className="w-full p-3.5 bg-gradient-to-r from-amber-500/25 via-amber-400/20 to-sky-900/35 border-2 border-amber-400/60 rounded-3xl shadow-xl backdrop-blur-md flex flex-col gap-2.5">
-            <div className="flex items-center justify-between text-xs px-0.5">
-              <span className="font-bold text-amber-200 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>Full Sacred Routine</span>
-              </span>
-              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-amber-400/25 text-amber-300 font-bold border border-amber-400/40">
-                {sequenceOrder.length} Stages • {totalRoutineMinutes} min
-              </span>
+              {/* Action Controls: Layout Switcher + Primary Begin Routine Button */}
+              <div className="flex flex-wrap items-center justify-center gap-2.5 w-full md:w-auto shrink-0">
+                {/* View toggle (Grid vs Timeline List) */}
+                <div className="flex items-center gap-0.5 p-1 bg-black/40 rounded-xl border border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setStageLayoutMode('grid')}
+                    className={`p-2 rounded-lg text-xs transition-colors cursor-pointer ${
+                      stageLayoutMode === 'grid'
+                        ? 'bg-white/20 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                    title="Grid view"
+                    aria-label="Grid view"
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStageLayoutMode('list')}
+                    className={`p-2 rounded-lg text-xs transition-colors cursor-pointer ${
+                      stageLayoutMode === 'list'
+                        ? 'bg-white/20 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                    title="Timeline list view"
+                    aria-label="List view"
+                  >
+                    <ListOrdered className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Chants Modal Button on mobile */}
+                <button
+                  type="button"
+                  onClick={() => setChantAffirmationModalOpen(true)}
+                  className="sm:hidden py-2 px-3 rounded-xl bg-black/40 hover:bg-black/60 border border-amber-400/30 text-amber-200 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Library</span>
+                </button>
+
+                {/* Primary Focal CTA: Begin Full Routine */}
+                <button
+                  type="button"
+                  onClick={handleStartFullRoutine}
+                  className={`w-full sm:w-auto py-3 px-6 rounded-2xl ${activeThemeConfig.startButton} text-sm sm:text-base flex items-center justify-center gap-2 shadow-xl active:scale-[0.98] transition-all cursor-pointer`}
+                >
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
+                  <span>Begin Full Routine ({totalRoutineMinutes} min)</span>
+                </button>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleStartFullRoutine}
-              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer border border-amber-200"
-            >
-              <Play className="w-5 h-5 fill-current" />
-              <span>Begin Full Routine ({totalRoutineMinutes} min)</span>
-            </button>
+            {/* Desktop 2-Column Split: Left = Stages Flow, Right = Sticky Customizer */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+              {/* Left Column: Stages Sequence Flow (7 cols on lg) */}
+              <div className="lg:col-span-7 flex flex-col gap-3">
+                <div className="flex items-center justify-between text-xs text-slate-300 px-1">
+                  <span className="font-semibold text-white/90">
+                    Routine Stages ({sequenceOrder.length})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setChantAffirmationModalOpen(true)}
+                    className="text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>+ Add / Reorder Stages</span>
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
 
-            <div className="flex items-center justify-between text-[11px] text-amber-100/80 px-1 font-medium">
-              <span>Auto-advance • Temple Bells & Gong</span>
-              <span className="text-amber-300 font-semibold">Touch to start</span>
-            </div>
-          </div>
+                {/* Compact Grid View: 4 cols on mobile, 5-6 cols on tablet/desktop */}
+                {stageLayoutMode === 'grid' && (
+                  <section
+                    aria-label="Meditation Stages Grid"
+                    className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-4 xl:grid-cols-5 gap-1.5 sm:gap-2 w-full"
+                  >
+                    {sequenceOrder.map((stageId, index) => {
+                      const stage = stages[stageId];
+                      if (!stage) return null;
+                      return (
+                        <StageCard
+                          key={stageId}
+                          stage={stage}
+                          stageIndex={index + 1}
+                          isSelected={selectedStageId === stageId}
+                          theme={activeThemeConfig}
+                          onSelect={() => setSelectedStageId(stageId)}
+                          onOpenInfo={() => setInfoModalStage(stage)}
+                        />
+                      );
+                    })}
+                  </section>
+                )}
 
-          {/* Sacred Stages Grid (Mapped to sequenceOrder) */}
-          <section
-            aria-label="Meditation Stages Grid"
-            className="grid grid-cols-3 gap-2 sm:gap-2.5 w-full"
-          >
-            {sequenceOrder.map((stageId) => {
-              const stage = stages[stageId];
-              if (!stage) return null;
-              return (
-                <StageCard
-                  key={stageId}
-                  stage={stage}
-                  isSelected={selectedStageId === stageId}
+                {/* Timeline List View */}
+                {stageLayoutMode === 'list' && (
+                  <section
+                    aria-label="Meditation Stages Timeline List"
+                    className="flex flex-col gap-2 w-full"
+                  >
+                    {sequenceOrder.map((stageId, index) => {
+                      const stage = stages[stageId];
+                      if (!stage) return null;
+                      const isSelected = selectedStageId === stageId;
+                      const isBreathing = Boolean(stage.breathPattern);
+                      const isPlayUntil = Boolean(
+                        stage.playUntilFinished || stage.customMedia?.playUntilFinished
+                      );
+                      const displayVal =
+                        stage.isCountBased && stage.kriyaCount !== undefined
+                          ? `${stage.kriyaCount} kriyas`
+                          : stage.isCountBased && stage.breathRounds !== undefined
+                          ? `${stage.breathRounds} counts`
+                          : isPlayUntil
+                          ? 'Full Track'
+                          : `${stage.minutes} mins`;
+
+                      return (
+                        <div
+                          key={stageId}
+                          onClick={() => setSelectedStageId(stageId)}
+                          className={`p-3 rounded-2xl flex items-center justify-between gap-3 border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-amber-400/15 border-amber-400/70 ring-1 ring-amber-400 shadow-md text-white'
+                              : 'bg-black/30 hover:bg-black/45 border-white/10 text-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className="font-mono text-xs font-bold text-amber-300 w-6 shrink-0">
+                              {String(index + 1).padStart(2, '0')}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="font-bold text-sm text-white truncate">
+                                {stage.title}
+                              </div>
+                              <div className="text-xs text-slate-400 truncate">
+                                {stage.subtitle || (isBreathing && stage.breathPattern ? `${stage.breathPattern.inhale}·${stage.breathPattern.hold}·${stage.breathPattern.exhale}` : 'Stage')}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 shrink-0">
+                            {stage.customMedia?.enabled && (
+                              <span className="text-red-400">
+                                <Youtube className="w-4 h-4" />
+                              </span>
+                            )}
+                            <span className="text-xs font-bold font-spiritual text-amber-300">
+                              {displayVal}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setInfoModalStage(stage);
+                              }}
+                              className="p-1 rounded-full text-slate-400 hover:text-white"
+                              title="Technique Info"
+                            >
+                              <Info className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </section>
+                )}
+              </div>
+
+              {/* Right Column: Sticky Tabbed Stage Customizer (5 cols on lg) */}
+              <div className="lg:col-span-5 lg:sticky lg:top-20 w-full">
+                <ControlPanel
+                  stage={selectedStage}
+                  incrementStep={incrementStep}
                   theme={activeThemeConfig}
-                  onSelect={() => setSelectedStageId(stageId)}
-                  onOpenInfo={() => setInfoModalStage(stage)}
+                  onToggleIncrement={handleToggleIncrement}
+                  onUpdateMinutes={handleUpdateMinutes}
+                  onUpdateKriyas={handleUpdateKriyas}
+                  onUpdateBreathRounds={handleUpdateBreathRounds}
+                  onUpdateBreathPattern={handleUpdateBreathPattern}
+                  onToggleCountMode={handleToggleCountMode}
+                  onStart={handleStartSingleSession}
+                  onStartFullRoutine={handleStartFullRoutine}
+                  totalRoutineMinutes={totalRoutineMinutes}
+                  onOpenSoundscapeModal={() => setSoundscapeModalOpen(true)}
+                  onOpenInfo={() => setInfoModalStage(selectedStage)}
+                  onOpenCustomMediaModal={() => {
+                    setCustomMediaModalStageId(selectedStageId);
+                    setCustomMediaModalOpen(true);
+                  }}
+                  onSelectMediaPreset={(preset) => {
+                    handleSaveCustomMedia(selectedStageId, {
+                      enabled: true,
+                      url: preset.url,
+                      title: preset.title,
+                      type: preset.type,
+                      muteSoundscape: true,
+                      playUntilFinished: true,
+                    });
+                  }}
+                  onTogglePlayUntilFinished={(val) =>
+                    handleTogglePlayUntilFinished(selectedStageId, val)
+                  }
                 />
-              );
-            })}
-          </section>
-
-          {/* Lower Control Panel */}
-          <section aria-label="Stage Timer and Soundscape Controls" className="w-full">
-            <ControlPanel
-              stage={selectedStage}
-              incrementStep={incrementStep}
-              theme={activeThemeConfig}
-              onToggleIncrement={handleToggleIncrement}
-              onUpdateMinutes={handleUpdateMinutes}
-              onUpdateKriyas={handleUpdateKriyas}
-              onUpdateBreathRounds={handleUpdateBreathRounds}
-              onUpdateBreathPattern={handleUpdateBreathPattern}
-              onToggleCountMode={handleToggleCountMode}
-              onStart={handleStartSingleSession}
-              onStartFullRoutine={handleStartFullRoutine}
-              totalRoutineMinutes={totalRoutineMinutes}
-              onOpenSoundscapeModal={() => setSoundscapeModalOpen(true)}
-              onOpenInfo={() => setInfoModalStage(selectedStage)}
-              onOpenCustomMediaModal={() => {
-                setCustomMediaModalStageId(selectedStageId);
-                setCustomMediaModalOpen(true);
-              }}
-              onSelectMediaPreset={(preset) => {
-                handleSaveCustomMedia(selectedStageId, {
-                  enabled: true,
-                  url: preset.url,
-                  title: preset.title,
-                  type: preset.type,
-                  muteSoundscape: true,
-                  playUntilFinished: true,
-                });
-              }}
-              onTogglePlayUntilFinished={(val) => handleTogglePlayUntilFinished(selectedStageId, val)}
-            />
-          </section>
-
-          {/* Quick Helper Subtext */}
-          <div className="flex items-center justify-between text-xs text-slate-400 px-2">
-            <span>Tap any stage to configure time & soundscape</span>
-            <button
-              type="button"
-              onClick={() => setInfoModalStage(selectedStage)}
-              className="underline font-semibold hover:text-slate-200 flex items-center gap-1 cursor-pointer"
-            >
-              <Info className="w-3.5 h-3.5" /> Stage Guide
-            </button>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* VIEW 2: INDEPENDENT 30 COUNTS PRACTICE */}
+        {activeView === 'thirty_counts' && (
+          <div className="w-full max-w-2xl flex flex-col gap-4 mx-auto animate-fadeIn">
+            {/* Back Bar */}
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setActiveView('routine')}
+                className="py-1.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Return to Sacred Routine</span>
+              </button>
+
+              <span className="text-xs text-amber-300 font-medium">
+                Paramahansa Yogananda 30 Counts Practice
+              </span>
+            </div>
+
+            {/* Dedicated 30 Counts Card */}
+            <ThirtyCountsCard
+              theme={activeThemeConfig}
+              onStartIndependent={handleStartIndependentThirtyCounts}
+              onAddToRoutine={handleAddThirtyCountsToRoutine}
+              isInRoutine={sequenceOrder.some((id) => id.startsWith('thirty_counts'))}
+            />
+          </div>
+        )}
       </main>
 
-      {/* Footer */}
-      <footer className="w-full py-3 text-center text-xs text-slate-400 border-t border-white/10 mt-4">
-        <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-1 text-[11px]">
-          <span>Paramahansa Yogananda Kriya Yoga Meditation Routine</span>
-          <span>100% Offline & GitHub Pages Compatible</span>
+      {/* Clean Footer */}
+      <footer className="w-full py-4 px-4 text-center border-t border-white/5 text-xs text-slate-400/80">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>Kriya Yoga Meditation Timer · Paramahansa Yogananda Lineage</span>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => setGhPagesModalOpen(true)}
+              className="hover:text-slate-200 underline cursor-pointer"
+            >
+              Offline & PWA Guide
+            </button>
+            <button
+              type="button"
+              onClick={() => setThemeModalOpen(true)}
+              className="hover:text-slate-200 underline cursor-pointer"
+            >
+              Themes
+            </button>
+          </div>
         </div>
       </footer>
 
-      {/* Theme Selector Modal */}
-      <ThemeSelectorModal
-        isOpen={themeModalOpen}
-        currentTheme={currentTheme}
-        onClose={() => setThemeModalOpen(false)}
-        onSelectTheme={(t) => setCurrentTheme(t)}
-      />
-
-      {/* Soundscape Customization Modal */}
+      {/* Modals & Dialogs */}
       <SoundscapeSelectorModal
         isOpen={soundscapeModalOpen}
         stage={selectedStage}
@@ -678,16 +858,14 @@ export default function App() {
         onApplyToAllStages={handleApplyToAllStages}
       />
 
-      {/* Custom YouTube and MP3 Media Modal */}
       <CustomMediaModal
         isOpen={customMediaModalOpen}
-        stage={stages[customMediaModalStageId] || selectedStage}
-        stages={stages as any}
+        stage={stages[customMediaModalStageId] || null}
+        stages={stages}
         onClose={() => setCustomMediaModalOpen(false)}
         onSaveMedia={handleSaveCustomMedia}
       />
 
-      {/* Chant & Affirmation Library and Drag & Drop Sequence Modal */}
       <ChantAffirmationTab
         isOpen={chantAffirmationModalOpen}
         stages={stages}
@@ -697,53 +875,56 @@ export default function App() {
         onAddStage={handleAddStage}
         onRemoveStage={handleRemoveStage}
         onReorderSequence={handleReorderSequence}
-        onUpdateStageConfig={(stageId, updates) => {
+        onUpdateStageConfig={(stageId: string, updates: Partial<MeditationStageConfig>) => {
           setStages((prev) => ({
             ...prev,
             [stageId]: { ...prev[stageId], ...updates },
           }));
         }}
-        onSelectStage={(stageId) => {
-          setSelectedStageId(stageId);
-          setChantAffirmationModalOpen(false);
-        }}
+        onSelectStage={(stageId: string) => setSelectedStageId(stageId as StageId)}
       />
 
-      {/* Technique & Prayer Guide Modal (i) */}
       <TechniqueInfoModal
         stage={infoModalStage}
         isOpen={Boolean(infoModalStage)}
         onClose={() => setInfoModalStage(null)}
-        onStartThisStage={(stg) => {
+        onStartThisStage={(stg: MeditationStageConfig) => {
           setSelectedStageId(stg.id);
-          setIsSequenceMode(false);
-          setActivePlayerOpen(true);
+          setInfoModalStage(null);
+          handleStartSingleSession();
         }}
-        onOpenCustomMedia={(stg) => {
+        onOpenCustomMedia={(stg: MeditationStageConfig) => {
+          setInfoModalStage(null);
           setCustomMediaModalStageId(stg.id);
           setCustomMediaModalOpen(true);
         }}
       />
 
-      {/* Full Active Session Meditation Player Modal */}
-      <ActiveSessionModal
-        isOpen={activePlayerOpen}
-        activeStageId={selectedStageId}
-        stages={stages}
-        stageOrder={sequenceOrder}
-        isSequenceMode={isSequenceMode}
-        onClose={() => setActivePlayerOpen(false)}
-        onStageChange={(nextStageId) => setSelectedStageId(nextStageId)}
-        onOpenCustomMediaModal={(stageId) => {
-          setCustomMediaModalStageId(stageId);
-          setCustomMediaModalOpen(true);
-        }}
+      <ThemeSelectorModal
+        isOpen={themeModalOpen}
+        currentTheme={currentTheme}
+        onClose={() => setThemeModalOpen(false)}
+        onSelectTheme={(themeKey: AppTheme) => setCurrentTheme(themeKey)}
       />
 
-      {/* GitHub Pages Deployment Info Modal */}
       <GitHubPagesModal
         isOpen={ghPagesModalOpen}
         onClose={() => setGhPagesModalOpen(false)}
+      />
+
+      {/* Active Meditation / Sequence Player Modal */}
+      <ActiveSessionModal
+        isOpen={activePlayerOpen}
+        isSequenceMode={isSequenceMode}
+        activeStageId={selectedStageId}
+        stages={stages}
+        stageOrder={sequenceOrder}
+        onClose={() => setActivePlayerOpen(false)}
+        onStageChange={(stageId: string) => setSelectedStageId(stageId as StageId)}
+        onOpenCustomMediaModal={(stageId: string) => {
+          setCustomMediaModalStageId(stageId);
+          setCustomMediaModalOpen(true);
+        }}
       />
     </div>
   );

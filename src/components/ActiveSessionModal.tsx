@@ -710,6 +710,33 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const handlePreviousStage = () => {
     const currentIndex = activeOrder.indexOf(activeStageId);
     if (currentIndex > 0) {
+      hasUserUnlockedRef.current = true;
+      soundEngine.unlockAudio();
+      const prevStage = stages[activeOrder[currentIndex - 1]];
+      if (prevStage?.customMedia?.enabled && prevStage.customMedia.url) {
+        const vidId = extractYouTubeId(prevStage.customMedia.url);
+        const startTime = extractYouTubeStartTime(prevStage.customMedia.url) || 0;
+        if (vidId && youtubeIframeRef.current?.contentWindow) {
+          try {
+            youtubeIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: 'loadVideoById', args: [vidId, startTime] }),
+              '*'
+            );
+            youtubeIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+              '*'
+            );
+            youtubeIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
+              '*'
+            );
+            youtubeIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+              '*'
+            );
+          } catch {}
+        }
+      }
       onStageChange(activeOrder[currentIndex - 1]);
     }
   };
@@ -717,6 +744,33 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const handleNextStage = () => {
     const currentIndex = activeOrder.indexOf(activeStageId);
     if (currentIndex < activeOrder.length - 1) {
+      hasUserUnlockedRef.current = true;
+      soundEngine.unlockAudio();
+      const nextStage = stages[activeOrder[currentIndex + 1]];
+      if (nextStage?.customMedia?.enabled && nextStage.customMedia.url) {
+        const vidId = extractYouTubeId(nextStage.customMedia.url);
+        const startTime = extractYouTubeStartTime(nextStage.customMedia.url) || 0;
+        if (vidId && youtubeIframeRef.current?.contentWindow) {
+          try {
+            youtubeIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: 'loadVideoById', args: [vidId, startTime] }),
+              '*'
+            );
+            youtubeIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+              '*'
+            );
+            youtubeIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
+              '*'
+            );
+            youtubeIframeRef.current.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+              '*'
+            );
+          } catch {}
+        }
+      }
       onStageChange(activeOrder[currentIndex + 1]);
     } else {
       handleStageCompletion();
@@ -951,8 +1005,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                     src={getYouTubeEmbedUrl(
                       customMedia.url,
                       true,
-                      typeof window !== 'undefined' &&
-                        ('ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) || window.innerWidth < 768)
+                      false
                     ) || ''}
                     title={customMedia.title || 'YouTube Player'}
                     className="w-full h-full border-0"
@@ -962,37 +1015,32 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                     onLoad={() => {
                       isIframeReadyRef.current = true;
                       currentLoadedVideoIdRef.current = extractYouTubeId(customMedia.url);
-                      try {
-                        youtubeIframeRef.current?.contentWindow?.postMessage(
-                          JSON.stringify({ event: 'listening', id: 1 }),
-                          '*'
-                        );
-                        if (isRunning) {
+                      const triggerAutoPlay = () => {
+                        try {
                           youtubeIframeRef.current?.contentWindow?.postMessage(
-                            JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+                            JSON.stringify({ event: 'listening', id: 1 }),
                             '*'
                           );
-                          youtubeIframeRef.current?.contentWindow?.postMessage(
-                            JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-                            '*'
-                          );
-                        }
-                      } catch {}
-                      // Guaranteed secondary trigger once player scripts compile
-                      setTimeout(() => {
-                        if (isRunning) {
-                          try {
+                          if (isRunning) {
                             youtubeIframeRef.current?.contentWindow?.postMessage(
                               JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+                              '*'
+                            );
+                            youtubeIframeRef.current?.contentWindow?.postMessage(
+                              JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
                               '*'
                             );
                             youtubeIframeRef.current?.contentWindow?.postMessage(
                               JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
                               '*'
                             );
-                          } catch {}
-                        }
-                      }, 700);
+                          }
+                        } catch {}
+                      };
+                      triggerAutoPlay();
+                      setTimeout(triggerAutoPlay, 300);
+                      setTimeout(triggerAutoPlay, 800);
+                      setTimeout(triggerAutoPlay, 1500);
                     }}
                   />
                 </div>
@@ -1014,8 +1062,8 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                   </a>
                 </div>
 
-                {/* Mobile Autoplay Helper: Always gives user an effortless, clear tap target if video is muted or waiting for unlock */}
-                {(mobileAutoplayBlocked || (!isVideoPlaying && isRunning)) && (
+                {/* Mobile Autoplay Helper: Shown only if video playback was blocked by browser policy after timeout */}
+                {mobileAutoplayBlocked && !isVideoPlaying && (
                   <button
                     type="button"
                     onClick={handleMobilePlayUnlock}

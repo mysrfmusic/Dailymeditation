@@ -1,9 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MeditationStageConfig, BreathPattern } from '../types/meditation';
 import { TapIncrementIcon, MalaBeadsIcon } from './Icons';
 import { SOUNDSCAPES } from '../utils/soundscapes';
 import { STAGE_MEDIA_PRESETS, StageMediaPreset } from '../utils/customMedia';
-import { Music, SlidersHorizontal, BookOpen, Wind, RotateCcw, Youtube, Play } from 'lucide-react';
+import {
+  Music,
+  SlidersHorizontal,
+  BookOpen,
+  Wind,
+  RotateCcw,
+  Youtube,
+  Play,
+  Clock,
+  Volume2,
+  Sparkles,
+  Check,
+  ChevronRight,
+  ExternalLink,
+} from 'lucide-react';
 import { ThemeConfig } from '../utils/theme';
 
 interface ControlPanelProps {
@@ -26,6 +40,8 @@ interface ControlPanelProps {
   onTogglePlayUntilFinished?: (val: boolean) => void;
 }
 
+export type ControlPanelTab = 'time' | 'sound' | 'guide';
+
 export const ControlPanel: React.FC<ControlPanelProps> = ({
   stage,
   incrementStep,
@@ -45,6 +61,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onSelectMediaPreset,
   onTogglePlayUntilFinished,
 }) => {
+  const [activeTab, setActiveTab] = useState<ControlPanelTab>('time');
+
   const isKriyas = stage.id === 'kriyas';
   const isJyotiMudra = stage.id === 'jyoti_mudra';
   const isBreathing1 = stage.id === 'breathing_1';
@@ -53,7 +71,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   const isBreathing = isPranayama && Boolean(stage.breathPattern);
   const isKriyaCount = isKriyas && stage.isCountBased && stage.kriyaCount !== undefined;
   const isBreathCount = isBreathing && stage.isCountBased;
-  const isPrayer = Boolean(stage.techniqueGuide.prayerText);
+  const isPrayer = Boolean(stage.techniqueGuide?.prayerText);
   const isChant = stage.stageType === 'chant' || stage.id === 'chant' || stage.id.startsWith('chant_');
   const isAffirmation = stage.stageType === 'affirmation' || stage.id === 'affirmation' || stage.id.startsWith('affirmation_');
   const isSacredVoice = stage.stageType === 'sacred_voices' || stage.id === 'sacred_voices' || stage.id.startsWith('sacred_voices_');
@@ -67,7 +85,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   };
   const currentRounds = stage.breathRounds ?? (isBreathing1 ? 3 : isBreathing2 ? 6 : isJyotiMudra ? 3 : 6);
 
-  // Soundscape name
+  // Soundscape
   const currentSound = SOUNDSCAPES.find((s) => s.id === stage.soundscape) || SOUNDSCAPES[0];
 
   // Min / Max ranges for slider
@@ -108,7 +126,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   };
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = Number(e.target.value);
+    const val = parseInt(e.target.value, 10);
     if (isKriyaCount && onUpdateKriyas) {
       onUpdateKriyas(val);
     } else if (isBreathCount && onUpdateBreathRounds) {
@@ -119,777 +137,754 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   };
 
   const handleSetEqualCount = (count: number) => {
-    if (onUpdateBreathPattern) {
-      onUpdateBreathPattern({
-        inhale: count,
-        hold: count,
-        exhale: count,
-      });
-    }
+    if (!onUpdateBreathPattern) return;
+    onUpdateBreathPattern({
+      inhale: count,
+      hold: count,
+      exhale: count,
+    });
   };
 
   const handleUpdateSingleBreathCount = (field: 'inhale' | 'hold' | 'exhale', delta: number) => {
-    if (onUpdateBreathPattern) {
-      const nextVal = Math.max(1, Math.min(60, currentPattern[field] + delta));
-      onUpdateBreathPattern({
-        ...currentPattern,
-        [field]: nextVal,
-      });
-    }
+    if (!onUpdateBreathPattern) return;
+    const nextVal = Math.max(field === 'hold' ? 0 : 2, currentPattern[field] + delta);
+    onUpdateBreathPattern({
+      ...currentPattern,
+      [field]: nextVal,
+    });
   };
 
-  const totalCycleSec = currentPattern.inhale + currentPattern.hold + currentPattern.exhale;
-  const targetCountForEst = isKriyaCount ? (stage.kriyaCount ?? 14) : currentRounds;
-  const estimatedMins = Math.max(1, Math.round((targetCountForEst * totalCycleSec) / 60));
+  const secPerCycle = isKriyas
+    ? currentPattern.inhale + currentPattern.hold + currentPattern.exhale
+    : isBreathing
+    ? currentPattern.inhale + currentPattern.hold + currentPattern.exhale
+    : 0;
 
-  const primaryNumber = isKriyaCount
-    ? `${stage.kriyaCount ?? 14}`
+  const estimatedMins = isKriyaCount
+    ? Math.max(1, Math.round(((stage.kriyaCount ?? 24) * secPerCycle) / 60))
     : isBreathCount
-    ? `${currentRounds}`
-    : `${stage.minutes}`;
+    ? Math.max(1, Math.round((currentRounds * secPerCycle) / 60))
+    : stage.minutes;
 
-  const secondaryTitle = stage.title;
-  const tertiarySubtitle = isKriyaCount
-    ? `${stage.kriyaCount ?? 14} Kriyas (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins}m`
+  // Subtitle summary text
+  const summaryBadge = isKriyaCount
+    ? `${stage.kriyaCount ?? 24} Kriyas (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins}m`
     : isBreathCount
-    ? `${currentRounds} Count${currentRounds > 1 ? 's' : ''} (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins}m`
+    ? `${currentRounds} Counts (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins}m`
     : isPlayUntilFinished && (isChant || isAffirmation || stage.customMedia?.enabled)
-    ? '🎵 Plays until music finishes (Auto-advances)'
+    ? '🎵 Full Track Auto-Advance'
     : `${stage.minutes} minute${stage.minutes > 1 ? 's' : ''}`;
 
   return (
     <div
-      className={`w-full rounded-[30px] p-4 sm:p-5 shadow-2xl relative overflow-hidden select-none transition-all duration-200 ${theme.controlPanelBg}`}
+      className={`w-full rounded-3xl p-4 sm:p-5 shadow-2xl relative overflow-hidden select-none transition-all duration-200 border border-white/10 ${theme.controlPanelBg}`}
     >
-      {/* Top 3-slot Row */}
-      <div className="grid grid-cols-3 items-center text-center">
-        {/* Left: Tap increments toggle */}
-        <button
-          type="button"
-          onClick={onToggleIncrement}
-          className="flex flex-col items-center justify-center group cursor-pointer opacity-90 hover:opacity-100 transition-all py-1 rounded-xl hover:bg-white/10 active:scale-95"
-          title={`Click to change increment (Current: ${incrementStep}m)`}
-        >
-          <div className="p-1 rounded-full group-hover:scale-110 transition-transform">
-            <TapIncrementIcon className="w-7 h-7 sm:w-8 sm:h-8" />
+      {/* Sleek Header: Stage Info + Quick Play */}
+      <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/10">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono text-amber-300/90 uppercase tracking-wider">
+              Selected Stage
+            </span>
+            <span aria-hidden="true" className="text-white/30">·</span>
+            <span className="text-xs text-slate-300 font-medium truncate">
+              {stage.subtitle || 'Kriya Routine'}
+            </span>
           </div>
-          <span className="text-[11px] sm:text-xs opacity-85 leading-tight mt-0.5 max-w-[100px]">
-            {isKriyaCount
-              ? `Increments of ${incrementStep === 5 ? '7' : '1'} kriyas`
-              : isBreathCount
-              ? `Count of rounds`
-              : `Increments of ${incrementStep} min`}
-          </span>
-        </button>
 
-        {/* Center: Big count & title */}
-        <div className="flex flex-col items-center justify-center">
-          <div className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-none font-spiritual">
-            {primaryNumber}
-          </div>
-          <div className="text-base sm:text-lg font-bold mt-0.5 truncate max-w-[160px]">
-            {secondaryTitle}
-          </div>
-          <div className="text-xs opacity-80 font-medium truncate max-w-[210px]">
-            {tertiarySubtitle}
+          <h3 className="text-lg sm:text-xl font-bold font-spiritual tracking-wide text-white truncate mt-0.5">
+            {stage.title}
+          </h3>
+
+          <div className="text-xs text-amber-300 font-medium mt-0.5 flex items-center gap-2">
+            <span>{summaryBadge}</span>
+            <span aria-hidden="true" className="text-white/30">·</span>
+            <span className="text-slate-300/80">{currentSound.name}</span>
           </div>
         </div>
 
-        {/* Right: Mode toggle or Info/Sound */}
-        <div className="flex flex-col items-center justify-center">
-          {isKriyas ? (
-            <button
-              type="button"
-              onClick={onToggleCountMode}
-              className="flex flex-col items-center justify-center group cursor-pointer opacity-90 hover:opacity-100 transition-all py-1 rounded-xl hover:bg-white/10 active:scale-95"
-              title="Toggle between Kriya count mode and standard timer"
-            >
-              <div className="p-1 group-hover:scale-110 transition-transform">
-                <MalaBeadsIcon className="w-8 h-8 sm:w-9 sm:h-9" />
+        {/* Play This Stage Quick CTA */}
+        <button
+          type="button"
+          onClick={onStart}
+          className="shrink-0 py-2 px-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+          title={`Practice ${stage.title} now`}
+        >
+          <Play className="w-3.5 h-3.5 fill-current" />
+          <span>Play Stage</span>
+        </button>
+      </div>
+
+      {/* Sleek Segmented Tab Switcher */}
+      <div className="grid grid-cols-3 gap-1 p-1 bg-black/40 rounded-xl mt-3 border border-white/10">
+        <button
+          type="button"
+          onClick={() => setActiveTab('time')}
+          className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            activeTab === 'time'
+              ? 'bg-white/15 text-white shadow-sm font-bold border border-white/20'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <Clock className="w-3.5 h-3.5 text-amber-300" />
+          <span>Time & Pace</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('sound')}
+          className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            activeTab === 'sound'
+              ? 'bg-white/15 text-white shadow-sm font-bold border border-white/20'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <Music className="w-3.5 h-3.5 text-amber-300" />
+          <span>Sound & Media</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('guide')}
+          className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            activeTab === 'guide'
+              ? 'bg-white/15 text-white shadow-sm font-bold border border-white/20'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <BookOpen className="w-3.5 h-3.5 text-amber-300" />
+          <span>Guide</span>
+        </button>
+      </div>
+
+      {/* TAB 1: TIME & PACE */}
+      {activeTab === 'time' && (
+        <div className="mt-3 space-y-3">
+          {/* SPECIALIZED KRIYA CONTROLS */}
+          {isKriyas && (
+            <div className="p-3 bg-black/25 rounded-2xl border border-white/10 space-y-2.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-amber-200 flex items-center gap-1.5">
+                  <MalaBeadsIcon className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Prescribed Kriyas</span>
+                </span>
+                <span className="text-[11px] text-slate-300">
+                  {stage.kriyaCount ?? 24} Kriyas (~{estimatedMins} min)
+                </span>
               </div>
-              <span className="text-[11px] sm:text-xs opacity-85 leading-tight mt-0.5">
-                {isKriyaCount ? 'Kriyas Mode' : 'Minutes Mode'}
-              </span>
-            </button>
-          ) : isBreathing ? (
-            <button
-              type="button"
-              onClick={onOpenInfo}
-              className="flex flex-col items-center justify-center group cursor-pointer opacity-90 hover:opacity-100 transition-all py-1 rounded-xl hover:bg-white/10 active:scale-95"
-              title="View pranayama technique instructions"
-            >
-              <div className="p-1 group-hover:scale-110 transition-transform">
-                <Wind className="w-6 h-6 sm:w-7 sm:h-7" />
+
+              {/* Prescribed Kriya Counts Presets */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {[
+                  { count: 24, label: '24 (Default)' },
+                  { count: 14, label: '14' },
+                  { count: 36, label: '36' },
+                  { count: 72, label: '72' },
+                  { count: 108, label: '108' },
+                ].map((item) => {
+                  const isSelected = (stage.kriyaCount ?? 24) === item.count;
+                  return (
+                    <button
+                      key={item.count}
+                      type="button"
+                      onClick={() => onUpdateKriyas?.(item.count)}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                          : 'bg-white/10 hover:bg-white/20 text-white/90'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
               </div>
-              <span className="text-[11px] sm:text-xs opacity-85 leading-tight mt-0.5">
-                Pranayama Guide
-              </span>
-            </button>
-          ) : stage.id === 'chant' ? (
-            <button
-              type="button"
-              onClick={onOpenCustomMediaModal || onOpenSoundscapeModal}
-              className="flex flex-col items-center justify-center group cursor-pointer opacity-90 hover:opacity-100 transition-all py-1 rounded-xl hover:bg-white/10 active:scale-95"
-              title="Customize YouTube Chant or MP3 link"
-            >
-              <div className="p-1 group-hover:scale-110 transition-transform text-red-400">
-                <Youtube className="w-6 h-6 sm:w-7 sm:h-7" />
+
+              {/* Kriya Breath Ratio Presets */}
+              <div className="pt-2 border-t border-white/10">
+                <div className="flex items-center justify-between text-xs mb-1.5">
+                  <span className="text-slate-300 font-medium">Breath Ratio:</span>
+                  <button
+                    type="button"
+                    onClick={() => onUpdateBreathPattern?.({ inhale: 10, hold: 3, exhale: 10 })}
+                    className="text-[11px] text-amber-300/80 hover:text-amber-200 underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" /> 10-3-10 Default
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {[
+                    { label: '10 · 3 · 10 (Default)', pattern: { inhale: 10, hold: 3, exhale: 10 } },
+                    { label: '8 · 3 · 8', pattern: { inhale: 8, hold: 3, exhale: 8 } },
+                    { label: '10 · 3 · 8', pattern: { inhale: 10, hold: 3, exhale: 8 } },
+                    { label: '12 · 3 · 12', pattern: { inhale: 12, hold: 3, exhale: 12 } },
+                    { label: '15 · 3 · 15', pattern: { inhale: 15, hold: 3, exhale: 15 } },
+                  ].map((p, idx) => {
+                    const isActive =
+                      currentPattern.inhale === p.pattern.inhale &&
+                      currentPattern.hold === p.pattern.hold &&
+                      currentPattern.exhale === p.pattern.exhale;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => onUpdateBreathPattern?.(p.pattern)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                          isActive
+                            ? 'bg-amber-300 text-slate-950 font-bold'
+                            : 'bg-white/10 hover:bg-white/20 text-white/90'
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <span className="text-[11px] sm:text-xs opacity-85 leading-tight mt-0.5 font-semibold">
-                {stage.customMedia?.enabled && stage.customMedia.url ? 'Chant Linked' : 'Chant Audio'}
+
+              {/* Steppers for Inhale, Hold, Exhale */}
+              <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+                <div className="bg-black/30 p-1.5 rounded-xl border border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-sky-300 block mb-1">Inhale</span>
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('inhale', -1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      −
+                    </button>
+                    <span className="font-bold text-xs tabular-nums w-5">{currentPattern.inhale}s</span>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('inhale', 1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-black/30 p-1.5 rounded-xl border border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-amber-300 block mb-1">Hold</span>
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('hold', -1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      −
+                    </button>
+                    <span className="font-bold text-xs tabular-nums w-5">{currentPattern.hold}s</span>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('hold', 1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-black/30 p-1.5 rounded-xl border border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-emerald-300 block mb-1">Exhale</span>
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('exhale', -1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      −
+                    </button>
+                    <span className="font-bold text-xs tabular-nums w-5">{currentPattern.exhale}s</span>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('exhale', 1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SPECIALIZED JYOTI MUDRA & PRANAYAMA CONTROLS */}
+          {isBreathing && !isKriyas && (
+            <div className="p-3 bg-black/25 rounded-2xl border border-white/10 space-y-2.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-amber-200 flex items-center gap-1.5">
+                  <Wind className="w-3.5 h-3.5 text-amber-300" />
+                  <span>
+                    {isJyotiMudra
+                      ? 'Jyoti Mudra (3 counts · 12-3-12 default)'
+                      : isBreathing1
+                      ? 'Breathing Ex 1 (6-6-6 default)'
+                      : 'Breathing Ex 2 (8-8-8 default)'}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isJyotiMudra) {
+                      onUpdateBreathPattern?.({ inhale: 12, hold: 3, exhale: 12 });
+                      onUpdateBreathRounds?.(3);
+                    } else if (isBreathing1) {
+                      onUpdateBreathPattern?.({ inhale: 6, hold: 6, exhale: 6 });
+                      onUpdateBreathRounds?.(3);
+                    } else {
+                      onUpdateBreathPattern?.({ inhale: 8, hold: 8, exhale: 8 });
+                      onUpdateBreathRounds?.(6);
+                    }
+                  }}
+                  className="text-[11px] text-amber-300/80 hover:text-amber-200 underline flex items-center gap-1 cursor-pointer"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" /> Reset Default
+                </button>
+              </div>
+
+              {/* Presets */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {isJyotiMudra ? (
+                  [
+                    { label: '12 · 3 · 12 (Default)', pattern: { inhale: 12, hold: 3, exhale: 12 } },
+                    { label: '10 · 3 · 10', pattern: { inhale: 10, hold: 3, exhale: 10 } },
+                    { label: '15 · 3 · 15', pattern: { inhale: 15, hold: 3, exhale: 15 } },
+                    { label: '8 · 3 · 8', pattern: { inhale: 8, hold: 3, exhale: 8 } },
+                  ].map((p, idx) => {
+                    const isActive =
+                      currentPattern.inhale === p.pattern.inhale &&
+                      currentPattern.hold === p.pattern.hold &&
+                      currentPattern.exhale === p.pattern.exhale;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => onUpdateBreathPattern?.(p.pattern)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                          isActive
+                            ? 'bg-amber-300 text-slate-950 font-bold'
+                            : 'bg-white/10 hover:bg-white/20 text-white/90'
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    );
+                  })
+                ) : (
+                  [
+                    { label: '6 · 6 · 6', val: 6 },
+                    { label: '8 · 8 · 8', val: 8 },
+                    { label: '10 · 10 · 10', val: 10 },
+                    { label: '12 · 12 · 12', val: 12 },
+                  ].map((p) => {
+                    const isActive =
+                      currentPattern.inhale === p.val &&
+                      currentPattern.hold === p.val &&
+                      currentPattern.exhale === p.val;
+                    return (
+                      <button
+                        key={p.val}
+                        type="button"
+                        onClick={() => handleSetEqualCount(p.val)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                          isActive
+                            ? 'bg-amber-300 text-slate-950 font-bold'
+                            : 'bg-white/10 hover:bg-white/20 text-white/90'
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Steppers */}
+              <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+                <div className="bg-black/30 p-1.5 rounded-xl border border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-sky-300 block mb-1">Inhale</span>
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('inhale', -1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      −
+                    </button>
+                    <span className="font-bold text-xs tabular-nums w-5">{currentPattern.inhale}s</span>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('inhale', 1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-black/30 p-1.5 rounded-xl border border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-amber-300 block mb-1">Hold</span>
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('hold', -1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      −
+                    </button>
+                    <span className="font-bold text-xs tabular-nums w-5">{currentPattern.hold}s</span>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('hold', 1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-black/30 p-1.5 rounded-xl border border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-emerald-300 block mb-1">Exhale</span>
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('exhale', -1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      −
+                    </button>
+                    <span className="font-bold text-xs tabular-nums w-5">{currentPattern.exhale}s</span>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateSingleBreathCount('exhale', 1)}
+                      className="w-5 h-5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SLIDER & STEPPERS FOR DURATION / COUNTS */}
+          <div className="p-3 bg-black/25 rounded-2xl border border-white/10">
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span className="font-medium text-slate-300">
+                {isKriyaCount
+                  ? 'Kriyas Count:'
+                  : isBreathCount
+                  ? 'Breath Rounds:'
+                  : 'Stage Duration:'}
               </span>
-            </button>
-          ) : isPrayer ? (
-            <div className="flex items-center gap-1">
+
+              {/* Increment Step Toggle */}
               <button
                 type="button"
-                onClick={onOpenInfo}
-                className="flex flex-col items-center justify-center group cursor-pointer opacity-90 hover:opacity-100 transition-all py-1 px-1 rounded-xl hover:bg-white/10 active:scale-95"
-                title="Read sacred prayer words"
+                onClick={onToggleIncrement}
+                className="text-[11px] text-amber-300/80 hover:text-amber-200 underline flex items-center gap-1 cursor-pointer"
+                title="Change +/- step increment"
               >
-                <div className="p-1 group-hover:scale-110 transition-transform">
-                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
-                </div>
-                <span className="text-[10px] sm:text-[11px] opacity-85 leading-tight mt-0.5">
-                  Prayer
-                </span>
+                <TapIncrementIcon className="w-3.5 h-3.5" />
+                <span>Step: {isKriyaCount ? (incrementStep === 5 ? '7' : '1') : `${incrementStep}m`}</span>
               </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleDecrement}
+                className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-lg font-bold cursor-pointer border border-white/10"
+              >
+                −
+              </button>
+
+              <div className="flex-1">
+                <input
+                  type="range"
+                  min={minVal}
+                  max={maxVal}
+                  step={isBreathCount ? 1 : isKriyaCount ? (incrementStep === 5 ? 7 : 1) : incrementStep}
+                  value={currentVal}
+                  onChange={handleSliderChange}
+                  className="w-full cursor-pointer accent-amber-400"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleIncrement}
+                className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-lg font-bold cursor-pointer border border-white/10"
+              >
+                +
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-slate-400 mt-2 px-1">
+              <span>{minVal} {isKriyaCount ? 'kriyas' : isBreathCount ? 'rounds' : 'min'}</span>
+              <span className="text-amber-300 font-bold font-spiritual text-base">
+                {isKriyaCount
+                  ? `${currentVal} Kriyas (~${estimatedMins} min)`
+                  : isBreathCount
+                  ? `${currentVal} Rounds (~${estimatedMins} min)`
+                  : `${currentVal} Minutes`}
+              </span>
+              <span>{maxVal} {isKriyaCount ? 'kriyas' : isBreathCount ? 'rounds' : 'min'}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: SOUND & MEDIA */}
+      {activeTab === 'sound' && (
+        <div className="mt-3 space-y-3">
+          {/* Soundscape Card */}
+          <div className="p-3 bg-black/25 rounded-2xl border border-white/10 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                <Music className="w-3.5 h-3.5 text-amber-300" />
+                <span>Ambient Soundscape</span>
+              </span>
+              <button
+                type="button"
+                onClick={onOpenSoundscapeModal}
+                className="text-xs text-amber-300 hover:text-amber-200 underline font-medium cursor-pointer"
+              >
+                Change Soundscape
+              </button>
+            </div>
+
+            <div
+              onClick={onOpenSoundscapeModal}
+              className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-between cursor-pointer transition-all"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">{currentSound.icon}</span>
+                <div>
+                  <div className="text-xs font-bold text-white">{currentSound.name}</div>
+                  <div className="text-[11px] text-slate-400">{currentSound.description}</div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+              <span>Bells: Temple Gongs & Bowls</span>
+              <span className="text-amber-300 font-medium">Auto-Chimes on Stage Switch</span>
+            </div>
+          </div>
+
+          {/* YouTube / Custom Media Section */}
+          <div className="p-3 bg-black/25 rounded-2xl border border-white/10 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-amber-200 flex items-center gap-1.5">
+                <Youtube className="w-3.5 h-3.5 text-red-400" />
+                <span>
+                  {isAffirmation
+                    ? 'Scientific Affirmation'
+                    : isSacredVoice
+                    ? 'Sacred Voice Talk'
+                    : isChant
+                    ? 'Cosmic Chant'
+                    : 'Custom YouTube / MP3'}
+                </span>
+              </span>
+
               {onOpenCustomMediaModal && (
                 <button
                   type="button"
                   onClick={onOpenCustomMediaModal}
-                  className="flex flex-col items-center justify-center group cursor-pointer opacity-90 hover:opacity-100 transition-all py-1 px-1 rounded-xl hover:bg-white/10 active:scale-95"
-                  title="Customize YouTube or MP3 prayer audio"
+                  className="text-xs text-sky-300 hover:text-sky-200 underline cursor-pointer"
                 >
-                  <div
-                    className={`p-1 group-hover:scale-110 transition-transform ${
-                      stage.customMedia?.enabled ? 'text-red-400' : 'text-amber-300'
-                    }`}
-                  >
-                    <Youtube className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </div>
-                  <span className="text-[10px] sm:text-[11px] opacity-85 leading-tight mt-0.5">
-                    {stage.customMedia?.enabled ? 'Audio Link' : 'Add Audio'}
+                  Custom URL / Preview
+                </button>
+              )}
+            </div>
+
+            {/* Presets dropdown for Chant / Affirmation / Sacred Voice */}
+            {(isChant || isAffirmation || isSacredVoice) && (
+              <div className="space-y-2">
+                <select
+                  value={stage.customMedia?.url || ''}
+                  onChange={(e) => {
+                    const targetUrl = e.target.value;
+                    if (!targetUrl) return;
+                    const pool = isAffirmation
+                      ? (STAGE_MEDIA_PRESETS.affirmation || [])
+                      : isSacredVoice
+                      ? ((STAGE_MEDIA_PRESETS as any).sacred_voices || [])
+                      : (STAGE_MEDIA_PRESETS.chant || []);
+                    const matchedPreset = pool.find((p: any) => p.url === targetUrl);
+                    if (matchedPreset && onSelectMediaPreset) {
+                      onSelectMediaPreset(matchedPreset);
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 focus:border-amber-400 text-xs text-amber-200 font-medium rounded-xl outline-none cursor-pointer truncate"
+                >
+                  {isAffirmation ? (
+                    <optgroup label="✨ Scientific Healing Affirmations (Paramahansa Yogananda)">
+                      {STAGE_MEDIA_PRESETS.affirmation?.map((preset) => (
+                        <option key={preset.id} value={preset.url}>
+                          {preset.title}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ) : isSacredVoice ? (
+                    <optgroup label="🎙️ Sacred Voices (Paramahansa Yogananda & Direct Disciples)">
+                      {((STAGE_MEDIA_PRESETS as any).sacred_voices || []).map((preset: any) => (
+                        <option key={preset.id} value={preset.url}>
+                          {preset.title}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ) : (
+                    <optgroup label="✨ SRF Cosmic Chants (Paramahansa Yogananda)">
+                      {STAGE_MEDIA_PRESETS.chant?.map((preset) => (
+                        <option key={preset.id} value={preset.url}>
+                          {preset.title}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
+
+                {/* Play till music is over toggle */}
+                <div className="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-amber-200">
+                    <input
+                      type="checkbox"
+                      checked={isPlayUntilFinished}
+                      onChange={(e) => onTogglePlayUntilFinished?.(e.target.checked)}
+                      className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 border-white/30 bg-black/50 cursor-pointer"
+                    />
+                    <span>Play until track finishes</span>
+                  </label>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">
+                    {isPlayUntilFinished ? '✓ Auto-Advance' : 'Fixed Duration'}
                   </span>
-                </button>
-              )}
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={onOpenSoundscapeModal}
-              className="flex flex-col items-center justify-center group cursor-pointer opacity-90 hover:opacity-100 transition-all py-1 rounded-xl hover:bg-white/10 active:scale-95"
-              title="Customize soundscape for this session"
-            >
-              <div className="p-1 group-hover:scale-110 transition-transform">
-                <Music className="w-6 h-6 sm:w-7 sm:h-7" />
+                </div>
               </div>
-              <span className="text-[11px] sm:text-xs opacity-85 leading-tight mt-0.5 truncate max-w-[90px]">
-                {currentSound.name.split(' ')[0]}
+            )}
+
+            {/* If not a chant/affirmation, show custom media link affordance */}
+            {!isChant && !isAffirmation && !isSacredVoice && (
+              <div className="flex items-center justify-between text-xs text-slate-300">
+                <span>
+                  {stage.customMedia?.enabled && stage.customMedia.url
+                    ? `Linked: ${stage.customMedia.title || 'YouTube / Audio'}`
+                    : 'No external media attached'}
+                </span>
+                {onOpenCustomMediaModal && (
+                  <button
+                    type="button"
+                    onClick={onOpenCustomMediaModal}
+                    className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium text-white cursor-pointer"
+                  >
+                    {stage.customMedia?.enabled ? 'Edit Link' : '+ Add Audio'}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: TECHNIQUE GUIDE */}
+      {activeTab === 'guide' && (
+        <div className="mt-3 p-3.5 bg-black/25 rounded-2xl border border-white/10 space-y-3 max-h-[300px] overflow-y-auto text-xs text-slate-200">
+          {/* Sacred Prayer Words */}
+          {stage.techniqueGuide?.prayerText && (
+            <div className="p-3 rounded-xl bg-amber-400/10 border border-amber-400/30">
+              <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider block mb-1">
+                Sacred Words
               </span>
-            </button>
+              <p className="font-spiritual italic text-sm text-amber-100 leading-relaxed whitespace-pre-line">
+                {stage.techniqueGuide.prayerText}
+              </p>
+            </div>
           )}
-        </div>
-      </div>
 
-      {/* SPECIALIZED BREATHING COUNT & RATIO CONTROLS */}
-      {isBreathing && (
-        <div className="mt-3.5 p-3 bg-black/25 rounded-2xl border border-white/15 space-y-2.5">
-          {/* Header & Reset Default */}
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold opacity-90 flex items-center gap-1">
-              <Wind className="w-3.5 h-3.5 text-amber-300" />
-              {isBreathing1
-                ? 'Ex 1 (Default: 6-6-6 · 3 counts)'
-                : isJyotiMudra
-                ? 'Jyoti Mudra (Default: 12-3-12 · 3 counts)'
-                : 'Ex 2 (Default: 8-8-8 · 6 counts)'}
-            </span>
+          {/* Affirmation Text */}
+          {stage.techniqueGuide?.affirmationText && (
+            <div className="p-3 rounded-xl bg-amber-400/10 border border-amber-400/30">
+              <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider block mb-1">
+                Scientific Affirmation
+              </span>
+              <p className="font-spiritual italic text-sm text-amber-100 leading-relaxed whitespace-pre-line">
+                {stage.techniqueGuide.affirmationText}
+              </p>
+            </div>
+          )}
 
-            {/* Quick Reset to default */}
+          {/* Core Technique Steps */}
+          {stage.techniqueGuide?.instructions && stage.techniqueGuide.instructions.length > 0 && (
+            <div>
+              <span className="text-[10px] font-bold text-sky-300 uppercase tracking-wider block mb-1.5">
+                Technique Instructions
+              </span>
+              <ul className="space-y-1.5 pl-3 list-disc text-slate-300 leading-relaxed">
+                {stage.techniqueGuide.instructions.map((step: string, idx: number) => (
+                  <li key={idx}>{step}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Purpose & Posture */}
+          {stage.techniqueGuide?.purpose && (
+            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-start gap-2">
+              <Sparkles className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-amber-200">Purpose: </span>
+                <span className="text-slate-300">{stage.techniqueGuide.purpose}</span>
+              </div>
+            </div>
+          )}
+
+          {stage.techniqueGuide?.posture && (
+            <div className="text-[11px] text-slate-400">
+              <span className="font-semibold text-slate-300">Posture: </span>
+              <span>{stage.techniqueGuide.posture}</span>
+            </div>
+          )}
+
+          {/* Full modal link */}
+          <div className="pt-1 text-right">
             <button
               type="button"
-              onClick={() => {
-                if (isBreathing1) {
-                  onUpdateBreathPattern?.({ inhale: 6, hold: 6, exhale: 6 });
-                  onUpdateBreathRounds?.(3);
-                } else if (isJyotiMudra) {
-                  onUpdateBreathPattern?.({ inhale: 12, hold: 3, exhale: 12 });
-                  onUpdateBreathRounds?.(3);
-                } else {
-                  onUpdateBreathPattern?.({ inhale: 8, hold: 8, exhale: 8 });
-                  onUpdateBreathRounds?.(6);
-                }
-              }}
-              className="text-[11px] underline opacity-75 hover:opacity-100 flex items-center gap-1"
+              onClick={onOpenInfo}
+              className="text-xs text-sky-300 hover:text-white underline inline-flex items-center gap-1 cursor-pointer"
             >
-              <RotateCcw className="w-3 h-3" /> Reset Default
+              <span>Read Full Guidelines & Cautions</span>
+              <ExternalLink className="w-3 h-3" />
             </button>
           </div>
-
-          {/* Quick presets for ratios */}
-          <div className="flex flex-wrap items-center justify-center gap-1.5 pt-0.5">
-            {isBreathing1 ? (
-              <>
-                {[
-                  { label: '6 · 6 · 6 (Default)', val: 6 },
-                  { label: '8 · 8 · 8', val: 8 },
-                  { label: '10 · 10 · 10', val: 10 },
-                  { label: '12 · 6 · 12', custom: { inhale: 12, hold: 6, exhale: 12 } },
-                ].map((p, idx) => {
-                  const isActive = p.custom
-                    ? currentPattern.inhale === p.custom.inhale &&
-                      currentPattern.hold === p.custom.hold &&
-                      currentPattern.exhale === p.custom.exhale
-                    : currentPattern.inhale === p.val &&
-                      currentPattern.hold === p.val &&
-                      currentPattern.exhale === p.val;
-                  return (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => {
-                        if (p.custom) {
-                          onUpdateBreathPattern?.(p.custom);
-                        } else if (p.val) {
-                          handleSetEqualCount(p.val);
-                        }
-                      }}
-                      className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                        isActive
-                          ? 'bg-amber-300 text-slate-900 font-bold shadow'
-                          : 'bg-white/10 hover:bg-white/20 text-white/90'
-                      }`}
-                    >
-                      {p.label}
-                    </button>
-                  );
-                })}
-              </>
-            ) : isJyotiMudra ? (
-              <>
-                {[
-                  { label: '12 · 3 · 12 (Default)', pattern: { inhale: 12, hold: 3, exhale: 12 } },
-                  { label: '10 · 3 · 10', pattern: { inhale: 10, hold: 3, exhale: 10 } },
-                  { label: '15 · 3 · 15', pattern: { inhale: 15, hold: 3, exhale: 15 } },
-                  { label: '8 · 3 · 8', pattern: { inhale: 8, hold: 3, exhale: 8 } },
-                ].map((p, idx) => {
-                  const isActive =
-                    currentPattern.inhale === p.pattern.inhale &&
-                    currentPattern.hold === p.pattern.hold &&
-                    currentPattern.exhale === p.pattern.exhale;
-                  return (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => onUpdateBreathPattern?.(p.pattern)}
-                      className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                        isActive
-                          ? 'bg-amber-300 text-slate-900 font-bold shadow'
-                          : 'bg-white/10 hover:bg-white/20 text-white/90'
-                      }`}
-                    >
-                      {p.label}
-                    </button>
-                  );
-                })}
-              </>
-            ) : (
-              <>
-                {[
-                  { label: '8 · 8 · 8 (Default)', val: 8 },
-                  { label: '10 · 10 · 10', val: 10 },
-                  { label: '20 · 20 · 20', val: 20 },
-                  { label: '6 · 6 · 6', val: 6 },
-                  { label: '12 · 12 · 12', val: 12 },
-                ].map((p) => {
-                  const isActive =
-                    currentPattern.inhale === p.val &&
-                    currentPattern.hold === p.val &&
-                    currentPattern.exhale === p.val;
-                  return (
-                    <button
-                      key={p.val}
-                      type="button"
-                      onClick={() => handleSetEqualCount(p.val)}
-                      className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                        isActive
-                          ? 'bg-amber-300 text-slate-900 font-bold shadow'
-                          : 'bg-white/10 hover:bg-white/20 text-white/90'
-                      }`}
-                    >
-                      {p.label}
-                    </button>
-                  );
-                })}
-              </>
-            )}
-          </div>
-
-          {/* Interactive Steppers for Inhale, Hold, Exhale counts */}
-          <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-            {/* Inhale Stepper */}
-            <div className="bg-black/20 p-1.5 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-sky-300 block mb-1">Inhale</span>
-              <div className="flex items-center justify-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('inhale', -1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold"
-                >
-                  −
-                </button>
-                <span className="font-extrabold text-sm tabular-nums w-6">
-                  {currentPattern.inhale}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('inhale', 1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            {/* Hold Stepper */}
-            <div className="bg-black/20 p-1.5 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-amber-300 block mb-1">Hold</span>
-              <div className="flex items-center justify-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('hold', -1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold"
-                >
-                  −
-                </button>
-                <span className="font-extrabold text-sm tabular-nums w-6">
-                  {currentPattern.hold}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('hold', 1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            {/* Exhale Stepper */}
-            <div className="bg-black/20 p-1.5 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-emerald-300 block mb-1">
-                Exhale
-              </span>
-              <div className="flex items-center justify-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('exhale', -1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold"
-                >
-                  −
-                </button>
-                <span className="font-extrabold text-sm tabular-nums w-6">
-                  {currentPattern.exhale}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('exhale', 1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
-      {/* SPECIALIZED KRIYA BREATH COUNT RATIO & PRESCRIBED COUNTS (8-3-8, 10-3-8, 12-3-12, 10-3-10, 15-3-15 & 30 Counts) */}
-      {isKriyas && (
-        <div className="mt-3.5 p-3 bg-black/25 rounded-2xl border border-white/15 space-y-3">
-          {/* Header & Reset Default */}
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold opacity-90 flex items-center gap-1.5">
-              <Wind className="w-3.5 h-3.5 text-amber-300" />
-              <span>Kriya Count Ratio</span>
-              <span className="text-[10px] opacity-75 font-normal">(Inhale · Hold · Exhale)</span>
-            </span>
-
-            {/* Quick Reset to default 10-3-10 */}
-            <button
-              type="button"
-              onClick={() => {
-                onUpdateBreathPattern?.({ inhale: 10, hold: 3, exhale: 10 });
-              }}
-              className="text-[11px] underline opacity-75 hover:opacity-100 flex items-center gap-1 cursor-pointer"
-            >
-              <RotateCcw className="w-3 h-3" /> Reset (10·3·10)
-            </button>
-          </div>
-
-          {/* Quick Presets for Prescribed Kriya Counts (including 30 Counts) */}
-          <div className="bg-black/20 p-2 rounded-xl border border-white/10">
-            <div className="flex items-center justify-between text-[11px] mb-1.5 px-0.5">
-              <span className="font-semibold text-amber-200/90 flex items-center gap-1">
-                <MalaBeadsIcon className="w-3 h-3 text-amber-300" />
-                <span>Prescribed Kriyas:</span>
-              </span>
-              <span className="font-bold text-amber-300">
-                {stage.kriyaCount ?? 24} Kriyas (~{estimatedMins} min)
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-1.5">
-              {[
-                { count: 24, label: '24 Kriyas (Default)' },
-                { count: 14, label: '14 Kriyas' },
-                { count: 36, label: '36 Kriyas' },
-                { count: 72, label: '72 Kriyas' },
-                { count: 108, label: '108 Kriyas' },
-              ].map((item) => {
-                const isSelected = (stage.kriyaCount ?? 24) === item.count;
-                return (
-                  <button
-                    key={item.count}
-                    type="button"
-                    onClick={() => onUpdateKriyas?.(item.count)}
-                    className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-amber-300 text-slate-900 font-bold shadow-md ring-2 ring-amber-400/50'
-                        : 'bg-white/10 hover:bg-white/20 text-white/90'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Quick presets for Kriya breath counts: 8-3-8, 10-3-8, 12-3-12, 10-3-10, 15-3-15 */}
-          <div>
-            <div className="text-[11px] font-semibold text-sky-200/90 mb-1 px-0.5">
-              Breath Ratio Presets:
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-1.5">
-              {[
-                { label: '8 · 3 · 8', pattern: { inhale: 8, hold: 3, exhale: 8 } },
-                { label: '10 · 3 · 8', pattern: { inhale: 10, hold: 3, exhale: 8 } },
-                { label: '10 · 3 · 10 (Default)', pattern: { inhale: 10, hold: 3, exhale: 10 } },
-                { label: '12 · 3 · 12', pattern: { inhale: 12, hold: 3, exhale: 12 } },
-                { label: '15 · 3 · 15', pattern: { inhale: 15, hold: 3, exhale: 15 } },
-              ].map((p, idx) => {
-                const isActive =
-                  currentPattern.inhale === p.pattern.inhale &&
-                  currentPattern.hold === p.pattern.hold &&
-                  currentPattern.exhale === p.pattern.exhale;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => onUpdateBreathPattern?.(p.pattern)}
-                    className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-amber-300 text-slate-900 font-bold shadow-md ring-2 ring-amber-400/50'
-                        : 'bg-white/10 hover:bg-white/20 text-white/90'
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Interactive Steppers for Inhale, Hold, Exhale counts */}
-          <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-            {/* Inhale Stepper */}
-            <div className="bg-black/20 p-1.5 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-sky-300 block mb-1">
-                Inhale (Spine Up)
-              </span>
-              <div className="flex items-center justify-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('inhale', -1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
-                >
-                  −
-                </button>
-                <span className="font-extrabold text-sm tabular-nums w-6">
-                  {currentPattern.inhale}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('inhale', 1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            {/* Hold Stepper */}
-            <div className="bg-black/20 p-1.5 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-amber-300 block mb-1">
-                Hold (Kutastha)
-              </span>
-              <div className="flex items-center justify-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('hold', -1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
-                >
-                  −
-                </button>
-                <span className="font-extrabold text-sm tabular-nums w-6">
-                  {currentPattern.hold}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('hold', 1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            {/* Exhale Stepper */}
-            <div className="bg-black/20 p-1.5 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-emerald-300 block mb-1">
-                Exhale (Spine Down)
-              </span>
-              <div className="flex items-center justify-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('exhale', -1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
-                >
-                  −
-                </button>
-                <span className="font-extrabold text-sm tabular-nums w-6">
-                  {currentPattern.exhale}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleUpdateSingleBreathCount('exhale', 1)}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Slider for count of rounds (for breathing) or duration (for others) */}
-      <div className="mt-3.5 flex items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto px-1">
-        {/* Minus Button */}
+      {/* Bottom Action Footer */}
+      <div className="mt-4 pt-3 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2.5">
         <button
           type="button"
-          onClick={handleDecrement}
-          aria-label={isBreathCount ? 'Decrease breath count' : 'Decrease time'}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-2xl font-bold hover:bg-white/15 active:scale-90 transition-all cursor-pointer border border-white/20"
+          onClick={onStart}
+          className="w-full sm:w-auto flex-1 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 active:scale-98 text-white font-semibold text-xs flex items-center justify-center gap-2 border border-white/20 transition-all cursor-pointer"
         >
-          −
+          <Play className="w-3.5 h-3.5" />
+          <span>Play {stage.title} Only</span>
         </button>
 
-        {/* Slider Input */}
-        <div className="flex-1 relative flex items-center">
-          <input
-            type="range"
-            min={minVal}
-            max={maxVal}
-            step={isBreathCount ? 1 : isKriyaCount ? (incrementStep === 5 ? 7 : 1) : incrementStep}
-            value={currentVal}
-            onChange={handleSliderChange}
-            aria-label={isBreathCount ? 'Adjust number of breath rounds' : 'Adjust duration or count'}
-            className="w-full cursor-pointer"
-          />
-        </div>
-
-        {/* Plus Button */}
-        <button
-          type="button"
-          onClick={handleIncrement}
-          aria-label={isBreathCount ? 'Increase breath count' : 'Increase time'}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-2xl font-bold hover:bg-white/15 active:scale-90 transition-all cursor-pointer border border-white/20"
-        >
-          +
-        </button>
-      </div>
-
-      {/* Target description text below slider */}
-      <div className="mt-1 text-center text-xs opacity-75">
-        {isBreathCount
-          ? `Target: ${currentRounds} breath rounds (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins} min`
-          : isKriyaCount
-          ? `Target: ${stage.kriyaCount ?? 14} Kriyas (${currentPattern.inhale}·${currentPattern.hold}·${currentPattern.exhale}) ~${estimatedMins} min`
-          : `Duration: ${stage.minutes} minute${stage.minutes > 1 ? 's' : ''}`}
-      </div>
-
-      {/* Dedicated Media Picker when Chant, Affirmation, or Sacred Voice stage is selected */}
-      {(isChant || isAffirmation || isSacredVoice) && (
-        <div className="mt-2.5 p-2.5 bg-black/40 rounded-2xl border border-amber-400/35 space-y-2 text-left">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
-              <Youtube className="w-3.5 h-3.5 text-red-400" />
-              <span>
-                {isAffirmation
-                  ? 'Scientific Affirmation:'
-                  : isSacredVoice
-                  ? 'Sacred Voice Talk:'
-                  : 'Cosmic Chant:'}
-              </span>
-            </span>
-            {onOpenCustomMediaModal && (
-              <button
-                type="button"
-                onClick={onOpenCustomMediaModal}
-                className="text-[10px] text-sky-300 hover:text-white underline cursor-pointer"
-              >
-                + Custom URL / Preview
-              </button>
-            )}
-          </div>
-
-          <div className="relative">
-            <select
-              value={stage.customMedia?.url || ''}
-              onChange={(e) => {
-                const targetUrl = e.target.value;
-                if (!targetUrl) return;
-                const pool = isAffirmation
-                  ? (STAGE_MEDIA_PRESETS.affirmation || [])
-                  : isSacredVoice
-                  ? ((STAGE_MEDIA_PRESETS as any).sacred_voices || [])
-                  : (STAGE_MEDIA_PRESETS.chant || []);
-                const matchedPreset = pool.find((p: any) => p.url === targetUrl);
-                if (matchedPreset && onSelectMediaPreset) {
-                  onSelectMediaPreset(matchedPreset);
-                }
-              }}
-              aria-label={
-                isAffirmation
-                  ? 'Select Scientific Affirmation'
-                  : isSacredVoice
-                  ? 'Select Sacred Voice'
-                  : 'Select Cosmic Chant'
-              }
-              className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700/80 focus:border-amber-400 text-xs text-amber-200 font-medium rounded-xl outline-none cursor-pointer truncate"
-            >
-              {isAffirmation ? (
-                <optgroup label="✨ Scientific Healing Affirmations (Paramahansa Yogananda)">
-                  {STAGE_MEDIA_PRESETS.affirmation?.map((preset) => (
-                    <option key={preset.id} value={preset.url}>
-                      {preset.title}
-                    </option>
-                  ))}
-                </optgroup>
-              ) : isSacredVoice ? (
-                <optgroup label="🎙️ Sacred Voices (Paramahansa Yogananda & Direct Disciples)">
-                  {((STAGE_MEDIA_PRESETS as any).sacred_voices || []).map((preset: any) => (
-                    <option key={preset.id} value={preset.url}>
-                      {preset.title}
-                    </option>
-                  ))}
-                </optgroup>
-              ) : (
-                <optgroup label="✨ SRF Cosmic Chants (Paramahansa Yogananda)">
-                  {STAGE_MEDIA_PRESETS.chant?.map((preset) => (
-                    <option key={preset.id} value={preset.url}>
-                      {preset.title}
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-            </select>
-          </div>
-
-          {/* Play till music is over toggle */}
-          <div className="pt-1 border-t border-white/10 flex items-center justify-between">
-            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-amber-200">
-              <input
-                type="checkbox"
-                checked={isPlayUntilFinished}
-                onChange={(e) => onTogglePlayUntilFinished?.(e.target.checked)}
-                className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 border-white/30 bg-black/50 cursor-pointer"
-              />
-              <span>Play till music is over</span>
-            </label>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">
-              {isPlayUntilFinished ? '✓ Auto-Advance' : 'Fixed Time'}
-            </span>
-          </div>
-          <p className="text-[10px] text-slate-300/80 leading-tight">
-            {isPlayUntilFinished
-              ? 'Plays until the sacred track completes, then rings the bell and moves to next stage.'
-              : `Runs for ${stage.minutes} minutes regardless of track length.`}
-          </p>
-        </div>
-      )}
-
-      {/* Soundscape & Custom Media pill triggers */}
-      <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2">
-        <button
-          type="button"
-          onClick={onOpenSoundscapeModal}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-black/25 hover:bg-black/40 text-current opacity-95 transition-all border border-white/20 cursor-pointer"
-        >
-          <span>{currentSound.icon}</span>
-          <span className="truncate max-w-[150px]">Sound: {currentSound.name}</span>
-          <SlidersHorizontal className="w-3 h-3 ml-0.5 opacity-80" />
-        </button>
-
-        {/* Custom YouTube / MP3 pill button */}
-        {onOpenCustomMediaModal && (
-          <button
-            type="button"
-            onClick={onOpenCustomMediaModal}
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all border cursor-pointer ${
-              stage.customMedia?.enabled && stage.customMedia.url
-                ? 'bg-red-500/25 hover:bg-red-500/35 text-red-200 border-red-400/60 shadow-sm'
-                : isPrayer || stage.id === 'chant'
-                ? 'bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border-amber-400/40'
-                : 'bg-black/25 hover:bg-black/40 text-current opacity-95 border-white/20'
-            }`}
-            title="Configure custom YouTube or MP3 link for this stage"
-          >
-            <Youtube className="w-3.5 h-3.5 text-red-400" />
-            <span className="truncate max-w-[160px]">
-              {stage.customMedia?.enabled && stage.customMedia.url
-                ? `Link: ${stage.customMedia.title || 'Custom Media'}`
-                : isPrayer || stage.id === 'chant'
-                ? '🎵 YouTube / MP3'
-                : 'Custom Audio'}
-            </span>
-          </button>
-        )}
-      </div>
-
-      {/* Bottom: Mobile-Friendly Big Full Routine and Single Stage Buttons */}
-      <div className="mt-4 flex flex-col items-center justify-center gap-2.5 w-full">
         {onStartFullRoutine && (
           <button
             type="button"
             onClick={onStartFullRoutine}
-            className="w-full max-w-[340px] py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-slate-950 font-extrabold text-base flex items-center justify-center gap-2 shadow-xl hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer border border-amber-200"
-            title={`Begin Full Sacred Routine (${totalRoutineMinutes || 54} min auto-advance)`}
+            className="w-full sm:w-auto flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 hover:brightness-105 active:scale-98 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer border border-amber-300"
           >
-            <Play className="w-5 h-5 fill-current" />
-            <span>Begin Full Routine ({totalRoutineMinutes || 54} min)</span>
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>Begin Full Routine ({totalRoutineMinutes || 54}m)</span>
           </button>
         )}
-
-        <button
-          type="button"
-          onClick={onStart}
-          className={`w-full max-w-[340px] active:scale-[0.98] text-sm py-2 px-6 rounded-xl shadow-md transition-all duration-150 cursor-pointer text-center bg-white/10 hover:bg-white/20 text-white/90 border border-white/20 font-semibold`}
-        >
-          Play Only This Stage ({stage.title})
-        </button>
       </div>
     </div>
   );

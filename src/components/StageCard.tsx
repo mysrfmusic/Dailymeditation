@@ -1,9 +1,11 @@
 import React from 'react';
 import { MeditationStageConfig } from '../types/meditation';
 import { ThemeConfig } from '../utils/theme';
+import { Youtube } from 'lucide-react';
 
 interface StageCardProps {
   stage: MeditationStageConfig;
+  stageIndex?: number;
   isSelected: boolean;
   theme: ThemeConfig;
   onSelect: () => void;
@@ -12,6 +14,7 @@ interface StageCardProps {
 
 export const StageCard: React.FC<StageCardProps> = ({
   stage,
+  stageIndex,
   isSelected,
   theme,
   onSelect,
@@ -25,11 +28,11 @@ export const StageCard: React.FC<StageCardProps> = ({
 
   const presenceLabel =
     stage.id === 'presence_hong_sau'
-      ? 'After Hong-Sau'
+      ? 'Post Hong-Sau'
       : stage.id === 'presence_om'
-      ? 'After Om'
+      ? 'Post Om'
       : stage.id === 'presence_kriya'
-      ? 'After Kriyas'
+      ? 'Post Kriyas'
       : '';
 
   const displayTitle = isPresence ? 'Presence' : stage.title;
@@ -42,86 +45,98 @@ export const StageCard: React.FC<StageCardProps> = ({
       ? `${stage.breathRounds}`
       : isPlayUntil
       ? `🎵`
-      : `${stage.minutes}‘`;
+      : `${stage.minutes}m`;
+
+  const unitLabel =
+    stage.isCountBased && stage.kriyaCount !== undefined
+      ? 'kriyas'
+      : stage.isCountBased && stage.breathRounds !== undefined
+      ? 'counts'
+      : isPlayUntil
+      ? 'auto'
+      : 'mins';
 
   return (
     <button
       type="button"
       onClick={onSelect}
       aria-label={`${stage.title}, ${displayValue}`}
-      className={`relative w-full aspect-square rounded-[20px] p-2 flex flex-col items-center justify-center transition-all duration-150 cursor-pointer text-center select-none active:scale-[0.98] ${
+      className={`relative w-full rounded-xl sm:rounded-2xl p-1.5 sm:p-2 flex flex-col items-center justify-between min-h-[66px] sm:min-h-[74px] transition-all duration-150 cursor-pointer text-center select-none active:scale-[0.97] ${
         isSelected ? theme.cardSelected : theme.cardDefault
       }`}
     >
-      {/* Top Left Info (i) Icon */}
-      <div
-        role="button"
-        tabIndex={0}
-        aria-label={`Technique details for ${stage.title}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpenInfo(e);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.stopPropagation();
-            onOpenInfo(e as unknown as React.MouseEvent);
-          }
-        }}
-        className={`absolute top-1.5 left-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-serif italic cursor-pointer transition-transform hover:scale-110 active:scale-95 border ${
-          isSelected
-            ? 'text-white/90 hover:text-white border-white/40 bg-white/10'
-            : 'text-current/70 hover:text-current border-current/40 bg-black/10'
-        }`}
-        title="Technique, Guidelines & Prayer"
-      >
-        i
-      </div>
-
-      {/* Top Right Custom Media Indicator (YouTube / MP3) */}
-      {stage.customMedia?.enabled && stage.customMedia.url && (
-        <div
-          className={`absolute top-1.5 right-1.5 px-1 py-0.2 rounded-full text-[9px] font-bold flex items-center gap-0.5 border shadow-sm ${
-            stage.customMedia.type === 'youtube' || stage.customMedia.url.includes('youtu')
-              ? 'bg-red-600/80 text-white border-red-400/80'
-              : 'bg-sky-600/80 text-white border-sky-400/80'
+      {/* Top Row: Sequence Index and Info / Media */}
+      <div className="w-full flex items-center justify-between text-[10px] leading-none px-0.5">
+        <span
+          className={`font-mono text-[9px] sm:text-[10px] font-bold ${
+            isSelected ? 'opacity-90' : 'opacity-70'
           }`}
-          title={`Custom Media Active: ${stage.customMedia.title || stage.customMedia.url}`}
         >
-          <span>{stage.customMedia.type === 'youtube' || stage.customMedia.url.includes('youtu') ? '▶' : '🎵'}</span>
+          {stageIndex !== undefined ? String(stageIndex).padStart(2, '0') : ''}
+        </span>
+
+        <div className="flex items-center gap-1">
+          {stage.customMedia?.enabled && stage.customMedia.url && (
+            <span
+              className="text-red-400"
+              title={`Media: ${stage.customMedia.title || 'Attached'}`}
+            >
+              <Youtube className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+            </span>
+          )}
+
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label={`Technique info for ${stage.title}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenInfo(e);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation();
+                onOpenInfo(e as unknown as React.MouseEvent);
+              }
+            }}
+            className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-serif italic cursor-pointer hover:scale-110 active:scale-90 transition-transform ${
+              isSelected
+                ? 'bg-black/20 text-current hover:bg-black/30'
+                : 'bg-white/10 text-current hover:bg-white/20'
+            }`}
+            title="Technique Details"
+          >
+            i
+          </span>
         </div>
-      )}
-
-      {/* Main Number Display (Counts for Kriyas and Breathing, or Minutes for time stages) */}
-      <div className="font-extrabold tracking-tight leading-none mt-1 font-spiritual text-3xl sm:text-4xl">
-        {displayValue}
       </div>
 
-      {/* Stage Title */}
-      <div className="mt-1 font-semibold text-xs sm:text-[13px] leading-tight px-0.5 max-w-full truncate">
-        {displayTitle}
+      {/* Center: Big Value & Subtitle */}
+      <div className="my-auto flex flex-col items-center justify-center leading-tight">
+        <div className="font-extrabold tracking-tight leading-none font-spiritual text-lg sm:text-2xl">
+          {displayValue}
+        </div>
+        <div className="text-[8.5px] sm:text-[9.5px] uppercase font-mono tracking-wider opacity-75">
+          {unitLabel}
+        </div>
       </div>
 
-      {/* For Presence: Show 'After Hong-Sau' / 'After Om' / 'After Kriyas' */}
-      {isPresence && (
-        <span className="text-[9px] sm:text-[10px] font-medium opacity-90 leading-tight mt-0.5 px-1.5 py-0.5 rounded-full bg-black/25 truncate max-w-[95%]">
-          {presenceLabel}
-        </span>
-      )}
+      {/* Bottom: Stage Title & Sub-detail */}
+      <div className="w-full leading-tight">
+        <div className="font-bold text-[10px] sm:text-[11.5px] truncate px-0.5">
+          {displayTitle}
+        </div>
 
-      {/* For Breathing: Show ratio badge below (e.g. 6·6·6 or 8·8·8) */}
-      {isBreathing && stage.breathPattern && (
-        <span className="text-[10px] opacity-80 font-mono leading-none mt-0.5 px-1.5 py-0.5 rounded bg-black/20">
-          {stage.breathPattern.inhale}·{stage.breathPattern.hold}·{stage.breathPattern.exhale}
-        </span>
-      )}
-
-      {/* For Play Until Music Finishes */}
-      {isPlayUntil && !isBreathing && !isPresence && (
-        <span className="text-[9px] font-semibold text-emerald-300 leading-none mt-0.5 px-1.5 py-0.5 rounded-full bg-black/30 border border-emerald-400/20">
-          Full Track
-        </span>
-      )}
+        {isPresence && presenceLabel ? (
+          <div className="text-[8px] sm:text-[9px] opacity-80 truncate">
+            {presenceLabel}
+          </div>
+        ) : isBreathing && stage.breathPattern ? (
+          <div className="text-[8px] sm:text-[9px] font-mono opacity-80 truncate">
+            {stage.breathPattern.inhale}·{stage.breathPattern.hold}·{stage.breathPattern.exhale}
+          </div>
+        ) : null}
+      </div>
     </button>
   );
 };
