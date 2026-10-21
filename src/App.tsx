@@ -13,6 +13,7 @@ import {
 } from './types/meditation';
 import { INITIAL_STAGES, STAGE_ORDER } from './data/stages';
 import { soundEngine, SoundscapeType } from './utils/soundscapes';
+import { backgroundKeepalive } from './utils/backgroundKeepalive';
 import { THEMES } from './utils/theme';
 import { StageCard } from './components/StageCard';
 import { ControlPanel } from './components/ControlPanel';
@@ -27,10 +28,10 @@ import { ThirtyCountsCard } from './components/ThirtyCountsCard';
 import { LotusIcon } from './components/Icons';
 import { Play, RotateCcw, Globe, Palette, Info, Sparkles } from 'lucide-react';
 
-const STORAGE_KEY = 'kriya_meditation_stages_v15';
-const SEQUENCE_KEY = 'kriya_sequence_order_v15';
-const INCREMENT_KEY = 'kriya_increment_step_v15';
-const THEME_KEY = 'kriya_app_theme_v15';
+const STORAGE_KEY = 'kriya_meditation_stages_v16';
+const SEQUENCE_KEY = 'kriya_sequence_order_v16';
+const INCREMENT_KEY = 'kriya_increment_step_v16';
+const THEME_KEY = 'kriya_app_theme_v16';
 
 export default function App() {
   // Theme state: defaults to spiritual_eye matching the uploaded Spiritual Eye photo
@@ -38,6 +39,7 @@ export default function App() {
     try {
       const saved =
         localStorage.getItem(THEME_KEY) ||
+        localStorage.getItem('kriya_app_theme_v15') ||
         localStorage.getItem('kriya_app_theme_v14') ||
         localStorage.getItem('kriya_app_theme_v13') ||
         localStorage.getItem('kriya_app_theme_v12');
@@ -49,34 +51,41 @@ export default function App() {
   // Load saved stages or defaults
   const [stages, setStages] = useState<Record<string, MeditationStageConfig>>(() => {
     try {
-      const isExistingV15 = Boolean(localStorage.getItem(STORAGE_KEY));
+      const isExistingV16 = Boolean(localStorage.getItem(STORAGE_KEY));
       const saved =
         localStorage.getItem(STORAGE_KEY) ||
+        localStorage.getItem('kriya_meditation_stages_v15') ||
         localStorage.getItem('kriya_meditation_stages_v14') ||
         localStorage.getItem('kriya_meditation_stages_v13');
       if (saved) {
         const parsed = JSON.parse(saved);
         const merged = { ...INITIAL_STAGES, ...parsed };
 
-        if (!isExistingV15) {
-          if (merged.chant) {
-            merged.chant = {
-              ...merged.chant,
-              minutes: 5,
-              stageType: 'chant',
-              playUntilFinished: true,
-              customMedia: merged.chant.customMedia
-                ? { ...merged.chant.customMedia, playUntilFinished: true }
-                : INITIAL_STAGES.chant.customMedia,
-            };
-          }
+        if (!isExistingV16) {
+          // Upgrade to user requested defaults: 24 Kriyas, Affirmation after chant, Jyoti Mudra 12-3-12 (3 counts)
           if (merged.kriyas) {
             merged.kriyas = {
               ...merged.kriyas,
-              breathPattern: { inhale: 10, hold: 3, exhale: 10 },
+              kriyaCount: 24,
               secondsPerKriya: 23,
-              minutes: 6,
+              minutes: 9,
+              isCountBased: true,
+              breathPattern: merged.kriyas.breathPattern || { inhale: 10, hold: 3, exhale: 10 },
             };
+          }
+          if (merged.jyoti_mudra) {
+            merged.jyoti_mudra = {
+              ...merged.jyoti_mudra,
+              isCountBased: true,
+              breathRounds: 3,
+              kriyaCount: 3,
+              secondsPerKriya: 27,
+              breathPattern: { inhale: 12, hold: 3, exhale: 12 },
+              minutes: 2,
+            };
+          }
+          if (!merged.affirmation) {
+            merged.affirmation = INITIAL_STAGES.affirmation;
           }
         }
         return merged;
@@ -91,7 +100,18 @@ export default function App() {
       const saved = localStorage.getItem(SEQUENCE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Ensure affirmation is present right after chant if not already present
+          if (!parsed.includes('affirmation')) {
+            const chantIdx = parsed.indexOf('chant');
+            if (chantIdx !== -1) {
+              parsed.splice(chantIdx + 1, 0, 'affirmation');
+            } else {
+              parsed.push('affirmation');
+            }
+          }
+          return parsed;
+        }
       }
     } catch {}
     return STAGE_ORDER;
@@ -381,12 +401,16 @@ export default function App() {
 
   // Handler: Start single session
   const handleStartSingleSession = () => {
+    backgroundKeepalive.requestWakeLock();
+    backgroundKeepalive.startAudioKeepalive();
     setIsSequenceMode(false);
     setActivePlayerOpen(true);
   };
 
   // Handler: Start full sequence routine
   const handleStartFullRoutine = () => {
+    backgroundKeepalive.requestWakeLock();
+    backgroundKeepalive.startAudioKeepalive();
     setIsSequenceMode(true);
     setSelectedStageId(sequenceOrder[0] || 'exercises'); // start from stage 1
     setActivePlayerOpen(true);
@@ -394,6 +418,8 @@ export default function App() {
 
   // Handler: Start independent 30 Counts practice
   const handleStartIndependentThirtyCounts = (stageConfig: MeditationStageConfig) => {
+    backgroundKeepalive.requestWakeLock();
+    backgroundKeepalive.startAudioKeepalive();
     setStages((prev) => ({
       ...prev,
       [stageConfig.id]: stageConfig,
@@ -530,6 +556,33 @@ export default function App() {
             isInRoutine={sequenceOrder.some((id) => id.startsWith('thirty_counts'))}
           />
 
+          {/* Prominent Mobile-Friendly Full Routine Hero Card */}
+          <div className="w-full p-3.5 bg-gradient-to-r from-amber-500/25 via-amber-400/20 to-sky-900/35 border-2 border-amber-400/60 rounded-3xl shadow-xl backdrop-blur-md flex flex-col gap-2.5">
+            <div className="flex items-center justify-between text-xs px-0.5">
+              <span className="font-bold text-amber-200 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                <span>Full Sacred Routine</span>
+              </span>
+              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-amber-400/25 text-amber-300 font-bold border border-amber-400/40">
+                {sequenceOrder.length} Stages • {totalRoutineMinutes} min
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleStartFullRoutine}
+              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer border border-amber-200"
+            >
+              <Play className="w-5 h-5 fill-current" />
+              <span>Begin Full Routine ({totalRoutineMinutes} min)</span>
+            </button>
+
+            <div className="flex items-center justify-between text-[11px] text-amber-100/80 px-1 font-medium">
+              <span>Auto-advance • Temple Bells & Gong</span>
+              <span className="text-amber-300 font-semibold">Touch to start</span>
+            </div>
+          </div>
+
           {/* Sacred Stages Grid (Mapped to sequenceOrder) */}
           <section
             aria-label="Meditation Stages Grid"
@@ -564,6 +617,8 @@ export default function App() {
               onUpdateBreathPattern={handleUpdateBreathPattern}
               onToggleCountMode={handleToggleCountMode}
               onStart={handleStartSingleSession}
+              onStartFullRoutine={handleStartFullRoutine}
+              totalRoutineMinutes={totalRoutineMinutes}
               onOpenSoundscapeModal={() => setSoundscapeModalOpen(true)}
               onOpenInfo={() => setInfoModalStage(selectedStage)}
               onOpenCustomMediaModal={() => {

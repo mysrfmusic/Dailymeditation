@@ -167,17 +167,18 @@ export async function fetchYouTubeVideoMetadata(rawUrl: string): Promise<{
  * Generates an embeddable YouTube URL with clean playback parameters and start offset.
  * Uses youtube-nocookie.com/embed with playsinline, origin verification, and avoids domain-restriction errors.
  */
-export function getYouTubeEmbedUrl(url: string, autoplay: boolean = true): string | null {
+export function getYouTubeEmbedUrl(
+  url: string,
+  autoplay: boolean = true,
+  mute: boolean = false
+): string | null {
   const videoId = extractYouTubeId(url);
   if (!videoId) return null;
   const autoParam = autoplay ? '1' : '0';
+  const muteParam = mute ? '&mute=1' : '';
   const startSec = extractYouTubeStartTime(url);
   const startParam = startSec && startSec > 0 ? `&start=${startSec}` : '';
-  const originParam =
-    typeof window !== 'undefined' && window.location && window.location.origin
-      ? `&origin=${encodeURIComponent(window.location.origin)}`
-      : '';
-  return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=${autoParam}&enablejsapi=1&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3${originParam}${startParam}`;
+  return `https://www.youtube.com/embed/${videoId}?autoplay=${autoParam}${muteParam}&enablejsapi=1&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3${startParam}`;
 }
 
 /**

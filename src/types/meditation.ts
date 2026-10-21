@@ -4,6 +4,7 @@ export type StageId =
   | 'exercises'
   | 'opening_prayer'
   | 'chant'
+  | 'affirmation'
   | 'breathing_1'
   | 'breathing_2'
   | 'hong_sau'

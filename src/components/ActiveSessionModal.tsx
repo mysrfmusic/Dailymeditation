@@ -5,6 +5,7 @@ import { SOUNDSCAPES, SoundscapeType, soundEngine } from '../utils/soundscapes';
 import {
   getYouTubeEmbedUrl,
   detectMediaType,
+  extractYouTubeId,
   extractYouTubeStartTime,
   formatSecondsToTimestamp,
   cleanAndCanonicalizeYouTubeUrl,
@@ -57,25 +58,30 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const activeOrder = stageOrder && stageOrder.length > 0 ? stageOrder : STAGE_ORDER;
   const currentStage = stages[activeStageId] || stages['kriyas'] || Object.values(stages)[0];
 
-  // Pranayama / Breathing Exercise & Kriya / 30-Counts state
+  // Pranayama / Breathing Exercise & Kriya / 30-Counts / Jyoti Mudra state
   const isKriyas = currentStage.id === 'kriyas';
   const isThirtyCounts =
     currentStage.stageType === 'thirty_counts' || currentStage.id.startsWith('thirty_counts');
+  const isJyotiMudra = currentStage.id === 'jyoti_mudra';
   const isBreathing1 = currentStage.id === 'breathing_1';
   const isBreathing2 = currentStage.id === 'breathing_2';
   const isPranayama = isBreathing1 || isBreathing2;
   const isCountBasedStage =
-    (isKriyas || isThirtyCounts) && currentStage.isCountBased !== false;
+    (isKriyas || isThirtyCounts || isJyotiMudra) && currentStage.isCountBased !== false;
   const isBreathingStage = isPranayama || isCountBasedStage;
   const breathPattern =
     currentStage.breathPattern ||
-    (isKriyas || isThirtyCounts
+    (isJyotiMudra
+      ? { inhale: 12, hold: 3, exhale: 12 }
+      : isKriyas || isThirtyCounts
       ? { inhale: 10, hold: 3, exhale: 10 }
       : { inhale: 6, hold: 6, exhale: 6 });
   const targetRounds = isThirtyCounts
     ? (currentStage.kriyaCount ?? 30)
     : isKriyas
-    ? (currentStage.kriyaCount ?? 14)
+    ? (currentStage.kriyaCount ?? 24)
+    : isJyotiMudra
+    ? (currentStage.breathRounds ?? (currentStage.kriyaCount ?? 3))
     : isBreathingStage
     ? (currentStage.breathRounds ?? (currentStage.id === 'breathing_1' ? 3 : 6))
     : 0;
@@ -91,9 +97,11 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const [isScreenAwake, setIsScreenAwake] = useState<boolean>(true);
   const lastTimestampRef = useRef<number>(Date.now());
 
-  // Kriyas / 30-Counts bead counter state
+  // Kriyas / 30-Counts / Jyoti Mudra bead counter state
   const targetBeads = isCountBasedStage
-    ? (currentStage.kriyaCount ?? (isThirtyCounts ? 30 : 14))
+    ? (isJyotiMudra
+        ? (currentStage.breathRounds ?? (currentStage.kriyaCount ?? 3))
+        : (currentStage.kriyaCount ?? (isThirtyCounts ? 30 : 24)))
     : 0;
   const [completedBeads, setCompletedBeads] = useState<number>(0);
   const [autoPacingBeads, setAutoPacingBeads] = useState<boolean>(true);
@@ -140,6 +148,9 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const [showVideo, setShowVideo] = useState<boolean>(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const youtubeIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const isIframeReadyRef = useRef<boolean>(false);
+  const currentLoadedVideoIdRef = useRef<string | null>(null);
+  const hasUserUnlockedRef = useRef<boolean>(false);
 
   // Soundscape state for current session
   const [activeSoundscape, setActiveSoundscape] = useState<SoundscapeType>(currentStage.soundscape);
@@ -210,6 +221,50 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
         audioRef.current.play().catch(() => {});
       }
 
+      // If YouTube, handle seamless track switching via loadVideoById on persistent player
+      if (isYouTube) {
+        const targetVideoId = extractYouTubeId(currentStage.customMedia?.url || '');
+        const targetStartTime = extractYouTubeStartTime(currentStage.customMedia?.url || '') || 0;
+        if (targetVideoId && isIframeReadyRef.current) {
+          if (targetVideoId !== currentLoadedVideoIdRef.current) {
+            try {
+              youtubeIframeRef.current?.contentWindow?.postMessage(
+                JSON.stringify({
+                  event: 'command',
+                  func: 'loadVideoById',
+                  args: [targetVideoId, targetStartTime],
+                }),
+                '*'
+              );
+              youtubeIframeRef.current?.contentWindow?.postMessage(
+                JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+                '*'
+              );
+              youtubeIframeRef.current?.contentWindow?.postMessage(
+                JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+                '*'
+              );
+              currentLoadedVideoIdRef.current = targetVideoId;
+            } catch {}
+          } else {
+            try {
+              youtubeIframeRef.current?.contentWindow?.postMessage(
+                JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+                '*'
+              );
+            } catch {}
+          }
+        }
+      } else if (youtubeIframeRef.current?.contentWindow) {
+        // Pause YouTube player on non-YouTube stages so music doesn't leak into breathing/kriyas
+        try {
+          youtubeIframeRef.current.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
+            '*'
+          );
+        } catch {}
+      }
+
       // Play starting gong for Breathing Inhale or Temple Bell for standard stages
       if (isBreathingStage) {
         if (audioBreathCues) {
@@ -246,6 +301,27 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
         const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
         if (!data) return;
 
+        // When YouTube frame signals onReady or initialDelivery, acknowledge listening and command play
+        if (data.event === 'onReady' || data.event === 'initialDelivery') {
+          isIframeReadyRef.current = true;
+          try {
+            youtubeIframeRef.current?.contentWindow?.postMessage(
+              JSON.stringify({ event: 'listening', id: 1 }),
+              '*'
+            );
+            if (isRunning) {
+              youtubeIframeRef.current?.contentWindow?.postMessage(
+                JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+                '*'
+              );
+              youtubeIframeRef.current?.contentWindow?.postMessage(
+                JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+                '*'
+              );
+            }
+          } catch {}
+        }
+
         let playerState: number | undefined;
         if (data.event === 'onStateChange') {
           playerState = data.info;
@@ -257,6 +333,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
           // Video is actively playing!
           setIsVideoPlaying(true);
           setMobileAutoplayBlocked(false);
+          hasUserUnlockedRef.current = true;
         } else if (playerState === 2) {
           // Paused
           setIsVideoPlaying(false);
@@ -272,12 +349,12 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
 
     window.addEventListener('message', handleMessage);
 
-    // If on mobile/tablet or autoplay blocked, check if video is playing after short delay
+    // If on mobile/tablet or autoplay delayed, only prompt after 4.5s buffer period if genuinely blocked
     const checkTimer = setTimeout(() => {
-      if (isRunning && !isVideoPlaying) {
+      if (isRunning && !isVideoPlaying && !hasUserUnlockedRef.current) {
         setMobileAutoplayBlocked(true);
       }
-    }, 1800);
+    }, 4500);
 
     return () => {
       window.removeEventListener('message', handleMessage);
@@ -286,10 +363,15 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   }, [isOpen, isYouTube, isRunning, isVideoPlaying, isPlayUntilFinished]);
 
   const handleMobilePlayUnlock = () => {
+    hasUserUnlockedRef.current = true;
     if (youtubeIframeRef.current?.contentWindow) {
       try {
         youtubeIframeRef.current.contentWindow.postMessage(
           JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+          '*'
+        );
+        youtubeIframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
           '*'
         );
         youtubeIframeRef.current.contentWindow.postMessage(
@@ -412,7 +494,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
             roundRef.current = nextRound;
             setBreathRoundsCompleted(nextRound);
 
-            if (isKriyas) {
+            if (isKriyas || isJyotiMudra || isThirtyCounts) {
               setCompletedBeads(nextRound);
               soundEngine.playBeadClick();
             }
@@ -855,30 +937,62 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
             {isYouTube && (
               <>
                 <div
+                  onClick={() => {
+                    if (!isVideoPlaying) {
+                      handleMobilePlayUnlock();
+                    }
+                  }}
                   className={`relative w-full rounded-2xl overflow-hidden bg-black border border-amber-400/40 shadow-xl transition-all duration-300 ${
                     showVideo ? 'aspect-video' : 'h-36 sm:h-44'
                   }`}
                 >
                   <iframe
-                    key={activeStageId}
                     ref={youtubeIframeRef}
-                    src={getYouTubeEmbedUrl(customMedia.url, true) || ''}
+                    src={getYouTubeEmbedUrl(
+                      customMedia.url,
+                      true,
+                      typeof window !== 'undefined' &&
+                        ('ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) || window.innerWidth < 768)
+                    ) || ''}
                     title={customMedia.title || 'YouTube Player'}
                     className="w-full h-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allow="accelerometer; autoplay *; clipboard-write; encrypted-media *; gyroscope; picture-in-picture *; web-share"
                     referrerPolicy="strict-origin-when-cross-origin"
                     allowFullScreen
                     onLoad={() => {
-                      if (isRunning) {
-                        setTimeout(() => {
+                      isIframeReadyRef.current = true;
+                      currentLoadedVideoIdRef.current = extractYouTubeId(customMedia.url);
+                      try {
+                        youtubeIframeRef.current?.contentWindow?.postMessage(
+                          JSON.stringify({ event: 'listening', id: 1 }),
+                          '*'
+                        );
+                        if (isRunning) {
+                          youtubeIframeRef.current?.contentWindow?.postMessage(
+                            JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+                            '*'
+                          );
+                          youtubeIframeRef.current?.contentWindow?.postMessage(
+                            JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+                            '*'
+                          );
+                        }
+                      } catch {}
+                      // Guaranteed secondary trigger once player scripts compile
+                      setTimeout(() => {
+                        if (isRunning) {
                           try {
+                            youtubeIframeRef.current?.contentWindow?.postMessage(
+                              JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+                              '*'
+                            );
                             youtubeIframeRef.current?.contentWindow?.postMessage(
                               JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
                               '*'
                             );
                           } catch {}
-                        }, 500);
-                      }
+                        }
+                      }, 700);
                     }}
                   />
                 </div>
@@ -900,15 +1014,15 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                   </a>
                 </div>
 
-                {/* Mobile Autoplay Unlock Helper Button: Appears on touch devices when browser restricts auto-play */}
-                {mobileAutoplayBlocked && (
+                {/* Mobile Autoplay Helper: Always gives user an effortless, clear tap target if video is muted or waiting for unlock */}
+                {(mobileAutoplayBlocked || (!isVideoPlaying && isRunning)) && (
                   <button
                     type="button"
                     onClick={handleMobilePlayUnlock}
                     className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-xl animate-pulse cursor-pointer border border-amber-200"
                   >
                     <Play className="w-4 h-4 fill-current" />
-                    <span>Tap to Play Sacred Music (Mobile Audio Unlock)</span>
+                    <span>Tap to Play & Unmute Sacred Video (Mobile)</span>
                   </button>
                 )}
               </>
@@ -1126,8 +1240,8 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
           </div>
         </div>
 
-        {/* Specialized Mala Beads Interactive Tap Bar (For Kriyas & 30-Counts) */}
-        {(isKriyas || isThirtyCounts) && targetBeads > 0 && !isCompleted && (
+        {/* Specialized Mala Beads Interactive Tap Bar (For Kriyas, 30-Counts & Jyoti Mudra) */}
+        {(isKriyas || isThirtyCounts || isJyotiMudra) && targetBeads > 0 && !isCompleted && (
           <div className="w-full max-w-sm mb-3 p-2.5 bg-black/45 rounded-2xl border border-[#ffd700]/40 flex items-center justify-between gap-2">
             <button
               type="button"
@@ -1139,12 +1253,14 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
               <span>
                 {isThirtyCounts
                   ? `Next Count (${Math.min(targetBeads, completedBeads + 1)}/${targetBeads})`
+                  : isJyotiMudra
+                  ? `Next Jyoti Mudra Count (${Math.min(targetBeads, completedBeads + 1)}/${targetBeads})`
                   : `Next Kriya Bead (${Math.min(targetBeads, completedBeads + 1)}/${targetBeads})`}
               </span>
             </button>
 
             <span className="text-[11px] font-bold text-amber-200 px-2.5 py-2 rounded-xl bg-white/10 border border-white/15">
-              Paced ({breathPattern.inhale}·{breathPattern.hold}·{breathPattern.exhale})
+              {isJyotiMudra ? '12·3·12 Format' : `Paced (${breathPattern.inhale}·${breathPattern.hold}·${breathPattern.exhale})`}
             </span>
           </div>
         )}

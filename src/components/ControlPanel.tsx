@@ -3,7 +3,7 @@ import { MeditationStageConfig, BreathPattern } from '../types/meditation';
 import { TapIncrementIcon, MalaBeadsIcon } from './Icons';
 import { SOUNDSCAPES } from '../utils/soundscapes';
 import { STAGE_MEDIA_PRESETS, StageMediaPreset } from '../utils/customMedia';
-import { Music, SlidersHorizontal, BookOpen, Wind, RotateCcw, Youtube } from 'lucide-react';
+import { Music, SlidersHorizontal, BookOpen, Wind, RotateCcw, Youtube, Play } from 'lucide-react';
 import { ThemeConfig } from '../utils/theme';
 
 interface ControlPanelProps {
@@ -17,6 +17,8 @@ interface ControlPanelProps {
   onUpdateBreathPattern?: (pattern: BreathPattern) => void;
   onToggleCountMode?: () => void;
   onStart: () => void;
+  onStartFullRoutine?: () => void;
+  totalRoutineMinutes?: number;
   onOpenSoundscapeModal: () => void;
   onOpenInfo: () => void;
   onOpenCustomMediaModal?: () => void;
@@ -35,6 +37,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onUpdateBreathPattern,
   onToggleCountMode,
   onStart,
+  onStartFullRoutine,
+  totalRoutineMinutes,
   onOpenSoundscapeModal,
   onOpenInfo,
   onOpenCustomMediaModal,
@@ -42,9 +46,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onTogglePlayUntilFinished,
 }) => {
   const isKriyas = stage.id === 'kriyas';
+  const isJyotiMudra = stage.id === 'jyoti_mudra';
   const isBreathing1 = stage.id === 'breathing_1';
   const isBreathing2 = stage.id === 'breathing_2';
-  const isPranayama = isBreathing1 || isBreathing2;
+  const isPranayama = isBreathing1 || isBreathing2 || isJyotiMudra;
   const isBreathing = isPranayama && Boolean(stage.breathPattern);
   const isKriyaCount = isKriyas && stage.isCountBased && stage.kriyaCount !== undefined;
   const isBreathCount = isBreathing && stage.isCountBased;
@@ -56,20 +61,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
   // Current breath pattern & rounds
   const currentPattern = stage.breathPattern || {
-    inhale: isBreathing1 ? 6 : isBreathing2 ? 8 : 10,
+    inhale: isBreathing1 ? 6 : isBreathing2 ? 8 : isJyotiMudra ? 12 : 10,
     hold: isBreathing1 ? 6 : isBreathing2 ? 8 : 3,
-    exhale: isBreathing1 ? 6 : isBreathing2 ? 8 : 10,
+    exhale: isBreathing1 ? 6 : isBreathing2 ? 8 : isJyotiMudra ? 12 : 10,
   };
-  const currentRounds = stage.breathRounds ?? (isBreathing1 ? 3 : 6);
+  const currentRounds = stage.breathRounds ?? (isBreathing1 ? 3 : isBreathing2 ? 6 : isJyotiMudra ? 3 : 6);
 
   // Soundscape name
   const currentSound = SOUNDSCAPES.find((s) => s.id === stage.soundscape) || SOUNDSCAPES[0];
 
   // Min / Max ranges for slider
   const minVal = isKriyaCount ? 2 : isBreathCount ? 1 : 1;
-  const maxVal = isKriyaCount ? 108 : isBreathCount ? 24 : 90;
+  const maxVal = isKriyaCount ? 108 : isBreathCount ? (isJyotiMudra ? 12 : 24) : 90;
   const currentVal = isKriyaCount
-    ? (stage.kriyaCount ?? 14)
+    ? (stage.kriyaCount ?? 24)
     : isBreathCount
     ? currentRounds
     : stage.minutes;
@@ -294,7 +299,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold opacity-90 flex items-center gap-1">
               <Wind className="w-3.5 h-3.5 text-amber-300" />
-              {isBreathing1 ? 'Ex 1 (Default: 6-6-6 · 3 counts)' : 'Ex 2 (Default: 8-8-8 · 6 counts)'}
+              {isBreathing1
+                ? 'Ex 1 (Default: 6-6-6 · 3 counts)'
+                : isJyotiMudra
+                ? 'Jyoti Mudra (Default: 12-3-12 · 3 counts)'
+                : 'Ex 2 (Default: 8-8-8 · 6 counts)'}
             </span>
 
             {/* Quick Reset to default */}
@@ -303,6 +312,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               onClick={() => {
                 if (isBreathing1) {
                   onUpdateBreathPattern?.({ inhale: 6, hold: 6, exhale: 6 });
+                  onUpdateBreathRounds?.(3);
+                } else if (isJyotiMudra) {
+                  onUpdateBreathPattern?.({ inhale: 12, hold: 3, exhale: 12 });
                   onUpdateBreathRounds?.(3);
                 } else {
                   onUpdateBreathPattern?.({ inhale: 8, hold: 8, exhale: 8 });
@@ -343,6 +355,34 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                           handleSetEqualCount(p.val);
                         }
                       }}
+                      className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-amber-300 text-slate-900 font-bold shadow'
+                          : 'bg-white/10 hover:bg-white/20 text-white/90'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </>
+            ) : isJyotiMudra ? (
+              <>
+                {[
+                  { label: '12 · 3 · 12 (Default)', pattern: { inhale: 12, hold: 3, exhale: 12 } },
+                  { label: '10 · 3 · 10', pattern: { inhale: 10, hold: 3, exhale: 10 } },
+                  { label: '15 · 3 · 15', pattern: { inhale: 15, hold: 3, exhale: 15 } },
+                  { label: '8 · 3 · 8', pattern: { inhale: 8, hold: 3, exhale: 8 } },
+                ].map((p, idx) => {
+                  const isActive =
+                    currentPattern.inhale === p.pattern.inhale &&
+                    currentPattern.hold === p.pattern.hold &&
+                    currentPattern.exhale === p.pattern.exhale;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => onUpdateBreathPattern?.(p.pattern)}
                       className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                         isActive
                           ? 'bg-amber-300 text-slate-900 font-bold shadow'
@@ -496,18 +536,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 <span>Prescribed Kriyas:</span>
               </span>
               <span className="font-bold text-amber-300">
-                {stage.kriyaCount ?? 14} Kriyas (~{estimatedMins} min)
+                {stage.kriyaCount ?? 24} Kriyas (~{estimatedMins} min)
               </span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-1.5">
               {[
+                { count: 24, label: '24 Kriyas (Default)' },
                 { count: 14, label: '14 Kriyas' },
-                { count: 24, label: '24 Kriyas' },
                 { count: 36, label: '36 Kriyas' },
                 { count: 72, label: '72 Kriyas' },
                 { count: 108, label: '108 Kriyas' },
               ].map((item) => {
-                const isSelected = (stage.kriyaCount ?? 14) === item.count;
+                const isSelected = (stage.kriyaCount ?? 24) === item.count;
                 return (
                   <button
                     key={item.count}
@@ -829,14 +869,26 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         )}
       </div>
 
-      {/* Bottom: Big Start Pill Button */}
-      <div className="mt-4 flex flex-col items-center justify-center gap-2">
+      {/* Bottom: Mobile-Friendly Big Full Routine and Single Stage Buttons */}
+      <div className="mt-4 flex flex-col items-center justify-center gap-2.5 w-full">
+        {onStartFullRoutine && (
+          <button
+            type="button"
+            onClick={onStartFullRoutine}
+            className="w-full max-w-[340px] py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-slate-950 font-extrabold text-base flex items-center justify-center gap-2 shadow-xl hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer border border-amber-200"
+            title={`Begin Full Sacred Routine (${totalRoutineMinutes || 54} min auto-advance)`}
+          >
+            <Play className="w-5 h-5 fill-current" />
+            <span>Begin Full Routine ({totalRoutineMinutes || 54} min)</span>
+          </button>
+        )}
+
         <button
           type="button"
           onClick={onStart}
-          className={`w-full max-w-[280px] active:scale-[0.97] text-lg py-3 px-8 rounded-full shadow-xl transition-all duration-150 cursor-pointer text-center ${theme.startButton}`}
+          className={`w-full max-w-[340px] active:scale-[0.98] text-sm py-2 px-6 rounded-xl shadow-md transition-all duration-150 cursor-pointer text-center bg-white/10 hover:bg-white/20 text-white/90 border border-white/20 font-semibold`}
         >
-          Start
+          Play Only This Stage ({stage.title})
         </button>
       </div>
     </div>
