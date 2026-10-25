@@ -1,7 +1,7 @@
 import React from 'react';
 import { MeditationStageConfig } from '../types/meditation';
 import { ThemeConfig } from '../utils/theme';
-import { Youtube } from 'lucide-react';
+import { Youtube, Music } from 'lucide-react';
 
 interface StageCardProps {
   stage: MeditationStageConfig;
@@ -26,6 +26,11 @@ export const StageCard: React.FC<StageCardProps> = ({
     stage.id === 'presence_om' ||
     stage.id === 'presence_kriya';
 
+  const isChant = stage.stageType === 'chant' || stage.id === 'chant' || stage.id.startsWith('chant_');
+  const isAffirmation = stage.stageType === 'affirmation' || stage.id === 'affirmation' || stage.id.startsWith('affirmation_');
+  const hasYouTubeMedia = Boolean(stage.customMedia?.enabled && (stage.customMedia?.type === 'youtube' || stage.customMedia?.url?.includes('youtu')));
+  const isMusicStage = isChant || isAffirmation || hasYouTubeMedia;
+
   const presenceLabel =
     stage.id === 'presence_hong_sau'
       ? 'Post Hong-Sau'
@@ -43,8 +48,6 @@ export const StageCard: React.FC<StageCardProps> = ({
       ? `${stage.kriyaCount}`
       : stage.isCountBased && stage.breathRounds !== undefined
       ? `${stage.breathRounds}`
-      : isPlayUntil
-      ? `🎵`
       : `${stage.minutes}m`;
 
   const unitLabel =
@@ -76,15 +79,24 @@ export const StageCard: React.FC<StageCardProps> = ({
         </span>
 
         <div className="flex items-center gap-1">
-          {stage.customMedia?.enabled && stage.customMedia.url && (
+          {/* Distinctive Red YouTube Badge for Chant, Affirmation & Video stages */}
+          {hasYouTubeMedia ? (
             <span
-              className="text-red-400"
-              title={`Media: ${stage.customMedia.title || 'Attached'}`}
+              className="px-1 py-0.2 rounded-full bg-red-600 text-white text-[8px] font-extrabold flex items-center gap-0.5 shadow-sm"
+              title={`YouTube: ${stage.customMedia?.title || 'Active'}`}
             >
-              <Youtube className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              <Youtube className="w-2.5 h-2.5 fill-current" />
             </span>
-          )}
+          ) : isMusicStage ? (
+            <span
+              className="text-amber-300"
+              title="Sacred Music"
+            >
+              <Music className="w-2.5 h-2.5" />
+            </span>
+          ) : null}
 
+          {/* Info Details Trigger */}
           <span
             role="button"
             tabIndex={0}
@@ -111,13 +123,24 @@ export const StageCard: React.FC<StageCardProps> = ({
         </div>
       </div>
 
-      {/* Center: Big Value & Subtitle */}
+      {/* Center: Big Value & Subtitle with Sacred Music Identity */}
       <div className="my-auto flex flex-col items-center justify-center leading-tight">
-        <div className="font-extrabold tracking-tight leading-none font-spiritual text-lg sm:text-2xl">
-          {displayValue}
-        </div>
-        <div className="text-[8.5px] sm:text-[9.5px] uppercase font-mono tracking-wider opacity-75">
-          {unitLabel}
+        {isMusicStage ? (
+          <div className="flex items-center gap-1">
+            <span className={`text-sm sm:text-base font-bold ${isSelected ? 'text-[#06103b]' : 'text-amber-300'}`}>
+              🎵
+            </span>
+            <span className="font-extrabold tracking-tight leading-none font-spiritual text-base sm:text-xl">
+              {displayValue}
+            </span>
+          </div>
+        ) : (
+          <div className="font-extrabold tracking-tight leading-none font-spiritual text-lg sm:text-2xl">
+            {displayValue}
+          </div>
+        )}
+        <div className={`text-[8.5px] sm:text-[9.5px] uppercase font-mono tracking-wider ${isMusicStage ? 'font-bold text-amber-300' : 'opacity-75'}`}>
+          {isMusicStage ? (isPlayUntil ? 'auto-track' : 'track mins') : unitLabel}
         </div>
       </div>
 
@@ -134,6 +157,10 @@ export const StageCard: React.FC<StageCardProps> = ({
         ) : isBreathing && stage.breathPattern ? (
           <div className="text-[8px] sm:text-[9px] font-mono opacity-80 truncate">
             {stage.breathPattern.inhale}·{stage.breathPattern.hold}·{stage.breathPattern.exhale}
+          </div>
+        ) : isMusicStage ? (
+          <div className="text-[8px] sm:text-[8.5px] font-semibold text-amber-300 truncate">
+            {isChant ? 'Cosmic Chant' : isAffirmation ? 'Healing Affirmation' : 'Sacred Audio'}
           </div>
         ) : null}
       </div>

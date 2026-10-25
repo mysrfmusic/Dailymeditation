@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MeditationStageConfig, BreathPattern } from '../types/meditation';
 import { TapIncrementIcon, MalaBeadsIcon } from './Icons';
 import { SOUNDSCAPES } from '../utils/soundscapes';
@@ -175,6 +175,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     ? '🎵 Full Track Auto-Advance'
     : `${stage.minutes} minute${stage.minutes > 1 ? 's' : ''}`;
 
+  useEffect(() => {
+    if (
+      stage.stageType === 'chant' ||
+      stage.stageType === 'affirmation' ||
+      stage.id === 'chant' ||
+      stage.id === 'affirmation' ||
+      Boolean(stage.customMedia?.enabled)
+    ) {
+      setActiveTab('sound');
+    }
+  }, [stage.id, stage.stageType]);
+
   return (
     <div
       className={`w-full rounded-3xl p-4 sm:p-5 shadow-2xl relative overflow-hidden select-none transition-all duration-200 border border-white/10 ${theme.controlPanelBg}`}
@@ -196,11 +208,28 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             {stage.title}
           </h3>
 
-          <div className="text-xs text-amber-300 font-medium mt-0.5 flex items-center gap-2">
-            <span>{summaryBadge}</span>
-            <span aria-hidden="true" className="text-white/30">·</span>
-            <span className="text-slate-300/80">{currentSound.name}</span>
-          </div>
+          {/* Dedicated YouTube / Music Button for Chant & Affirmation */}
+          {isChant || isAffirmation || stage.customMedia?.enabled ? (
+            <div className="mt-1 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onOpenCustomMediaModal || (() => setActiveTab('sound'))}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-600/30 hover:bg-red-600/45 text-red-200 border border-red-400/70 shadow-sm cursor-pointer transition-all active:scale-95"
+                title="Configure YouTube Chant / Affirmation Audio"
+              >
+                <Youtube className="w-3.5 h-3.5 text-red-400 fill-current" />
+                <span className="truncate max-w-[200px]">
+                  {stage.customMedia?.title || (isChant ? 'Cosmic Chant Audio' : 'Healing Affirmation')}
+                </span>
+              </button>
+            </div>
+          ) : (
+            <div className="text-xs text-amber-300 font-medium mt-0.5 flex items-center gap-2">
+              <span>{summaryBadge}</span>
+              <span aria-hidden="true" className="text-white/30">·</span>
+              <span className="text-slate-300/80">{currentSound.name}</span>
+            </div>
+          )}
         </div>
 
         {/* Play This Stage Quick CTA */}
@@ -235,12 +264,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           onClick={() => setActiveTab('sound')}
           className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             activeTab === 'sound'
-              ? 'bg-white/15 text-white shadow-sm font-bold border border-white/20'
+              ? isChant || isAffirmation
+                ? 'bg-red-600/35 text-white shadow-md font-bold border border-red-400/80 ring-1 ring-red-400/50'
+                : 'bg-white/15 text-white shadow-sm font-bold border border-white/20'
+              : isChant || isAffirmation
+              ? 'text-red-300 hover:text-white bg-red-600/15 border border-red-400/30'
               : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Music className="w-3.5 h-3.5 text-amber-300" />
-          <span>Sound & Media</span>
+          {isChant || isAffirmation ? (
+            <Youtube className="w-3.5 h-3.5 text-red-400 fill-current" />
+          ) : (
+            <Music className="w-3.5 h-3.5 text-amber-300" />
+          )}
+          <span>{isChant ? 'Chant Audio' : isAffirmation ? 'Affirmation Audio' : 'Sound & Media'}</span>
         </button>
 
         <button

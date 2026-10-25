@@ -152,6 +152,54 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const currentLoadedVideoIdRef = useRef<string | null>(null);
   const hasUserUnlockedRef = useRef<boolean>(false);
 
+  // Stable pre-warmed initial YouTube URL so the iframe never reloads its src on stage transitions
+  const initialYouTubeUrlRef = useRef<string>(
+    (stages[activeStageId]?.customMedia?.enabled &&
+      stages[activeStageId]?.customMedia?.url &&
+      extractYouTubeId(stages[activeStageId]!.customMedia!.url) &&
+      stages[activeStageId]!.customMedia!.url) ||
+      activeOrder
+        .map((id) => stages[id]?.customMedia?.url)
+        .find((u) => u && extractYouTubeId(u)) ||
+      'https://www.youtube.com/watch?v=krd41uFL2s4'
+  );
+
+  const sendYouTubeCommand = (func: string, args: any[] = []) => {
+    if (youtubeIframeRef.current?.contentWindow) {
+      try {
+        youtubeIframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func, args }),
+          '*'
+        );
+      } catch {}
+    }
+  };
+
+  const triggerPlayCurrentYouTube = () => {
+    if (!isYouTube || !currentStage.customMedia?.url) return;
+    const targetVideoId = extractYouTubeId(currentStage.customMedia.url);
+    const targetStartTime = extractYouTubeStartTime(currentStage.customMedia.url) || 0;
+    if (!targetVideoId) return;
+
+    try {
+      youtubeIframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: 'listening', id: 1 }),
+        '*'
+      );
+      if (currentLoadedVideoIdRef.current !== targetVideoId) {
+        sendYouTubeCommand('loadVideoById', [targetVideoId, targetStartTime]);
+        currentLoadedVideoIdRef.current = targetVideoId;
+      }
+      sendYouTubeCommand('unMute');
+      sendYouTubeCommand('setVolume', [100]);
+      sendYouTubeCommand('playVideo');
+    } catch {}
+  };
+
+  const pausePersistentYouTube = () => {
+    sendYouTubeCommand('pauseVideo');
+  };
+
   // Soundscape state for current session
   const [activeSoundscape, setActiveSoundscape] = useState<SoundscapeType>(currentStage.soundscape);
   const [volume, setVolume] = useState<number>(currentStage.soundscapeVolume ?? 0.65);
@@ -221,48 +269,19 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
         audioRef.current.play().catch(() => {});
       }
 
-      // If YouTube, handle seamless track switching via loadVideoById on persistent player
+      // If YouTube, seamless track playback via loadVideoById on persistent player
       if (isYouTube) {
-        const targetVideoId = extractYouTubeId(currentStage.customMedia?.url || '');
-        const targetStartTime = extractYouTubeStartTime(currentStage.customMedia?.url || '') || 0;
-        if (targetVideoId && isIframeReadyRef.current) {
-          if (targetVideoId !== currentLoadedVideoIdRef.current) {
-            try {
-              youtubeIframeRef.current?.contentWindow?.postMessage(
-                JSON.stringify({
-                  event: 'command',
-                  func: 'loadVideoById',
-                  args: [targetVideoId, targetStartTime],
-                }),
-                '*'
-              );
-              youtubeIframeRef.current?.contentWindow?.postMessage(
-                JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
-                '*'
-              );
-              youtubeIframeRef.current?.contentWindow?.postMessage(
-                JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-                '*'
-              );
-              currentLoadedVideoIdRef.current = targetVideoId;
-            } catch {}
-          } else {
-            try {
-              youtubeIframeRef.current?.contentWindow?.postMessage(
-                JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-                '*'
-              );
-            } catch {}
-          }
-        }
-      } else if (youtubeIframeRef.current?.contentWindow) {
-        // Pause YouTube player on non-YouTube stages so music doesn't leak into breathing/kriyas
-        try {
-          youtubeIframeRef.current.contentWindow.postMessage(
-            JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
-            '*'
-          );
-        } catch {}
+        triggerPlayCurrentYouTube();
+        const t1 = setTimeout(triggerPlayCurrentYouTube, 200);
+        const t2 = setTimeout(triggerPlayCurrentYouTube, 600);
+        const t3 = setTimeout(triggerPlayCurrentYouTube, 1200);
+        return () => {
+          clearTimeout(t1);
+          clearTimeout(t2);
+          clearTimeout(t3);
+        };
+      } else {
+        pausePersistentYouTube();
       }
 
       // Play starting gong for Breathing Inhale or Temple Bell for standard stages
@@ -277,6 +296,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
       soundEngine.stopSoundscape();
       backgroundKeepalive.releaseWakeLock();
       backgroundKeepalive.stopAudioKeepalive();
+      pausePersistentYouTube();
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -286,6 +306,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
       soundEngine.stopSoundscape();
       backgroundKeepalive.releaseWakeLock();
       backgroundKeepalive.stopAudioKeepalive();
+      pausePersistentYouTube();
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -294,14 +315,14 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
 
   // YouTube Iframe event listener & mobile autoplay detection
   useEffect(() => {
-    if (!isOpen || !isYouTube) return;
+    if (!isOpen) return;
 
     const handleMessage = (e: MessageEvent) => {
       try {
         const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
         if (!data) return;
 
-        // When YouTube frame signals onReady or initialDelivery, acknowledge listening and command play
+        // When YouTube frame signals onReady or initialDelivery, acknowledge listening and command play if on YouTube stage
         if (data.event === 'onReady' || data.event === 'initialDelivery') {
           isIframeReadyRef.current = true;
           try {
@@ -309,15 +330,8 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
               JSON.stringify({ event: 'listening', id: 1 }),
               '*'
             );
-            if (isRunning) {
-              youtubeIframeRef.current?.contentWindow?.postMessage(
-                JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
-                '*'
-              );
-              youtubeIframeRef.current?.contentWindow?.postMessage(
-                JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-                '*'
-              );
+            if (isYouTube && isRunning) {
+              triggerPlayCurrentYouTube();
             }
           } catch {}
         }
@@ -349,12 +363,12 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
 
     window.addEventListener('message', handleMessage);
 
-    // If on mobile/tablet or autoplay delayed, only prompt after 4.5s buffer period if genuinely blocked
+    // Fast check for mobile autoplay restriction (1.5s timeout)
     const checkTimer = setTimeout(() => {
-      if (isRunning && !isVideoPlaying && !hasUserUnlockedRef.current) {
+      if (isYouTube && isRunning && !isVideoPlaying) {
         setMobileAutoplayBlocked(true);
       }
-    }, 4500);
+    }, 1500);
 
     return () => {
       window.removeEventListener('message', handleMessage);
@@ -364,21 +378,17 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
 
   const handleMobilePlayUnlock = () => {
     hasUserUnlockedRef.current = true;
-    if (youtubeIframeRef.current?.contentWindow) {
-      try {
-        youtubeIframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
-          '*'
-        );
-        youtubeIframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
-          '*'
-        );
-        youtubeIframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-          '*'
-        );
-      } catch {}
+    soundEngine.unlockAudio();
+    if (isYouTube && currentStage.customMedia?.url) {
+      const targetVideoId = extractYouTubeId(currentStage.customMedia.url);
+      const targetStartTime = extractYouTubeStartTime(currentStage.customMedia.url) || 0;
+      if (targetVideoId) {
+        sendYouTubeCommand('loadVideoById', [targetVideoId, targetStartTime]);
+        currentLoadedVideoIdRef.current = targetVideoId;
+      }
+      sendYouTubeCommand('unMute');
+      sendYouTubeCommand('setVolume', [100]);
+      sendYouTubeCommand('playVideo');
     }
     if (audioRef.current) {
       audioRef.current.play().catch(() => {});
@@ -716,26 +726,15 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
       if (prevStage?.customMedia?.enabled && prevStage.customMedia.url) {
         const vidId = extractYouTubeId(prevStage.customMedia.url);
         const startTime = extractYouTubeStartTime(prevStage.customMedia.url) || 0;
-        if (vidId && youtubeIframeRef.current?.contentWindow) {
-          try {
-            youtubeIframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'loadVideoById', args: [vidId, startTime] }),
-              '*'
-            );
-            youtubeIframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
-              '*'
-            );
-            youtubeIframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
-              '*'
-            );
-            youtubeIframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-              '*'
-            );
-          } catch {}
+        if (vidId) {
+          sendYouTubeCommand('loadVideoById', [vidId, startTime]);
+          sendYouTubeCommand('unMute');
+          sendYouTubeCommand('setVolume', [100]);
+          sendYouTubeCommand('playVideo');
+          currentLoadedVideoIdRef.current = vidId;
         }
+      } else {
+        pausePersistentYouTube();
       }
       onStageChange(activeOrder[currentIndex - 1]);
     }
@@ -750,26 +749,15 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
       if (nextStage?.customMedia?.enabled && nextStage.customMedia.url) {
         const vidId = extractYouTubeId(nextStage.customMedia.url);
         const startTime = extractYouTubeStartTime(nextStage.customMedia.url) || 0;
-        if (vidId && youtubeIframeRef.current?.contentWindow) {
-          try {
-            youtubeIframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'loadVideoById', args: [vidId, startTime] }),
-              '*'
-            );
-            youtubeIframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
-              '*'
-            );
-            youtubeIframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
-              '*'
-            );
-            youtubeIframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-              '*'
-            );
-          } catch {}
+        if (vidId) {
+          sendYouTubeCommand('loadVideoById', [vidId, startTime]);
+          sendYouTubeCommand('unMute');
+          sendYouTubeCommand('setVolume', [100]);
+          sendYouTubeCommand('playVideo');
+          currentLoadedVideoIdRef.current = vidId;
         }
+      } else {
+        pausePersistentYouTube();
       }
       onStageChange(activeOrder[currentIndex + 1]);
     } else {
@@ -923,24 +911,23 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
           </div>
         )}
 
-        {/* Custom YouTube or MP3 Media Player Card */}
-        {hasCustomMedia && customMedia && (
-          <div className="w-full max-w-sm mt-2 mb-1 p-2.5 bg-black/60 border border-amber-400/40 rounded-2xl flex flex-col items-center gap-2 shadow-lg backdrop-blur-sm">
+        {/* Persistent YouTube Media Player Card: Kept in DOM across entire session for rock-solid iOS/PC autoplay */}
+        <div
+          className={`w-full max-w-sm mt-2 mb-1 p-2.5 bg-black/60 border border-amber-400/40 rounded-2xl flex-col items-center gap-2 shadow-lg backdrop-blur-sm ${
+            isYouTube ? 'flex' : 'hidden'
+          }`}
+          style={{ display: isYouTube ? 'flex' : 'none' }}
+        >
+          {isYouTube && (
             <div className="w-full flex items-center justify-between text-xs px-1">
               <div className="flex items-center gap-1.5 truncate max-w-[200px]">
-                {isYouTube ? (
-                  <span className="p-1 rounded-md bg-red-600/30 text-red-400">
-                    <Youtube className="w-3.5 h-3.5" />
-                  </span>
-                ) : (
-                  <span className="p-1 rounded-md bg-sky-600/30 text-sky-400">
-                    <Music className="w-3.5 h-3.5" />
-                  </span>
-                )}
-                <span className="font-semibold text-amber-200 truncate">
-                  {customMedia.title || (isYouTube ? 'YouTube Chant' : 'Audio Track')}
+                <span className="p-1 rounded-md bg-red-600/30 text-red-400">
+                  <Youtube className="w-3.5 h-3.5 fill-current" />
                 </span>
-                {isYouTube && extractYouTubeStartTime(customMedia.url) !== null && (
+                <span className="font-semibold text-amber-200 truncate">
+                  {customMedia?.title || (isChant ? 'Cosmic Chant Audio' : isAffirmation ? 'Healing Affirmation' : 'Sacred YouTube Audio')}
+                </span>
+                {customMedia?.url && extractYouTubeStartTime(customMedia.url) !== null && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30 whitespace-nowrap">
                     ⏱ {formatSecondsToTimestamp(extractYouTubeStartTime(customMedia.url)!)}
                   </span>
@@ -948,23 +935,21 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
               </div>
 
               <div className="flex items-center gap-1.5">
-                {isYouTube && (
-                  <button
-                    type="button"
-                    onClick={() => setShowVideo(!showVideo)}
-                    className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center gap-1 cursor-pointer"
-                  >
-                    {showVideo ? (
-                      <>
-                        <Eye className="w-3 h-3 text-[#ffd700]" /> Eye Mode
-                      </>
-                    ) : (
-                      <>
-                        <Tv className="w-3 h-3 text-red-400" /> View Video
-                      </>
-                    )}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowVideo(!showVideo)}
+                  className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center gap-1 cursor-pointer"
+                >
+                  {showVideo ? (
+                    <>
+                      <Eye className="w-3 h-3 text-[#ffd700]" /> Eye Mode
+                    </>
+                  ) : (
+                    <>
+                      <Tv className="w-3 h-3 text-red-400" /> View Video
+                    </>
+                  )}
+                </button>
                 {onOpenCustomMediaModal && (
                   <button
                     type="button"
@@ -975,81 +960,59 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                     Edit
                   </button>
                 )}
-                <a
-                  href={customMedia.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white/60 hover:text-white p-1"
-                  title="Open in new window / external app"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+                {customMedia?.url && (
+                  <a
+                    href={customMedia.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/60 hover:text-white p-1"
+                    title="Open in new window / external app"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
               </div>
             </div>
+          )}
 
-            {/* If YouTube: Single responsive, reliable embed iframe with strict-origin policy */}
-            {isYouTube && (
-              <>
-                <div
-                  onClick={() => {
-                    if (!isVideoPlaying) {
-                      handleMobilePlayUnlock();
-                    }
-                  }}
-                  className={`relative w-full rounded-2xl overflow-hidden bg-black border border-amber-400/40 shadow-xl transition-all duration-300 ${
-                    showVideo ? 'aspect-video' : 'h-36 sm:h-44'
-                  }`}
-                >
-                  <iframe
-                    ref={youtubeIframeRef}
-                    src={getYouTubeEmbedUrl(
-                      customMedia.url,
-                      true,
-                      false
-                    ) || ''}
-                    title={customMedia.title || 'YouTube Player'}
-                    className="w-full h-full border-0"
-                    allow="accelerometer; autoplay *; clipboard-write; encrypted-media *; gyroscope; picture-in-picture *; web-share"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                    onLoad={() => {
-                      isIframeReadyRef.current = true;
-                      currentLoadedVideoIdRef.current = extractYouTubeId(customMedia.url);
-                      const triggerAutoPlay = () => {
-                        try {
-                          youtubeIframeRef.current?.contentWindow?.postMessage(
-                            JSON.stringify({ event: 'listening', id: 1 }),
-                            '*'
-                          );
-                          if (isRunning) {
-                            youtubeIframeRef.current?.contentWindow?.postMessage(
-                              JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
-                              '*'
-                            );
-                            youtubeIframeRef.current?.contentWindow?.postMessage(
-                              JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
-                              '*'
-                            );
-                            youtubeIframeRef.current?.contentWindow?.postMessage(
-                              JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-                              '*'
-                            );
-                          }
-                        } catch {}
-                      };
-                      triggerAutoPlay();
-                      setTimeout(triggerAutoPlay, 300);
-                      setTimeout(triggerAutoPlay, 800);
-                      setTimeout(triggerAutoPlay, 1500);
-                    }}
-                  />
-                </div>
+          {/* Persistent Iframe Viewport: ALWAYS mounted from turn 1 so iOS Safari grants media authorization */}
+          <div
+            onClick={() => {
+              if (!isVideoPlaying) {
+                handleMobilePlayUnlock();
+              }
+            }}
+            className={`relative w-full rounded-2xl overflow-hidden bg-black border border-amber-400/40 shadow-xl transition-all duration-300 ${
+              showVideo ? 'aspect-video' : 'h-36 sm:h-44'
+            }`}
+          >
+            <iframe
+              ref={youtubeIframeRef}
+              src={getYouTubeEmbedUrl(initialYouTubeUrlRef.current, false, false) || ''}
+              title={customMedia?.title || 'Sacred YouTube Player'}
+              className="w-full h-full border-0"
+              allow="accelerometer; autoplay *; clipboard-write; encrypted-media *; gyroscope; picture-in-picture *; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              onLoad={() => {
+                isIframeReadyRef.current = true;
+                if (isYouTube) {
+                  triggerPlayCurrentYouTube();
+                  setTimeout(triggerPlayCurrentYouTube, 300);
+                  setTimeout(triggerPlayCurrentYouTube, 800);
+                }
+              }}
+            />
+          </div>
 
-                <div className="w-full flex items-center justify-between px-1 text-xs">
-                  <span className="text-[11px] text-amber-200/80 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Synchronized Audio & Video</span>
-                  </span>
+          {isYouTube && (
+            <>
+              <div className="w-full flex items-center justify-between px-1 text-xs">
+                <span className="text-[11px] text-amber-200/80 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Synchronized Audio & Video</span>
+                </span>
+                {customMedia?.url && (
                   <a
                     href={cleanAndCanonicalizeYouTubeUrl(customMedia.url)}
                     target="_blank"
@@ -1060,40 +1023,52 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
                     <ExternalLink className="w-3 h-3" />
                     <span>Watch in YouTube App</span>
                   </a>
-                </div>
-
-                {/* Mobile Autoplay Helper: Shown only if video playback was blocked by browser policy after timeout */}
-                {mobileAutoplayBlocked && !isVideoPlaying && (
-                  <button
-                    type="button"
-                    onClick={handleMobilePlayUnlock}
-                    className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-xl animate-pulse cursor-pointer border border-amber-200"
-                  >
-                    <Play className="w-4 h-4 fill-current" />
-                    <span>Tap to Play & Unmute Sacred Video (Mobile)</span>
-                  </button>
                 )}
-              </>
-            )}
-
-            {/* If MP3 / Audio file: Render HTML5 Audio element */}
-            {isAudioFile && (
-              <div className="w-full flex items-center justify-between gap-2 pt-1 border-t border-white/10">
-                <audio
-                  ref={audioRef}
-                  src={customMedia.url}
-                  autoPlay={isRunning}
-                  loop={!isPlayUntilFinished}
-                  onEnded={() => {
-                    if (isPlayUntilFinished) {
-                      handleStageCompletion();
-                    }
-                  }}
-                  className="w-full h-8"
-                  controls
-                />
               </div>
-            )}
+
+              {/* Mobile Autoplay Helper: Shown if mobile Safari blocked unmuted autoplay after stage transition */}
+              {mobileAutoplayBlocked && !isVideoPlaying && (
+                <button
+                  type="button"
+                  onClick={handleMobilePlayUnlock}
+                  className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-xl animate-pulse cursor-pointer border border-amber-200"
+                >
+                  <Play className="w-4 h-4 fill-current" />
+                  <span>Tap to Play & Unmute Sacred Video (Mobile)</span>
+                </button>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Dedicated MP3 Player Card for direct audio files */}
+        {hasCustomMedia && isAudioFile && customMedia && (
+          <div className="w-full max-w-sm mt-2 mb-1 p-2.5 bg-black/60 border border-amber-400/40 rounded-2xl flex flex-col items-center gap-2 shadow-lg backdrop-blur-sm">
+            <div className="w-full flex items-center justify-between text-xs px-1">
+              <div className="flex items-center gap-1.5 truncate max-w-[200px]">
+                <span className="p-1 rounded-md bg-sky-600/30 text-sky-400">
+                  <Music className="w-3.5 h-3.5" />
+                </span>
+                <span className="font-semibold text-amber-200 truncate">
+                  {customMedia.title || 'Audio Track'}
+                </span>
+              </div>
+            </div>
+            <div className="w-full flex items-center justify-between gap-2 pt-1 border-t border-white/10">
+              <audio
+                ref={audioRef}
+                src={customMedia.url}
+                autoPlay={isRunning}
+                loop={!isPlayUntilFinished}
+                onEnded={() => {
+                  if (isPlayUntilFinished) {
+                    handleStageCompletion();
+                  }
+                }}
+                className="w-full h-8"
+                controls
+              />
+            </div>
           </div>
         )}
 

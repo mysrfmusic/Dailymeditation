@@ -178,7 +178,11 @@ export function getYouTubeEmbedUrl(
   const muteParam = mute ? '&mute=1' : '';
   const startSec = extractYouTubeStartTime(url);
   const startParam = startSec && startSec > 0 ? `&start=${startSec}` : '';
-  return `https://www.youtube.com/embed/${videoId}?autoplay=${autoParam}${muteParam}&enablejsapi=1&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3${startParam}`;
+  const originParam =
+    typeof window !== 'undefined' && window.location?.origin
+      ? `&origin=${encodeURIComponent(window.location.origin)}`
+      : '';
+  return `https://www.youtube.com/embed/${videoId}?autoplay=${autoParam}${muteParam}&enablejsapi=1&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3${startParam}${originParam}`;
 }
 
 /**
