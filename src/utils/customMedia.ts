@@ -1,12 +1,55 @@
 import { StageId } from '../types/meditation';
+import DEVOTIONAL_ALBUMS_DATA from '../data/devotional_albums.json';
+import HARMONIES_AUDIO_DATA from '../data/harmonies_audio.json';
 
 export interface StageMediaPreset {
   id: string;
   title: string;
   subtitle: string;
   url: string;
-  type: 'youtube' | 'mp3';
+  type: 'youtube' | 'mp3' | 'other';
   affirmationText?: string;
+  album?: string;
+  albumId?: string;
+  category?: string;
+  speaker?: string;
+  icon?: string;
+  isAffirmation?: boolean;
+}
+
+export interface RawAlbumTrack {
+  id: string;
+  title: string;
+  desc: string;
+  icon?: string;
+  url?: string;
+  tags?: string[];
+}
+
+export interface RawAlbum {
+  id: string;
+  name: string;
+  description: string;
+  themeColor?: string;
+  accentColor?: string;
+  icon?: string;
+  tracks: RawAlbumTrack[];
+}
+
+export interface RawHarmoniesTrack {
+  id: string;
+  title: string;
+  url: string;
+  speaker: string;
+  tradition: string;
+  category: string;
+  description: string;
+}
+
+export interface RawHarmoniesCategory {
+  name: string;
+  icon: string;
+  description: string;
 }
 
 /**
@@ -212,255 +255,138 @@ export function detectMediaType(url: string): 'youtube' | 'mp3' | 'other' {
 }
 
 /**
- * Curated sacred presets for Opening Prayer, Chant, World Prayer, and Closing Prayer.
- * Users can 1-click select these or customize their own YouTube / MP3 links.
+ * Complete sacred collections sourced directly from:
+ * 1) harmonies_audio.json (Paramahansa Yogananda & Swami Kriyananda High-Res MP3s & Discourses)
+ * 2) devotional_albums.json (21 Devotional Albums with 253 YouTube tracks)
+ */
+export const DEVOTIONAL_ALBUMS: RawAlbum[] = DEVOTIONAL_ALBUMS_DATA as RawAlbum[];
+export const HARMONIES_CATEGORIES: RawHarmoniesCategory[] = (HARMONIES_AUDIO_DATA as any).categories;
+export const HARMONIES_TRACKS: RawHarmoniesTrack[] = (HARMONIES_AUDIO_DATA as any).tracks;
+
+// Map album tracks into StageMediaPreset
+export const DEVOTIONAL_ALBUM_PRESETS: StageMediaPreset[] = DEVOTIONAL_ALBUMS.flatMap((album) =>
+  album.tracks.map((track) => {
+    const rawUrl = track.url || `https://www.youtube.com/watch?v=${track.id}`;
+    const cleanUrl = cleanAndCanonicalizeYouTubeUrl(rawUrl);
+    const isAffirmation =
+      album.id === 'samadhi' ||
+      album.name.toLowerCase().includes('affirm') ||
+      track.desc.toLowerCase().includes('poem') ||
+      track.desc.toLowerCase().includes('affirm');
+
+    return {
+      id: `album_${album.id}_${track.id}`,
+      title: track.title,
+      subtitle: `${album.name} — ${track.desc}`,
+      url: cleanUrl,
+      type: detectMediaType(cleanUrl),
+      album: album.name,
+      albumId: album.id,
+      category: album.name,
+      icon: track.icon,
+      isAffirmation,
+      affirmationText:
+        isAffirmation || (track.desc && track.desc.length > 20)
+          ? `“${track.title}” — ${track.desc}`
+          : undefined,
+    };
+  })
+);
+
+// Map Harmonies tracks into StageMediaPreset
+export const HARMONIES_PRESETS: StageMediaPreset[] = HARMONIES_TRACKS.map((track) => {
+  const isWisdom = track.category === 'Spiritual Wisdom Teachings';
+  const mediaType = detectMediaType(track.url);
+
+  return {
+    id: `harmonies_${track.id}`,
+    title: track.title,
+    subtitle: `${track.category} · ${track.speaker}`,
+    url: track.url,
+    type: mediaType,
+    album: track.category,
+    albumId: track.category.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    category: track.category,
+    speaker: track.speaker,
+    isAffirmation: isWisdom,
+    affirmationText: isWisdom
+      ? `“${track.title}” — ${track.description}`
+      : undefined,
+  };
+});
+
+// All 324 tracks combined
+export const ALL_SACRED_TRACKS: StageMediaPreset[] = [
+  ...HARMONIES_PRESETS,
+  ...DEVOTIONAL_ALBUM_PRESETS,
+];
+
+// All devotional songs and cosmic chants
+export const ALL_DEVOTIONAL_SONGS: StageMediaPreset[] = ALL_SACRED_TRACKS.filter(
+  (t) => !t.isAffirmation
+);
+
+// All affirmations and spiritual wisdom discourses
+export const ALL_AFFIRMATION_PRESETS: StageMediaPreset[] = [
+  // 1. Paramahansa Yogananda Spiritual Wisdom Discourses from Harmonies
+  ...HARMONIES_PRESETS.filter((t) => t.isAffirmation),
+  // 2. Samadhi and sacred poem recitations from Devotional Albums
+  ...DEVOTIONAL_ALBUM_PRESETS.filter((t) => t.isAffirmation),
+  // 3. Devotional chants with meaningful affirmation lyrics
+  ...DEVOTIONAL_ALBUM_PRESETS.filter((t) => !t.isAffirmation && t.affirmationText),
+];
+
+// Original voice discourses of Paramahansa Yogananda
+export const SACRED_VOICE_PRESETS: StageMediaPreset[] = ALL_SACRED_TRACKS.filter(
+  (t) =>
+    t.category === 'Spiritual Wisdom Teachings' ||
+    t.speaker === 'Paramahansa Yogananda' ||
+    t.title.toLowerCase().includes('yogananda')
+);
+
+/**
+ * Curated presets mapped per stage ID from the new collections
  */
 export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> = {
-  opening_prayer: [
-    {
-      id: 'op_default_requested',
-      title: 'SRF Opening Prayer (Paramahansa Yogananda)',
-      subtitle: 'Sacred invocation to the Divine and Line of Gurus',
-      url: 'https://youtu.be/zPUzuy6hcoE?si=bjAEGU7CqU5t0YM6',
-      type: 'youtube',
-    },
-    {
-      id: 'op_invocation_1',
-      title: 'Paramahansa Yogananda: In the Glory of the Spirit',
-      subtitle: 'Original recorded voice and invocation prayer',
-      url: 'https://www.youtube.com/watch?v=krd41uFL2s4',
-      type: 'youtube',
-    },
-    {
-      id: 'op_invocation_2',
-      title: 'Guru Lineage Attunement & Meditation Prayer',
-      subtitle: 'Devotional spoken prayer for deep attunement with the Great Ones',
-      url: 'https://www.youtube.com/watch?v=Gu45m-enngI',
-      type: 'youtube',
-    },
-  ],
   chant: [
-    {
-      id: 'chant_wake_yet_wake',
-      title: 'Wake, Yet Wake, O My Saint',
-      subtitle: 'SRF Cosmic Chant — Paramahansa Yogananda',
-      url: 'https://youtu.be/VVqTgKySMLA?si=ZTwKyzWsoQLfj2Hd',
-      type: 'youtube',
-    },
-    {
-      id: 'chant_he_who_knows',
-      title: 'He Who Knows',
-      subtitle: 'SRF Cosmic Chant — Paramahansa Yogananda',
-      url: 'https://youtu.be/mKhXU6XhLQA?si=wKEjRgkn0sbtetd_',
-      type: 'youtube',
-    },
-    {
-      id: 'chant_in_samadhi',
-      title: 'In Samadhi',
-      subtitle: 'SRF Cosmic Chant — Paramahansa Yogananda',
-      url: 'https://youtu.be/wjQOnllwNb8?si=JNXeCQ6GbVKHO4lr',
-      type: 'youtube',
-    },
-    {
-      id: 'chant_why_o_mind',
-      title: 'Why, O Mind, Wanderest Thou',
-      subtitle: 'SRF Cosmic Chant — Paramahansa Yogananda',
-      url: 'https://youtu.be/UUVHntSSoQ8?si=J6VYXNYnz65AHuOc',
-      type: 'youtube',
-    },
-    {
-      id: 'chant_divine_loves_sorrow',
-      title: "Divine Love's Sorrow",
-      subtitle: 'SRF Cosmic Chant — Paramahansa Yogananda',
-      url: 'https://youtu.be/905o-xfQpUM?si=z1LJCStHPvMkY6FE',
-      type: 'youtube',
-    },
-    {
-      id: 'chant_what_lightning_flash',
-      title: 'What Lightning Flash',
-      subtitle: 'SRF Cosmic Chant — Paramahansa Yogananda',
-      url: 'https://youtu.be/5w2W-wWF4Qw?si=8wlhbu6zLfWnldv2',
-      type: 'youtube',
-    },
-    {
-      id: 'chant_door_of_my_heart',
-      title: 'Door of My Heart (Cosmic Chant)',
-      subtitle: 'Paramahansa Yogananda — Devotional Bhakti Chant',
-      url: 'https://www.youtube.com/watch?v=avn4ZTxSuyo',
-      type: 'youtube',
-    },
-    {
-      id: 'chant_o_god_beautiful',
-      title: 'O God Beautiful (Cosmic Chant)',
-      subtitle: 'In the forest, in the flowers, in the temple of stillness',
-      url: 'https://www.youtube.com/watch?v=hc2x64QAmvo',
-      type: 'youtube',
-    },
-    {
-      id: 'chant_temple_of_silence',
-      title: 'In the Temple of Silence',
-      subtitle: 'SRF Guided Meditation & Devotional Chanting (Brother Chidananda)',
-      url: 'https://www.youtube.com/watch?v=MJR06v8qakg',
-      type: 'youtube',
-    },
-    {
-      id: 'chant_aum_chanting',
-      title: 'AUM (OM) Chanting by Paramahansa Yogananda',
-      subtitle: 'Original recording of Master vibrating the sacred cosmic AUM',
-      url: 'https://www.youtube.com/watch?v=eaLSahm6Ne8',
-      type: 'youtube',
-    },
+    // Top beloved cosmic chants from Devotional Albums
+    ...DEVOTIONAL_ALBUM_PRESETS.slice(0, 40),
+    // High-res Harmonies MP3 chants
+    ...HARMONIES_PRESETS.filter((t) => !t.isAffirmation),
   ],
-  world_prayer: [
-    {
-      id: 'wp_default_requested',
-      title: 'Worldwide Prayer Circle (Healing & AUM at 3:15)',
-      subtitle: 'Paramahansa Yogananda Worldwide Healing Prayer',
-      url: 'https://www.youtube.com/watch?v=rl4ULW_OgtQ&t=195s',
-      type: 'youtube',
-    },
-    {
-      id: 'wp_srf_healing',
-      title: 'Cosmic AUM World Healing Prayer (SRF)',
-      subtitle: 'Vibrating prana and light for all souls and all nations',
-      url: 'https://www.youtube.com/watch?v=kzncvlw781g',
-      type: 'youtube',
-    },
-    {
-      id: 'wp_global_peace',
-      title: 'Global Healing Peace Chant & Affirmation',
-      subtitle: 'Broadcasting peace and vitality into the cosmic ether',
-      url: 'https://www.youtube.com/watch?v=hP4j5KbfGKY',
-      type: 'youtube',
-    },
+  affirmation: ALL_AFFIRMATION_PRESETS,
+  sacred_voices: SACRED_VOICE_PRESETS,
+  opening_prayer: [
+    ...ALL_SACRED_TRACKS.filter((t) =>
+      t.title.toLowerCase().includes('brahma') ||
+      t.title.toLowerCase().includes('guru') ||
+      t.title.toLowerCase().includes('invocation') ||
+      t.title.toLowerCase().includes('dawn') ||
+      t.title.toLowerCase().includes('glory')
+    ),
+    ...DEVOTIONAL_ALBUM_PRESETS.slice(0, 15),
   ],
   closing_prayer: [
-    {
-      id: 'cp_default_requested',
-      title: 'SRF Closing Prayer & God Alone (Live at 2:54:06)',
-      subtitle: 'Sacred closing prayer & divine surrender',
-      url: 'https://www.youtube.com/live/JmVnhRu5huk?t=10446&si=lrZxdz4aFMgSrFHr',
-      type: 'youtube',
-    },
-    {
-      id: 'cp_god_alone',
-      title: 'God Alone Devotional Closing Prayer',
-      subtitle: '“God Alone, God Alone, all else passes away” (Swami Kriyananda)',
-      url: 'https://www.youtube.com/watch?v=GCBF_GjfybA',
-      type: 'youtube',
-    },
-    {
-      id: 'cp_aum_shanti',
-      title: 'Aum, Shanti, Peace, Amen',
-      subtitle: 'Closing meditation surrender & blessing vibration',
-      url: 'https://www.youtube.com/watch?v=eaLSahm6Ne8',
-      type: 'youtube',
-    },
+    ...ALL_SACRED_TRACKS.filter((t) =>
+      t.title.toLowerCase().includes('samadhi') ||
+      t.title.toLowerCase().includes('shanti') ||
+      t.title.toLowerCase().includes('peace') ||
+      t.title.toLowerCase().includes('alone') ||
+      t.title.toLowerCase().includes('feet') ||
+      t.title.toLowerCase().includes('ocean of love')
+    ),
+    ...DEVOTIONAL_ALBUM_PRESETS.slice(15, 30),
   ],
-  affirmation: [
-    {
-      id: 'aff_healing_light',
-      title: 'Scientific Healing Affirmation (Paramahansa Yogananda)',
-      subtitle: '“I am submerged in Thy eternal light; it permeates every particle of my being.”',
-      url: 'https://www.youtube.com/watch?v=PsbA8JFdO98',
-      type: 'youtube',
-      affirmationText:
-        '“I am submerged in Thy eternal light; it permeates every particle of my being. I am alive in that light. The divine presence fills my body with peace, harmony, and perfect health.”',
-    },
-    {
-      id: 'aff_divine_peace',
-      title: 'Affirmation for Radiant Peace & Calmness',
-      subtitle: '“God is within and around me, protecting me; so banish all fear.”',
-      url: 'https://www.youtube.com/watch?v=krd41uFL2s4',
-      type: 'youtube',
-      affirmationText:
-        '“God is within and around me, protecting me; so banish all fear, which comes from the unholy thought of God’s absence. The light of His presence is ever around me.”',
-    },
-    {
-      id: 'aff_divine_will',
-      title: 'Affirmation for Will Power & Spiritual Success',
-      subtitle: '“Thy infinite power flows through me; I shall succeed in all noble duties.”',
-      url: 'https://www.youtube.com/watch?v=rdc5khxI0Hw',
-      type: 'youtube',
-      affirmationText:
-        '“Thy infinite power flows through me; I shall succeed in all noble duties. I will go forward with courage, faith, and patience. God’s grace is my eternal shield.”',
-    },
-    {
-      id: 'aff_vitality',
-      title: 'Affirmation for Youthfulness and Vitality',
-      subtitle: 'Recharging body batteries with cosmic prana and divine joy',
-      url: 'https://www.youtube.com/watch?v=ZXPdmWX8VB4',
-      type: 'youtube',
-      affirmationText:
-        '“O Father, recharge my body cells with Thy cosmic prana; recharge my mind with Thy concentration; recharge my soul with Thine ever-new joy. Divine Joy, fill me!”',
-    },
-    {
-      id: 'aff_wisdom',
-      title: 'Affirmation for Intuition & Divine Guidance',
-      subtitle: 'Attuning the inner eye to the voice of Omniscience',
-      url: 'https://www.youtube.com/watch?v=Gu45m-enngI',
-      type: 'youtube',
-      affirmationText:
-        '“Behind the wave of my consciousness is the infinite ocean of God’s wisdom. I claim my divine heritage of intuitive understanding and spiritual sight.”',
-    },
-  ],
-  sacred_voices: [
-    {
-      id: 'sv_yogananda_loving_god',
-      title: 'Paramahansa Yogananda: “Loving God”',
-      subtitle: 'Original archival audio of Master speaking on love for the Divine Mother',
-      url: 'https://www.youtube.com/watch?v=krd41uFL2s4',
-      type: 'youtube',
-      affirmationText:
-        '“I will be Thine always. Through life and death, through sunshine and storm, my soul is anchored in Thee, my beloved Lord. Thou art my one and only Love.” — Paramahansa Yogananda',
-    },
-    {
-      id: 'sv_yogananda_destroy_suffering',
-      title: 'Paramahansa Yogananda: How to Destroy Suffering by Its Roots',
-      subtitle: 'Original archival talk on overcoming all sorrow and finding lasting bliss',
-      url: 'https://www.youtube.com/watch?v=rdc5khxI0Hw',
-      type: 'youtube',
-      affirmationText:
-        '“In the temple of silence, in the secret bower of my soul, I lay my offering of pure devotion at Thy lotus feet. Speak to me, Lord, in the stillness.” — Paramahansa Yogananda',
-    },
-    {
-      id: 'sv_yogananda_thinking_of_god',
-      title: 'Paramahansa Yogananda: Thinking of Nothing But God',
-      subtitle: 'Master’s sacred voice on continuous awareness of the Divine Presence',
-      url: 'https://www.youtube.com/watch?v=ZXPdmWX8VB4',
-      type: 'youtube',
-      affirmationText:
-        '“Keep your mind centered in God. He is the life of your life, the heartbeat of your heart, the soul of your soul.” — Paramahansa Yogananda',
-    },
-    {
-      id: 'sv_yogananda_key_to_heaven',
-      title: 'Paramahansa Yogananda: The Key to Heaven',
-      subtitle: 'Rare recorded voice on perseverance and meditation at the Spiritual Eye',
-      url: 'https://www.youtube.com/watch?v=Gu45m-enngI',
-      type: 'youtube',
-      affirmationText:
-        '“Persevere in meditation until the divine light dawns within. You are a child of God, immortal and divine.” — Paramahansa Yogananda',
-    },
-    {
-      id: 'sv_daya_mata_deepest_needs',
-      title: 'Sri Daya Mata: Fulfilling the Soul’s Deepest Needs',
-      subtitle: 'Spiritual address by SRF President Sri Daya Mata at World Convocation',
-      url: 'https://www.youtube.com/watch?v=qZQFm856Coc',
-      type: 'youtube',
-      affirmationText:
-        '“Find God first in the stillness of deep meditation, and then love Him in all human beings, serving Him in all life with joy and unconditional love.” — Sri Daya Mata',
-    },
-    {
-      id: 'sv_daya_mata_peace_balance',
-      title: 'Sri Daya Mata: Finding Divine Peace and Balance',
-      subtitle: 'Spiritual discourse on bringing deep peace and spiritual poise into life',
-      url: 'https://www.youtube.com/watch?v=QKD71YLHRuM',
-      type: 'youtube',
-      affirmationText:
-        '“Hold on to the peace you feel in meditation. Take it into activity, and let nothing disturb the calm sanctuary of your soul.” — Sri Daya Mata',
-    },
+  world_prayer: [
+    ...ALL_SACRED_TRACKS.filter((t) =>
+      t.title.toLowerCase().includes('healing') ||
+      t.title.toLowerCase().includes('aum') ||
+      t.title.toLowerCase().includes('om') ||
+      t.title.toLowerCase().includes('light') ||
+      t.title.toLowerCase().includes('shanti')
+    ),
+    ...DEVOTIONAL_ALBUM_PRESETS.slice(30, 45),
   ],
 };
 
-export const AFFIRMATION_PRESETS = STAGE_MEDIA_PRESETS.affirmation || [];
-export const SACRED_VOICE_PRESETS = (STAGE_MEDIA_PRESETS as any).sacred_voices || [];
+export const AFFIRMATION_PRESETS = ALL_AFFIRMATION_PRESETS;

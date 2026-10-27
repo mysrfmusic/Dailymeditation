@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { MeditationStageConfig, StageId } from '../types/meditation';
 import {
   STAGE_MEDIA_PRESETS,
   StageMediaPreset,
-  AFFIRMATION_PRESETS,
+  DEVOTIONAL_ALBUMS,
+  HARMONIES_CATEGORIES,
+  ALL_SACRED_TRACKS,
+  ALL_DEVOTIONAL_SONGS,
+  ALL_AFFIRMATION_PRESETS,
   SACRED_VOICE_PRESETS,
   cleanAndCanonicalizeYouTubeUrl,
   fetchYouTubeVideoMetadata,
@@ -26,6 +30,7 @@ import {
   ListOrdered,
   X,
   Mic,
+  Search,
 } from 'lucide-react';
 import { ThemeConfig } from '../utils/theme';
 
@@ -64,11 +69,15 @@ export const ChantAffirmationTab: React.FC<ChantAffirmationTabProps> = ({
   const [addedSuccessMessage, setAddedSuccessMessage] = useState<string | null>(null);
   const [isResolvingUrl, setIsResolvingUrl] = useState<boolean>(false);
 
+  // Search and album filtering states
+  const [chantSearch, setChantSearch] = useState<string>('');
+  const [chantAlbumFilter, setChantAlbumFilter] = useState<string>('all');
+  const [affirmationSearch, setAffirmationSearch] = useState<string>('');
+  const [voiceSearch, setVoiceSearch] = useState<string>('');
+
   // Drag and drop state
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
-
-  if (!isOpen) return null;
 
   const showNotification = (msg: string) => {
     setAddedSuccessMessage(msg);
@@ -96,6 +105,59 @@ export const ChantAffirmationTab: React.FC<ChantAffirmationTabProps> = ({
       setIsResolvingUrl(false);
     }
   };
+
+  const filteredChants = useMemo(() => {
+    let list = ALL_DEVOTIONAL_SONGS;
+    if (chantAlbumFilter !== 'all') {
+      list = list.filter(
+        (t) =>
+          t.albumId === chantAlbumFilter ||
+          t.album === chantAlbumFilter ||
+          t.category === chantAlbumFilter
+      );
+    }
+    if (chantSearch.trim()) {
+      const q = chantSearch.toLowerCase().trim();
+      list = list.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          t.subtitle.toLowerCase().includes(q) ||
+          (t.album && t.album.toLowerCase().includes(q)) ||
+          (t.speaker && t.speaker.toLowerCase().includes(q))
+      );
+    }
+    return list;
+  }, [chantAlbumFilter, chantSearch]);
+
+  const filteredAffirmations = useMemo(() => {
+    let list = ALL_AFFIRMATION_PRESETS;
+    if (affirmationSearch.trim()) {
+      const q = affirmationSearch.toLowerCase().trim();
+      list = list.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          t.subtitle.toLowerCase().includes(q) ||
+          (t.affirmationText && t.affirmationText.toLowerCase().includes(q)) ||
+          (t.speaker && t.speaker.toLowerCase().includes(q))
+      );
+    }
+    return list;
+  }, [affirmationSearch]);
+
+  const filteredVoices = useMemo(() => {
+    let list = SACRED_VOICE_PRESETS;
+    if (voiceSearch.trim()) {
+      const q = voiceSearch.toLowerCase().trim();
+      list = list.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          t.subtitle.toLowerCase().includes(q) ||
+          (t.speaker && t.speaker.toLowerCase().includes(q)) ||
+          (t.affirmationText && t.affirmationText.toLowerCase().includes(q))
+      );
+    }
+    return list;
+  }, [voiceSearch]);
 
   const handleAddPresetChant = (preset: StageMediaPreset, minutes: number = 5) => {
     const uniqueId = `chant_${Date.now()}`;
@@ -200,6 +262,8 @@ export const ChantAffirmationTab: React.FC<ChantAffirmationTabProps> = ({
     setDragOverIdx(null);
   };
 
+  if (!isOpen) return null;
+
   return (
     <div
       role="dialog"
@@ -269,59 +333,137 @@ export const ChantAffirmationTab: React.FC<ChantAffirmationTabProps> = ({
 
         {/* Tab Content Area */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-          {/* TAB 1: COSMIC CHANTS */}
+          {/* TAB 1: COSMIC CHANTS & SONGS */}
           {activeTab === 'chants' && (
             <div className="space-y-3">
               <div className="bg-amber-500/10 border border-amber-400/25 rounded-2xl p-3 text-xs text-amber-200/90 flex items-start gap-2.5">
                 <Music className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold text-amber-300">Paramahansa Yogananda Cosmic Chants:</span>
+                  <span className="font-bold text-amber-300">
+                    Sacred Cosmic Chants & Devotional Songs ({filteredChants.length} available):
+                  </span>
                   <p className="text-[11px] text-amber-100/80 mt-0.5">
-                    Select any sacred chant below to add it into your sequence. By default, chants play until the sacred music is completed!
+                    Browse all 21 Devotional Albums and High-Res Harmonies Audio tracks. Chants automatically play until the music completes!
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {STAGE_MEDIA_PRESETS.chant?.map((preset) => (
-                  <div
-                    key={preset.id}
-                    className="p-3 bg-black/35 border border-white/10 hover:border-amber-400/50 rounded-2xl flex flex-col justify-between gap-2.5 transition-all group"
-                  >
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-xs font-bold text-amber-200 group-hover:text-amber-100 leading-tight">
-                          {preset.title}
-                        </span>
-                        <a
-                          href={preset.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-slate-400 hover:text-red-400 p-0.5 transition-colors"
-                          title="Preview on YouTube"
-                        >
-                          <Youtube className="w-4 h-4" />
-                        </a>
-                      </div>
-                      <p className="text-[11px] text-slate-300/80 line-clamp-2 mt-1">
-                        {preset.subtitle}
-                      </p>
-                    </div>
+              {/* Search & Album Filters */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={chantSearch}
+                    onChange={(e) => setChantSearch(e.target.value)}
+                    placeholder="Search songs, chants, lyrics..."
+                    className="w-full pl-8 pr-7 py-1.5 bg-black/40 border border-white/10 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  />
+                  {chantSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setChantSearch('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                      <span className="text-[10px] text-emerald-400 font-medium">
-                        ✓ Plays till music ends
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleAddPresetChant(preset)}
-                        className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 transition-all active:scale-95 cursor-pointer shadow-sm"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Add to Routine
-                      </button>
-                    </div>
+                <div className="relative">
+                  <select
+                    value={chantAlbumFilter}
+                    onChange={(e) => setChantAlbumFilter(e.target.value)}
+                    className="w-full py-1.5 px-2.5 bg-black/40 border border-white/10 rounded-xl text-xs text-amber-200 focus:outline-none focus:border-amber-400 cursor-pointer"
+                  >
+                    <option value="all">All Albums & Categories ({ALL_DEVOTIONAL_SONGS.length} songs)</option>
+                    <optgroup label="Devotional Albums (21)">
+                      {DEVOTIONAL_ALBUMS.map((album) => (
+                        <option key={album.id} value={album.id}>
+                          {album.name} ({album.tracks.length} tracks)
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Harmonies Audio Categories">
+                      {HARMONIES_CATEGORIES.map((cat) => (
+                        <option key={cat.name} value={cat.name}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+
+              {/* Songs Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[50vh] overflow-y-auto pr-1">
+                {filteredChants.length === 0 ? (
+                  <div className="col-span-full py-8 text-center text-xs text-slate-400 bg-black/20 rounded-2xl border border-white/5">
+                    No songs found matching your search.
                   </div>
-                ))}
+                ) : (
+                  filteredChants.map((preset) => (
+                    <div
+                      key={preset.id}
+                      className="p-3 bg-black/35 border border-white/10 hover:border-amber-400/50 rounded-2xl flex flex-col justify-between gap-2.5 transition-all group"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-xs font-bold text-amber-200 group-hover:text-amber-100 leading-tight">
+                            {preset.title}
+                          </span>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {preset.type === 'youtube' ? (
+                              <a
+                                href={preset.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-400 hover:text-red-400 p-0.5 transition-colors"
+                                title="Open on YouTube"
+                              >
+                                <Youtube className="w-4 h-4" />
+                              </a>
+                            ) : (
+                              <span className="p-0.5 rounded text-sky-400" title="High-Res MP3 Audio">
+                                <Music className="w-3.5 h-3.5" />
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          {preset.album && (
+                            <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-white/5 text-amber-300/80 truncate max-w-[170px]">
+                              {preset.album}
+                            </span>
+                          )}
+                          {preset.speaker && (
+                            <span className="text-[9.5px] text-slate-400 truncate">
+                              · {preset.speaker}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-[11px] text-slate-300/80 line-clamp-2 mt-1">
+                          {preset.subtitle}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                        <span className="text-[10px] text-emerald-400 font-medium">
+                          ✓ Plays till music ends
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleAddPresetChant(preset)}
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 transition-all active:scale-95 cursor-pointer shadow-sm"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Add to Routine
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -332,53 +474,105 @@ export const ChantAffirmationTab: React.FC<ChantAffirmationTabProps> = ({
               <div className="bg-sky-500/10 border border-sky-400/25 rounded-2xl p-3 text-xs text-sky-200/90 flex items-start gap-2.5">
                 <Sparkles className="w-4 h-4 text-sky-300 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold text-sky-300">Scientific Healing Affirmations:</span>
+                  <span className="font-bold text-sky-300">
+                    Scientific Healing Affirmations & Wisdom Discourses ({filteredAffirmations.length} available):
+                  </span>
                   <p className="text-[11px] text-sky-100/80 mt-0.5">
-                    Infuse mind and soul with cosmic vitality through Paramahansa Yogananda’s scientific affirmations. Easily add one or more into your sequence!
+                    Original archival discourses by Paramahansa Yogananda, Samadhi recitations, and healing affirmations. Add one or more into your sequence!
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {AFFIRMATION_PRESETS.map((preset) => (
-                  <div
-                    key={preset.id}
-                    className="p-3 bg-black/35 border border-white/10 hover:border-sky-400/50 rounded-2xl flex flex-col justify-between gap-2.5 transition-all group"
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={affirmationSearch}
+                  onChange={(e) => setAffirmationSearch(e.target.value)}
+                  placeholder="Search affirmations, discourses, wisdom..."
+                  className="w-full pl-8 pr-7 py-1.5 bg-black/40 border border-white/10 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-400"
+                />
+                {affirmationSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setAffirmationSearch('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5"
                   >
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-xs font-bold text-sky-200 group-hover:text-sky-100 leading-tight">
-                          {preset.title}
-                        </span>
-                        <a
-                          href={preset.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-slate-400 hover:text-red-400 p-0.5 transition-colors"
-                          title="Preview video"
-                        >
-                          <Youtube className="w-4 h-4" />
-                        </a>
-                      </div>
-                      <p className="text-[11px] text-slate-300/80 italic line-clamp-3 mt-1.5 font-serif">
-                        {preset.subtitle}
-                      </p>
-                    </div>
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                      <span className="text-[10px] text-sky-400 font-medium">
-                        ✓ Plays till music ends
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleAddPresetAffirmation(preset)}
-                        className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-sky-400 hover:bg-sky-300 text-slate-950 transition-all active:scale-95 cursor-pointer shadow-sm"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Add to Routine
-                      </button>
-                    </div>
+              {/* Affirmations Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[50vh] overflow-y-auto pr-1">
+                {filteredAffirmations.length === 0 ? (
+                  <div className="col-span-full py-8 text-center text-xs text-slate-400 bg-black/20 rounded-2xl border border-white/5">
+                    No affirmations found matching your search.
                   </div>
-                ))}
+                ) : (
+                  filteredAffirmations.map((preset) => (
+                    <div
+                      key={preset.id}
+                      className="p-3 bg-black/35 border border-white/10 hover:border-sky-400/50 rounded-2xl flex flex-col justify-between gap-2.5 transition-all group"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-xs font-bold text-sky-200 group-hover:text-sky-100 leading-tight">
+                            {preset.title}
+                          </span>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {preset.type === 'youtube' ? (
+                              <a
+                                href={preset.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-400 hover:text-red-400 p-0.5 transition-colors"
+                                title="Preview video"
+                              >
+                                <Youtube className="w-4 h-4" />
+                              </a>
+                            ) : (
+                              <span className="p-0.5 rounded text-sky-400" title="Audio MP3">
+                                <Music className="w-3.5 h-3.5" />
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          {preset.album && (
+                            <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-white/5 text-sky-300/80 truncate max-w-[170px]">
+                              {preset.album}
+                            </span>
+                          )}
+                          {preset.speaker && (
+                            <span className="text-[9.5px] text-slate-400 truncate">
+                              · {preset.speaker}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-[11px] text-slate-300/80 italic line-clamp-3 mt-1.5 font-serif">
+                          {preset.affirmationText || preset.subtitle}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                        <span className="text-[10px] text-sky-400 font-medium">
+                          ✓ Plays till audio ends
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleAddPresetAffirmation(preset)}
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-sky-400 hover:bg-sky-300 text-slate-950 transition-all active:scale-95 cursor-pointer shadow-sm"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Add to Routine
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -389,58 +583,103 @@ export const ChantAffirmationTab: React.FC<ChantAffirmationTabProps> = ({
               <div className="bg-purple-500/10 border border-purple-400/25 rounded-2xl p-3 text-xs text-purple-200/90 flex items-start gap-2.5">
                 <Mic className="w-4 h-4 text-purple-300 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold text-purple-300">Sacred Voices of Paramahansa Yogananda & Direct Disciples:</span>
+                  <span className="font-bold text-purple-300">
+                    Spiritual Wisdom Teachings of Paramahansa Yogananda ({filteredVoices.length} talks):
+                  </span>
                   <p className="text-[11px] text-purple-100/80 mt-0.5">
-                    Historic spoken voice recordings, divine invocations from Whispers from Eternity, and teachings by Sri Daya Mata and line of gurus. Direct attunement with the Master's vibration.
+                    Original spoken voice recordings and discourses from the Harmonies collection. Direct attunement with the Guru's vibration.
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {SACRED_VOICE_PRESETS.map((preset: StageMediaPreset) => (
-                  <div
-                    key={preset.id}
-                    className="p-3 bg-black/35 border border-white/10 hover:border-purple-400/50 rounded-2xl flex flex-col justify-between gap-2.5 transition-all group"
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={voiceSearch}
+                  onChange={(e) => setVoiceSearch(e.target.value)}
+                  placeholder="Search Guru's voice talks..."
+                  className="w-full pl-8 pr-7 py-1.5 bg-black/40 border border-white/10 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-400"
+                />
+                {voiceSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setVoiceSearch('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5"
                   >
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-xs font-bold text-purple-200 group-hover:text-purple-100 leading-tight">
-                          {preset.title}
-                        </span>
-                        <a
-                          href={preset.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-slate-400 hover:text-red-400 p-0.5 transition-colors"
-                          title="Preview video"
-                        >
-                          <Youtube className="w-4 h-4" />
-                        </a>
-                      </div>
-                      <p className="text-[11px] text-slate-300/80 mt-1">
-                        {preset.subtitle}
-                      </p>
-                      {preset.affirmationText && (
-                        <p className="text-[10.5px] text-amber-200/90 italic font-serif mt-1.5 line-clamp-3 bg-white/5 p-1.5 rounded-lg border border-white/5">
-                          {preset.affirmationText}
-                        </p>
-                      )}
-                    </div>
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                      <span className="text-[10px] text-purple-300 font-medium">
-                        ✓ Plays till audio ends
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleAddPresetSacredVoice(preset)}
-                        className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-purple-400 hover:bg-purple-300 text-slate-950 transition-all active:scale-95 cursor-pointer shadow-sm"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Add to Routine
-                      </button>
-                    </div>
+              {/* Voices Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[50vh] overflow-y-auto pr-1">
+                {filteredVoices.length === 0 ? (
+                  <div className="col-span-full py-8 text-center text-xs text-slate-400 bg-black/20 rounded-2xl border border-white/5">
+                    No voice talks found matching your search.
                   </div>
-                ))}
+                ) : (
+                  filteredVoices.map((preset: StageMediaPreset) => (
+                    <div
+                      key={preset.id}
+                      className="p-3 bg-black/35 border border-white/10 hover:border-purple-400/50 rounded-2xl flex flex-col justify-between gap-2.5 transition-all group"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-xs font-bold text-purple-200 group-hover:text-purple-100 leading-tight">
+                            {preset.title}
+                          </span>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {preset.type === 'youtube' ? (
+                              <a
+                                href={preset.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-400 hover:text-red-400 p-0.5 transition-colors"
+                                title="Preview video"
+                              >
+                                <Youtube className="w-4 h-4" />
+                              </a>
+                            ) : (
+                              <span className="p-0.5 rounded text-purple-400" title="Audio MP3">
+                                <Music className="w-3.5 h-3.5" />
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-white/5 text-purple-300/80 truncate">
+                            {preset.speaker || 'Paramahansa Yogananda'}
+                          </span>
+                        </div>
+
+                        <p className="text-[11px] text-slate-300/80 mt-1">
+                          {preset.subtitle}
+                        </p>
+                        {preset.affirmationText && (
+                          <p className="text-[10.5px] text-amber-200/90 italic font-serif mt-1.5 line-clamp-3 bg-white/5 p-1.5 rounded-lg border border-white/5">
+                            {preset.affirmationText}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                        <span className="text-[10px] text-purple-300 font-medium">
+                          ✓ Plays till audio ends
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleAddPresetSacredVoice(preset)}
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-purple-400 hover:bg-purple-300 text-slate-950 transition-all active:scale-95 cursor-pointer shadow-sm"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Add to Routine
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}

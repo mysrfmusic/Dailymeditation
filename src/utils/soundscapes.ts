@@ -165,7 +165,7 @@ class SoundEngine {
       this.soundGain.connect(this.masterGain);
 
       this.bellGain = this.ctx.createGain();
-      this.bellGain.gain.setValueAtTime(0.45, this.ctx.currentTime); // Soft, subtle transition bell volume
+      this.bellGain.gain.setValueAtTime(0.9, this.ctx.currentTime); // Crisp, resonant transition bell volume
       this.bellGain.connect(this.masterGain);
     }
     if (this.ctx.state === 'suspended' || (this.ctx.state as string) === 'interrupted') {
@@ -317,13 +317,13 @@ class SoundEngine {
       const t = now + delayTime;
       const baseFreq = 276 * pitchMultiplier; // Deep warm C#4/D4 Tibetan Singing Bowl fundamental
 
-      // Subtle, warm harmonic partials (softened high frequencies for soothing tone)
+      // Resonant, warm harmonic partials for singing bowl chime
       const partials = [
-        { mult: 1.0, gain: 0.28, decay: 5.5 },
-        { mult: 2.76, gain: 0.14, decay: 4.2 },
-        { mult: 4.12, gain: 0.06, decay: 2.8 },
-        { mult: 5.4, gain: 0.025, decay: 1.8 },
-        { mult: 8.92, gain: 0.008, decay: 1.1 },
+        { mult: 1.0, gain: 0.55, decay: 5.5 },
+        { mult: 2.76, gain: 0.28, decay: 4.2 },
+        { mult: 4.12, gain: 0.12, decay: 2.8 },
+        { mult: 5.4, gain: 0.05, decay: 1.8 },
+        { mult: 8.92, gain: 0.015, decay: 1.1 },
       ];
 
       partials.forEach(({ mult, gain: pGain, decay }) => {
@@ -335,8 +335,8 @@ class SoundEngine {
         osc.frequency.setValueAtTime(baseFreq * mult + (Math.random() * 0.4 - 0.2), t);
 
         g.gain.setValueAtTime(0.0001, t);
-        // Smooth 35ms attack for subtle, non-abrupt entry
-        g.gain.exponentialRampToValueAtTime(pGain * 0.7, t + 0.035);
+        // Smooth 25ms attack for crisp, clear, non-jarring entry
+        g.gain.exponentialRampToValueAtTime(pGain, t + 0.025);
         g.gain.exponentialRampToValueAtTime(0.00001, t + decay);
 
         osc.connect(g);
@@ -350,7 +350,7 @@ class SoundEngine {
         osc.stop(t + decay + 0.1);
       });
 
-      // Soft, cushioned felt mallet strike (warm and muted, non-jarring)
+      // Soft, cushioned felt mallet strike
       const clickBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.035), ctx.sampleRate);
       const data = clickBuf.getChannelData(0);
       for (let i = 0; i < data.length; i++) {
@@ -362,7 +362,7 @@ class SoundEngine {
       clickFilter.type = 'lowpass';
       clickFilter.frequency.setValueAtTime(700, t);
       const clickGain = ctx.createGain();
-      clickGain.gain.setValueAtTime(0.045, t);
+      clickGain.gain.setValueAtTime(0.08, t);
       clickGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
       clickSource.connect(clickFilter);
       clickFilter.connect(clickGain);
@@ -398,7 +398,7 @@ class SoundEngine {
     filter.frequency.setValueAtTime(1200, now);
 
     g.gain.setValueAtTime(0.0001, now);
-    g.gain.linearRampToValueAtTime(0.25, now + 0.005);
+    g.gain.linearRampToValueAtTime(0.35, now + 0.005);
     g.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
 
     osc.connect(filter);
@@ -428,12 +428,12 @@ class SoundEngine {
     // Exhale: 288 Hz (Deep D4 grounding relaxation)
     const baseFreq = phase === 'inhale' ? 432.0 : phase === 'hold' ? 528.0 : 288.0;
 
-    // Subtle singing bowl partial ratios & decay profile
+    // Resonant singing bowl partial ratios & decay profile
     const partials = [
-      { mult: 1.0, gain: 0.28, decay: 3.2 },
-      { mult: 2.76, gain: 0.14, decay: 2.5 },
-      { mult: 4.12, gain: 0.06, decay: 1.8 },
-      { mult: 5.4, gain: 0.025, decay: 1.2 },
+      { mult: 1.0, gain: 0.52, decay: 3.5 },
+      { mult: 2.76, gain: 0.26, decay: 2.6 },
+      { mult: 4.12, gain: 0.12, decay: 1.8 },
+      { mult: 5.4, gain: 0.045, decay: 1.2 },
     ];
 
     partials.forEach(({ mult, gain: pGain, decay }) => {
@@ -445,8 +445,8 @@ class SoundEngine {
       osc.frequency.setValueAtTime(baseFreq * mult + (Math.random() * 0.4 - 0.2), t);
 
       g.gain.setValueAtTime(0.0001, t);
-      // Gentle 30ms rise for subtle transition entry
-      g.gain.exponentialRampToValueAtTime(pGain * 0.7, t + 0.03);
+      // Crisp 25ms rise for clear transition guidance
+      g.gain.exponentialRampToValueAtTime(pGain, t + 0.025);
       g.gain.exponentialRampToValueAtTime(0.00001, t + decay);
 
       osc.connect(g);

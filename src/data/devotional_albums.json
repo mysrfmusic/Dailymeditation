@@ -1,0 +1,2357 @@
+[
+  {
+    "id": "ocean-of-love",
+    "name": "The Ocean of Love",
+    "description": "Devotional chants of divine longing, love, and union.",
+    "themeColor": "text-rose-400",
+    "accentColor": "rose",
+    "icon": "Heart",
+    "tracks": [
+      {
+        "id": "Rc5Twttk5Mw",
+        "title": "Hymn to Brahma",
+        "desc": "Rig Veda cosmic chant.",
+        "icon": "Flame"
+      },
+      {
+        "id": "YnBLADvOleE",
+        "title": "Dawn Chant",
+        "desc": "A call to rise and awaken in light.",
+        "icon": "Sun"
+      },
+      {
+        "id": "kd4H7nnnB8Y",
+        "title": "Brindavan Vihari",
+        "desc": "Deep devotion and joy of Krishna.",
+        "icon": "Sparkles"
+      },
+      {
+        "id": "OfGe2pmnA48",
+        "title": "Om Kali",
+        "desc": "Reverence to the divine Mother Kali.",
+        "icon": "Shield"
+      },
+      {
+        "id": "zcJda9_MuGY",
+        "title": "Do Not Dry the Ocean of My Love",
+        "desc": "A beautiful prayer to the cosmic beloved.",
+        "icon": "Droplet"
+      },
+      {
+        "id": "MNZVJDr4l90",
+        "title": "Jai Guru, Jai Ma",
+        "desc": "Connecting with Guru and Divine Mother.",
+        "icon": "Compass"
+      },
+      {
+        "id": "LZ4heAblFzQ",
+        "title": "My Krishna Is Blue",
+        "desc": "Chant celebrating infinity of spirit.",
+        "icon": "Music"
+      },
+      {
+        "id": "nIDLu09FRyA",
+        "title": "Thou Art My Life",
+        "desc": "Complete surrender of soul to the cosmic ray.",
+        "icon": "Activity"
+      },
+      {
+        "id": "Gkrti3-1LjA",
+        "title": "I Am the Bubble, Make Me the Sea",
+        "desc": "Chant by Paramahansa Yogananda.",
+        "icon": "Timer"
+      },
+      {
+        "id": "RrZT6ATYNjc",
+        "title": "Om Namo Bhagavate...",
+        "desc": "Deep grounding mantra.",
+        "icon": "Bookmark"
+      },
+      {
+        "id": "dO2cbEY61lw",
+        "title": "Ever New Joy",
+        "desc": "Chant of the eternal bliss of Spirit.",
+        "icon": "Smile"
+      }
+    ]
+  },
+  {
+    "id": "soul-song",
+    "name": "Listen to My Soul Song",
+    "description": "Exquisite tracks calling the soul deeper into divine joy.",
+    "themeColor": "text-indigo-400",
+    "accentColor": "indigo",
+    "icon": "Music",
+    "tracks": [
+      {
+        "id": "c4N3fCg8AR0",
+        "title": "Hymn to Brahma",
+        "desc": "Sanskrit hymn celebrating cosmic creation.",
+        "icon": "Flame"
+      },
+      {
+        "id": "RtxaSGVLiHI",
+        "title": "At Thy Feet",
+        "desc": "Devotional prayer of sweet surrender.",
+        "icon": "Bookmark"
+      },
+      {
+        "id": "MQZvITlGMkI",
+        "title": "Sri Guru Sharanam",
+        "desc": "Seeking refuge under the grace of Gurudev.",
+        "icon": "Compass"
+      },
+      {
+        "id": "gHVdC3yiSu8",
+        "title": "Will That Day Come to Me, Mother?",
+        "desc": "Passionate query to Divine Mother.",
+        "icon": "Heart"
+      },
+      {
+        "id": "0ikmHYSpT3A",
+        "title": "Blue Lotus Feet",
+        "desc": "Meditation on the divine blue aura.",
+        "icon": "Sparkles"
+      },
+      {
+        "id": "UgmKA0pxP0s",
+        "title": "My Krishna Is Blue",
+        "desc": "Soul song of devotion to Krishna.",
+        "icon": "Activity"
+      },
+      {
+        "id": "mxKZdxvWCrY",
+        "title": "Govinda Jai Jai",
+        "desc": "Rhythmic vibration of holy names.",
+        "icon": "Sun"
+      },
+      {
+        "id": "NuxP3UX_SUY",
+        "title": "When Thy Song Flows Through Me",
+        "desc": "The ultimate connection with cosmic sound.",
+        "icon": "Droplet"
+      },
+      {
+        "id": "Zf6a2fXS9VU",
+        "title": "Jai Guru Jai",
+        "desc": "Chant of victory to the spiritual guide.",
+        "icon": "Shield"
+      },
+      {
+        "id": "Shof_WmmlG0",
+        "title": "Om Shanti",
+        "desc": "Blessings of profound universe peace.",
+        "icon": "Smile"
+      }
+    ]
+  },
+  {
+    "id": "silent-sky",
+    "name": "Come Out of the Silent Sky",
+    "description": "Divine communion from the stillness of the silent heavens.",
+    "themeColor": "text-cyan-400",
+    "accentColor": "cyan",
+    "icon": "Compass",
+    "tracks": [
+      {
+        "id": "TR4SBHRZUE8",
+        "title": "Aum Intro / Hymn to Brahman",
+        "desc": "Primal vibration of Brahman.",
+        "icon": "Flame"
+      },
+      {
+        "id": "R4I-zcV7tNE",
+        "title": "I Give You My Soul Call",
+        "desc": "Earnest prayer of direct communion.",
+        "icon": "Activity"
+      },
+      {
+        "id": "FPse1MZLiuM",
+        "title": "Who Is In My Temple?",
+        "desc": "Searching for the light within the heart.",
+        "icon": "Heart"
+      },
+      {
+        "id": "iadprkEqREE",
+        "title": "What Lightning Flash",
+        "desc": "The sudden awakening of inner wisdom.",
+        "icon": "Zap"
+      },
+      {
+        "id": "HvKaDD1IEw0",
+        "title": "Wink Has Not Touched My Eyes",
+        "desc": "Restless prayer for divine vision.",
+        "icon": "Compass"
+      },
+      {
+        "id": "THH3-_uJq2g",
+        "title": "Narayan Kirtan",
+        "desc": "Sanskrit chants to the supreme Lord.",
+        "icon": "Sun"
+      },
+      {
+        "id": "LzQmWfPc5jU",
+        "title": "Madhura, Madhura Naam",
+        "desc": "Chants of divine sweet resonance.",
+        "icon": "Music"
+      },
+      {
+        "id": "zPUzuy6hcoE",
+        "title": "Hymn to Brahma",
+        "desc": "Ancient cosmic sound of Brahma.",
+        "icon": "Shield"
+      },
+      {
+        "id": "kE-i8p-wGdA",
+        "title": "Dawn Chant",
+        "desc": "Greet the morning with inner light.",
+        "icon": "Sun"
+      },
+      {
+        "id": "Au30AuaIEog",
+        "title": "Govinda Jai Jai",
+        "desc": "Vibrant and celebratory devotion.",
+        "icon": "Sparkles"
+      },
+      {
+        "id": "9jJW93JMFxs",
+        "title": "Blue Lotus Feet",
+        "desc": "Honoring the form of the supreme guardian.",
+        "icon": "Droplet"
+      },
+      {
+        "id": "vQKGqftLSXs",
+        "title": "Swami Ram Tirtha’s Song",
+        "desc": "Ecstatic lyrics of spiritual freedom.",
+        "icon": "Activity"
+      },
+      {
+        "id": "4WzwdIJJ8DA",
+        "title": "Om Kali",
+        "desc": "Venerating cosmic motherly protection.",
+        "icon": "Shield"
+      },
+      {
+        "id": "FnL2A5_2sbQ",
+        "title": "Gurudeva",
+        "desc": "Ode to the teacher guiding to liberation.",
+        "icon": "Bookmark"
+      },
+      {
+        "id": "K2ed6uMPSZc",
+        "title": "Namo Namaste",
+        "desc": "Divine salutations to the infinite.",
+        "icon": "Smile"
+      }
+    ]
+  },
+  {
+    "id": "blazing-light",
+    "name": "O Blazing Light",
+    "description": "Radiant chants celebrating the magnificent inner fire.",
+    "themeColor": "text-yellow-400",
+    "accentColor": "yellow",
+    "icon": "Sun",
+    "tracks": [
+      {
+        "id": "zPUzuy6hcoE",
+        "title": "Hymn to Brahma",
+        "desc": "Holy chant of supreme consciousness.",
+        "icon": "Flame"
+      },
+      {
+        "id": "kE-i8p-wGdA",
+        "title": "Dawn Chant",
+        "desc": "Awakening with the sunrise of soul.",
+        "icon": "Sun"
+      },
+      {
+        "id": "Au30AuaIEog",
+        "title": "Govinda Jai Jai",
+        "desc": "Ecstatic rhythmic chant to Hari.",
+        "icon": "Sparkles"
+      },
+      {
+        "id": "9jJW93JMFxs",
+        "title": "Blue Lotus Feet",
+        "desc": "Devout focus on pure divinity.",
+        "icon": "Droplet"
+      },
+      {
+        "id": "vQKGqftLSXs",
+        "title": "Swami Ram Tirtha’s Song",
+        "desc": "Liberation chant of oneness.",
+        "icon": "Activity"
+      },
+      {
+        "id": "4WzwdIJJ8DA",
+        "title": "Om Kali",
+        "desc": "Cosmic creation energy vibrations.",
+        "icon": "Shield"
+      },
+      {
+        "id": "FnL2A5_2sbQ",
+        "title": "Gurudeva",
+        "desc": "Honoring wisdom and lineage.",
+        "icon": "Bookmark"
+      },
+      {
+        "id": "K2ed6uMPSZc",
+        "title": "Namo Namaste",
+        "desc": "Infinite salutations and surrender.",
+        "icon": "Smile"
+      }
+    ]
+  },
+  {
+    "id": "heart-of-hearts",
+    "name": "Thy Heart of Hearts",
+    "description": "Longing devotion reaching the deepest sanctum of the divine.",
+    "themeColor": "text-fuchsia-400",
+    "accentColor": "fuchsia",
+    "icon": "Heart",
+    "tracks": [
+      {
+        "id": "5AvzM_Ljdaw",
+        "title": "Come, Listen to My Soul Song",
+        "desc": "The voice of loving calls.",
+        "icon": "Heart"
+      },
+      {
+        "id": "DAvau8w3d4A",
+        "title": "Amaraguru, Yogananda",
+        "desc": "Everliving guru of pure wisdom.",
+        "icon": "Compass"
+      },
+      {
+        "id": "u-j-fNkNxac",
+        "title": "O Thou Blue Sky",
+        "desc": "Infinite sky of boundless spirit.",
+        "icon": "Sun"
+      },
+      {
+        "id": "OMAS58Z6P-I",
+        "title": "At Thy Feet",
+        "desc": "Surrendering all limitations in peace.",
+        "icon": "Bookmark"
+      },
+      {
+        "id": "O3SBN67-hDc",
+        "title": "In the Land Beyond My Dreams",
+        "desc": "Entering mystical deep dreamless bliss.",
+        "icon": "Sparkles"
+      },
+      {
+        "id": "K5LzMw2NR-k",
+        "title": "Thousands of Suns",
+        "desc": "Brilliant blinding white inner aura of Spirit.",
+        "icon": "Flame"
+      },
+      {
+        "id": "6OHyDyVm9wU",
+        "title": "Cloud-Colored Christ",
+        "desc": "Chant celebrating infinite Christ presence.",
+        "icon": "Shield"
+      },
+      {
+        "id": "hkZ1wB0PEOk",
+        "title": "Receive Me on Thy Lap",
+        "desc": "Sweet longing for eternal safety.",
+        "icon": "Droplet"
+      },
+      {
+        "id": "-ytgLWdJUik",
+        "title": "From This Sleep, Lord",
+        "desc": "Waking from cosmic dream to truth.",
+        "icon": "Activity"
+      },
+      {
+        "id": "ZJkaKJdzUhU",
+        "title": "Hare Krishna",
+        "desc": "Vibrating divine names purely.",
+        "icon": "Music"
+      },
+      {
+        "id": "jqj5hwxDfBA",
+        "title": "Where Is There Love?",
+        "desc": "The endless search ending and meeting in Ma.",
+        "icon": "Smile"
+      },
+      {
+        "id": "Gd9gYcaXjco",
+        "title": "Yogananda Sharanam",
+        "desc": "Shelter in Paramahansa Yogananda.",
+        "icon": "Timer"
+      }
+    ]
+  },
+  {
+    "id": "ever-new-joy",
+    "name": "Ever New Joy",
+    "description": "Blissful, happy chants celebrating eternal conscious joy.",
+    "themeColor": "text-amber-400",
+    "accentColor": "amber",
+    "icon": "Smile",
+    "tracks": [
+      {
+        "id": "pr5NNezfNgE",
+        "title": "Hymn to Brahma",
+        "desc": "Uplifting sanskrit cosmic praise.",
+        "icon": "Flame"
+      },
+      {
+        "id": "3JtTQzZYQgc",
+        "title": "Amaraguru Yogananda",
+        "desc": "Ever-new guide of the soul.",
+        "icon": "Compass"
+      },
+      {
+        "id": "-mI5NZt35X0",
+        "title": "Search Him Out in Secret",
+        "desc": "Silent interiorised meditation.",
+        "icon": "Zap"
+      },
+      {
+        "id": "IPjp5WgxdqQ",
+        "title": "Hey Bhagavan",
+        "desc": "Warm personal prayer of calling.",
+        "icon": "Heart"
+      },
+      {
+        "id": "ENx8UKqJATs",
+        "title": "Hare Krishna",
+        "desc": "Joyful chanting of the lord.",
+        "icon": "Music"
+      },
+      {
+        "id": "XO5Ea_KZ6wc",
+        "title": "I Give You My Soul Call",
+        "desc": "The voice of direct devotion.",
+        "icon": "Activity"
+      },
+      {
+        "id": "yBml0dMPA10",
+        "title": "Ever New Joy",
+        "desc": "Pure state of bliss.",
+        "icon": "Smile"
+      },
+      {
+        "id": "dqJOYQ9v7YE",
+        "title": "I Will Sing Thy Name",
+        "desc": "Unbroken thread of divine chant.",
+        "icon": "Sparkles"
+      },
+      {
+        "id": "hrihi0H-txw",
+        "title": "Spirit and Nature",
+        "desc": "Oneness of consciousness and creation.",
+        "icon": "Sun"
+      },
+      {
+        "id": "FwTeRCBokZQ",
+        "title": "Deliver Us From Delusion",
+        "desc": "Prayer for single-pointed clarity.",
+        "icon": "Shield"
+      }
+    ]
+  },
+  {
+    "id": "song-flows",
+    "name": "When Thy Song Flows Through Me",
+    "description": "Deeply moving cosmic sound vibrations and silent communion.",
+    "themeColor": "text-rose-400",
+    "accentColor": "rose",
+    "icon": "Music",
+    "tracks": [
+      {
+        "id": "UIq6YRA7HGE",
+        "title": "Jai Guru",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Compass"
+      },
+      {
+        "id": "SsIi9Ba4h2Y",
+        "title": "Thou Art My Life",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "P_QZSGjaK9Y",
+        "title": "Door of My Heart",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Heart"
+      },
+      {
+        "id": "mXZazhOSN84",
+        "title": "When Thy Song Flows Through Me",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "Mj2w2WB9WwI",
+        "title": "I Am the Sky",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "s7redy0-Law",
+        "title": "Polestar of My Life",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "6px3yz6gA-Y",
+        "title": "Blue Lotus Feet",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Droplet"
+      },
+      {
+        "id": "6bWOCm9OeTI",
+        "title": "O God Beautiful - Aum Chant",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Activity"
+      }
+    ]
+  },
+  {
+    "id": "sing-name",
+    "name": "I Will Sing Thy Name",
+    "description": "Devotional calling and sweet surrender through sacred chants.",
+    "themeColor": "text-indigo-400",
+    "accentColor": "indigo",
+    "icon": "Sparkles",
+    "tracks": [
+      {
+        "id": "jI5iAnceXZ4",
+        "title": "I Will Sing Thy Name",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "6BDZL9e4zDg",
+        "title": "Search Him Out in Secret",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "c5OBhhEf5FA",
+        "title": "Deliver Us From Delusion",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Activity"
+      },
+      {
+        "id": "gx_VaV_mScU",
+        "title": "Who Is in My Temple",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "COhHyD2U-r8",
+        "title": "Spirit and Nature",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "z5xNm-VYLfM",
+        "title": "Hare Krishna, Hare Ram",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "raQEPqlHzTQ",
+        "title": "In the Valley of Sorrow",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "C--HVQLIxe0",
+        "title": "He Bhagavan",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "gj-dth2Crl0",
+        "title": "Light the Lamp of Thy Love",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Heart"
+      },
+      {
+        "id": "LbdlrkDveZM",
+        "title": "Swami Ram Tirtha's Song",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "UegOUQ97PWs",
+        "title": "Divine Gypsy",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      }
+    ]
+  },
+  {
+    "id": "dreams-dream",
+    "name": "When My Dream's Dream is Done",
+    "description": "Mystical tracks awakening the soul into cosmic consciousness.",
+    "themeColor": "text-cyan-400",
+    "accentColor": "cyan",
+    "icon": "Compass",
+    "tracks": [
+      {
+        "id": "Qn4Wmndg3vQ",
+        "title": "Hymn to Brahma",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Flame"
+      },
+      {
+        "id": "bYz_XyHsJKI",
+        "title": "Polestar of My Life - O God Beautiful",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "jijHOc0R-4g",
+        "title": "Spirit and Nature",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "jNqrEAWVLNE",
+        "title": "When My Dream's Dream is Done",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "Nt3urPc2tkw",
+        "title": "Satchidananda Guru",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Compass"
+      },
+      {
+        "id": "zm2TRrZbLqI",
+        "title": "Listen, Listen, Listen",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "BdEtD_AN_Sc",
+        "title": "Radhe Shyam",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "XmQasAzmxCU",
+        "title": "Blue Lotus Feet - Om Chant",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Droplet"
+      }
+    ]
+  },
+  {
+    "id": "shanti-mandir",
+    "name": "Shanti Mandir",
+    "description": "Profound sanctuary of peace, silence, and sacred mantras.",
+    "themeColor": "text-emerald-400",
+    "accentColor": "emerald",
+    "icon": "Smile",
+    "tracks": [
+      {
+        "id": "BPybvY2lDEw",
+        "title": "Suno Mere Atma-Gan (At Thy Feet)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Sun"
+      },
+      {
+        "id": "9D1rd8hFj9s",
+        "title": "Is Nind Se, Prabhu (From This Sleep, Lord)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Activity"
+      },
+      {
+        "id": "_A94KMJDl7o",
+        "title": "Dukh Ki Vadi Me (In the Valley of Sorrow)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "8RBBs6jeu_M",
+        "title": "Nitya Navin Anand (Ever New Joy)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Sparkles"
+      },
+      {
+        "id": "DfcNZfmdEDY",
+        "title": "Shanti Mandir Me (In the Temple of Silence)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Smile"
+      },
+      {
+        "id": "G2wJnRwWoZc",
+        "title": "Shyamal Krishna (Cloud-Colored Christ)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "ZUTbWsHy62o",
+        "title": "Niras Na Karo Mere Prem Sagar Ko (Do Not Dry the Ocean of My Love)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Heart"
+      },
+      {
+        "id": "fVOWVugDSxw",
+        "title": "Ma, Tujhe Di Atma Ki Pukar (I Give You My Soul Call)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "4bUcwYLB8kA",
+        "title": "Kaun Hai Mere Mandir Me (Who is in My Temple)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "7nZM9mXjxfU",
+        "title": "Nil Kamal Charan (Blue Lotus Feet)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Droplet"
+      },
+      {
+        "id": "N2aYWB1z2-k",
+        "title": "Guru Stuti (Slokas) - He Bhagavan (Praise of the Guru - O Lord)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Compass"
+      },
+      {
+        "id": "2u1zIMyVxLw",
+        "title": "Dhyan Karo (Meditate)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "BkCgGbqruiw",
+        "title": "Bhaja Mana (Pray Night and Day)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "edlqMm-8OXk",
+        "title": "Sri Guru Sharanam (I Surrender to the Guru)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Compass"
+      },
+      {
+        "id": "krSz8ApD_KE",
+        "title": "Krishna Stuti (Sloka) - Krishna Gopal Giridhari (Praise Lord Krishna - Victory to Krishna in...",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "aBnUPM_sG2Y",
+        "title": "Bhajan Karungi Tumhara (Lord, I Will Sing to Thee)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "XHgUOm4I5Po",
+        "title": "Hare Krishna",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "VDqKwucZLDY",
+        "title": "Om Jai Jagadish Hare (Arati)",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Activity"
+      }
+    ]
+  },
+  {
+    "id": "guru-sharanam",
+    "name": "Guru Sharanam",
+    "description": "Blessed refuge and guided light of the lineage seekers.",
+    "themeColor": "text-yellow-400",
+    "accentColor": "yellow",
+    "icon": "Compass",
+    "tracks": [
+      {
+        "id": "fdqB5J32pX8",
+        "title": "Guru Hamare",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Compass"
+      },
+      {
+        "id": "VdugSeqC6Oo",
+        "title": "Help Me Come Back",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Activity"
+      },
+      {
+        "id": "SCCBfCeIvpI",
+        "title": "Tero Naam",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "ZX2CbJvm2MQ",
+        "title": "God, Krishna, Christ, Gurus",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Compass"
+      },
+      {
+        "id": "urFqRZTIYmU",
+        "title": "Om, Tat, Sat",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Activity"
+      },
+      {
+        "id": "S312XGYA4t8",
+        "title": "Namo, Namo",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      }
+    ]
+  },
+  {
+    "id": "thy-feet",
+    "name": "At Thy Feet",
+    "description": "Surrendering all boundaries and limitations at the altar of spirit.",
+    "themeColor": "text-fuchsia-400",
+    "accentColor": "fuchsia",
+    "icon": "Heart",
+    "tracks": [
+      {
+        "id": "oys07DpHR30",
+        "title": "At Thy Feet",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "kITE3vbsgT4",
+        "title": "I Am the Bubble, Make Me the Sea",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "2GAQoi2OeDM",
+        "title": "Door of My Heart",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Heart"
+      },
+      {
+        "id": "aUa3A8Yvt8U",
+        "title": "Cloud-Colored Christ",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "cu0mJ5fzLoY",
+        "title": "Dawn Chant",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Sun"
+      },
+      {
+        "id": "9dr3gY_lf34",
+        "title": "Sri Guru Sharanam",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Compass"
+      },
+      {
+        "id": "1R4_LzeiXK4",
+        "title": "Light the Lamp of Thy Love",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Heart"
+      },
+      {
+        "id": "6yQKEHq4HAA",
+        "title": "I Am the Sky",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "a0nOLb54y9s",
+        "title": "Who Is in My Temple?",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "NyAbtk4864c",
+        "title": "Murali Krishna",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "yxF3_6JRsjo",
+        "title": "In the Land Beyond My Dreams",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "PBMyZt_yURw",
+        "title": "I Give You My Soul Call",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "KqkQgkU2t6M",
+        "title": "Thousands of Suns",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Sun"
+      },
+      {
+        "id": "q0BIshw_F10",
+        "title": "Thou Art My Life",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "62cSBt9bb4Q",
+        "title": "Jaya Jaya Ma",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "H7Li5Yo2s9Q",
+        "title": "Jai Guru",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Compass"
+      },
+      {
+        "id": "-AFByO1YL74",
+        "title": "O Thou Blue Sky",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Droplet"
+      },
+      {
+        "id": "HDxFwX6kPbI",
+        "title": "Radha Krishna Govinda",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "wbChJuu7CPM",
+        "title": "I Will Sing Thy Name",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      }
+    ]
+  },
+  {
+    "id": "songs-heart",
+    "name": "Songs of My Heart",
+    "description": "An intimate collection of divine melodies of sweet devotion.",
+    "themeColor": "text-amber-400",
+    "accentColor": "amber",
+    "icon": "Heart",
+    "tracks": [
+      {
+        "id": "EyBtOifZAys",
+        "title": "Prayer at Dawn",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Sun"
+      },
+      {
+        "id": "hc2x64QAmvo",
+        "title": "O God beautiful - Paramhansa Yogananda",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "IXY0CM83Jss",
+        "title": "He Hari Sundara",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Sun"
+      },
+      {
+        "id": "Bju7gWiuZCU",
+        "title": "What Lightning Flash",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "hnTJwKDtHDA",
+        "title": "God, Christ, Gurus",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Compass"
+      },
+      {
+        "id": "wIKiFgsIWHs",
+        "title": "Prayer at Noon",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "_rjI-ej-nGY",
+        "title": "The Hound of Heaven",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "FszBLKSeM28",
+        "title": "Cloud-Colored Christ",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "DFH5PzhpFz8",
+        "title": "Divine Mothers Song to the Devotee",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "mhgwDjRjdFM",
+        "title": "In the Temple of Silence",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "L6h7v4TqZ4g",
+        "title": "Song of India",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "KFNdg7Q9YYs",
+        "title": "Shanti Mundiray",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Smile"
+      },
+      {
+        "id": "3Z79qGEeQL8",
+        "title": "Prayer at Eventide",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "j_8qDvlFmlU",
+        "title": "I Will Be Thine Always",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "A0e9CPSym7k",
+        "title": "Main Tera Hamesha",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "iXP8mcipTgs",
+        "title": "Do not dry the ocean of my Love - Paramhansa Yogananda",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Heart"
+      },
+      {
+        "id": "upQUvPfT6W8",
+        "title": "Prayer at Night",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      }
+    ]
+  },
+  {
+    "id": "in-temple-heart",
+    "name": "In the Temple of My Heart",
+    "description": "Inspiring and meditative cosmic chants to awaken divine presence in the inner temple of your heart.",
+    "themeColor": "text-cyan-400",
+    "accentColor": "cyan",
+    "icon": "Heart",
+    "tracks": [
+      {
+        "id": "koOT2vXXyJs",
+        "title": "Invocation to the Gurus",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Flame"
+      },
+      {
+        "id": "zaWo5l18FD4",
+        "title": "They Have Heard Thy Name",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Music"
+      },
+      {
+        "id": "_oyZK23zif0",
+        "title": "Opal Flame",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Flame"
+      },
+      {
+        "id": "BuV3m1oiSWM",
+        "title": "God of Beauty",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Sparkles"
+      },
+      {
+        "id": "NKvXkU0I6yQ",
+        "title": "Om Song",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Activity"
+      },
+      {
+        "id": "jfFzZDWNeA4",
+        "title": "In the Temple of Silence",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Shield"
+      },
+      {
+        "id": "jXLyNsbu9bI",
+        "title": "Desire, My Great Enemy",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Droplet"
+      },
+      {
+        "id": "905o-xfQpUM",
+        "title": "Divine Love's Sorrow",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Heart"
+      },
+      {
+        "id": "QuNfRtJ3OP4",
+        "title": "From This Sleep, Lord",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Sun"
+      },
+      {
+        "id": "VVqTgKySMLA",
+        "title": "Wake, Yet Wake, O My Saint",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Smile"
+      },
+      {
+        "id": "5w2W-wWF4Qw",
+        "title": "What Lightning Flash",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Zap"
+      },
+      {
+        "id": "UUVHntSSoQ8",
+        "title": "Why, O Mind, Wanderest Thou",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Compass"
+      },
+      {
+        "id": "2p8JYIxMRns",
+        "title": "Divine Mother's Song to the Devotee",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Heart"
+      },
+      {
+        "id": "6Umz_yN2vY8",
+        "title": "Today My Mind Has Dived",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Droplet"
+      },
+      {
+        "id": "mKhXU6XhLQA",
+        "title": "He Who Knows",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Sparkles"
+      },
+      {
+        "id": "wjQOnllwNb8",
+        "title": "In Samadhi",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Sun"
+      },
+      {
+        "id": "l4i3h4P2bys",
+        "title": "When My Dream's Dream is Done",
+        "desc": "Devotional cosmic chant.",
+        "icon": "Heart"
+      }
+    ]
+  },
+  {
+    "id": "cosmic-chant-tamil",
+    "name": "Cosmic Chant Tamil",
+    "description": "Devotional singing of Paramahansa Yogananda's Cosmic Chants by YSS Monastics in Tamil.",
+    "themeColor": "text-purple-400",
+    "accentColor": "purple",
+    "icon": "Music",
+    "tracks": [
+      {
+        "id": "_nc7GgkGJx0",
+        "title": "Who is in My Temple?",
+        "desc": "Cosmic chant sung by YSS Monastics in Tamil.",
+        "icon": "Heart"
+      },
+      {
+        "id": "tRyj3zB4l34",
+        "title": "Polestar of My Life",
+        "desc": "Cosmic chant sung by YSS Monastics in Tamil.",
+        "icon": "Sun"
+      },
+      {
+        "id": "VMde9B24YN0",
+        "title": "Door of My Heart",
+        "desc": "Cosmic chant sung by YSS Monastics in Tamil.",
+        "icon": "Flame"
+      },
+      {
+        "id": "kmRV3yBe6Lo",
+        "title": "Listen, Listen, Listen",
+        "desc": "Cosmic chant sung by YSS Monastics in Tamil.",
+        "icon": "Music"
+      }
+    ]
+  },
+  {
+    "id": "kriyananda-chants-yogananda",
+    "name": "Kriyananda Chants Yogananda",
+    "description": "Sacred chants of Paramahansa Yogananda sung and played by Swami Kriyananda.",
+    "themeColor": "text-amber-400",
+    "accentColor": "amber",
+    "icon": "Flame",
+    "artist": "Swami Kriyananda",
+    "tags": [
+      "Swami Kriyananda",
+      "Swamy Kiryananda",
+      "Chants",
+      "Devotional Chants"
+    ],
+    "tracks": [
+      {
+        "id": "46vTBeDN18U",
+        "title": "Do Not Dry the Ocean of My Love",
+        "desc": "Devotional song by Swami Kriyananda (Kriyananda Chants Yogananda).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Kriyananda Chants Yogananda",
+          "Do Not",
+          "Dry",
+          "Ocean",
+          "Love"
+        ]
+      },
+      {
+        "id": "nGFiOpU0wWY",
+        "title": "I Will Be Thine Always",
+        "desc": "Devotional song by Swami Kriyananda (Kriyananda Chants Yogananda).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Kriyananda Chants Yogananda",
+          "Will",
+          "Thine",
+          "Always"
+        ]
+      },
+      {
+        "id": "dOVPUGgyAOg",
+        "title": "Door of My Heart",
+        "desc": "Devotional song by Swami Kriyananda (Kriyananda Chants Yogananda).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Kriyananda Chants Yogananda",
+          "Door",
+          "Heart"
+        ]
+      },
+      {
+        "id": "DZ8h-vMwIAo",
+        "title": "I Have Been Roaming",
+        "desc": "Devotional song by Swami Kriyananda (Kriyananda Chants Yogananda).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Kriyananda Chants Yogananda",
+          "Have",
+          "Been",
+          "Roaming"
+        ]
+      },
+      {
+        "id": "WX74Xo0s3oI",
+        "title": "Lord, When in Darkness",
+        "desc": "Devotional song by Swami Kriyananda (Kriyananda Chants Yogananda).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Kriyananda Chants Yogananda",
+          "Lord",
+          "When",
+          "Darkness"
+        ]
+      },
+      {
+        "id": "B66fhAYZ9WQ",
+        "title": "Will That Day Come to Me, Ma",
+        "desc": "Devotional song by Swami Kriyananda (Kriyananda Chants Yogananda).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Kriyananda Chants Yogananda",
+          "Will",
+          "That",
+          "Day",
+          "Come"
+        ]
+      },
+      {
+        "id": "VokbXlBluOo",
+        "title": "Blue Lotus Feet",
+        "desc": "Devotional song by Swami Kriyananda (Kriyananda Chants Yogananda).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Kriyananda Chants Yogananda",
+          "Blue",
+          "Lotus",
+          "Feet"
+        ]
+      },
+      {
+        "id": "EZHA9e96Kcs",
+        "title": "When I Awake",
+        "desc": "Devotional song by Swami Kriyananda (Kriyananda Chants Yogananda).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Kriyananda Chants Yogananda",
+          "When",
+          "Awake"
+        ]
+      },
+      {
+        "id": "xHYY33G42Ys",
+        "title": "Om Namo Bhagavate",
+        "desc": "Devotional song by Swami Kriyananda (Kriyananda Chants Yogananda).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Kriyananda Chants Yogananda",
+          "Namo",
+          "Bhagavate"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "o-god-beautiful",
+    "name": "O God Beautiful",
+    "description": "Devotional chants and inspirational songs of soul longing and joy.",
+    "themeColor": "text-rose-400",
+    "accentColor": "rose",
+    "icon": "Heart",
+    "artist": "Swami Kriyananda",
+    "tags": [
+      "Swami Kriyananda",
+      "Swamy Kiryananda",
+      "Chants",
+      "Devotional Chants"
+    ],
+    "tracks": [
+      {
+        "id": "R-NnX0FA69I",
+        "title": "Dawn Chant",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Dawn",
+          "Chant"
+        ]
+      },
+      {
+        "id": "01EYgZI4QE8",
+        "title": "Deliver Us from Delusion",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Deliver",
+          "From",
+          "Delusion"
+        ]
+      },
+      {
+        "id": "iTcWz2ZjRsY",
+        "title": "Door of My Heart",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Door",
+          "Heart"
+        ]
+      },
+      {
+        "id": "0uPBYW72s8U",
+        "title": "Listen, Listen, Listen",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Listen"
+        ]
+      },
+      {
+        "id": "lQaCc9UAUqk",
+        "title": "I Am Free",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Free"
+        ]
+      },
+      {
+        "id": "NZwpn7IwH0o",
+        "title": "Thou Art My Life",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Thou",
+          "Art",
+          "Life"
+        ]
+      },
+      {
+        "id": "5xWsG8a5hMU",
+        "title": "In the Temple of Silence",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Temple",
+          "Silence"
+        ]
+      },
+      {
+        "id": "W6H1eEDWs54",
+        "title": "Who Is in My Temple",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Who",
+          "Temple"
+        ]
+      },
+      {
+        "id": "yVR9LHwzdjA",
+        "title": "Polestar of My Life",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Polestar",
+          "Life"
+        ]
+      },
+      {
+        "id": "6-T3HaTLhRk",
+        "title": "I Give You My Soul Call",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Give",
+          "You",
+          "Soul",
+          "Call"
+        ]
+      },
+      {
+        "id": "TqVqG0Tsing",
+        "title": "Divine Love Sorrows",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Divine",
+          "Love",
+          "Sorrows"
+        ]
+      },
+      {
+        "id": "eP0yjkXzvN0",
+        "title": "Blue Lotus Feet",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Blue",
+          "Lotus",
+          "Feet"
+        ]
+      },
+      {
+        "id": "OhhEoeHMJxY",
+        "title": "O God Beautiful",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "God",
+          "Beautiful"
+        ]
+      },
+      {
+        "id": "wFpOB2fNLFM",
+        "title": "Jenny Will Love Me",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Jenny",
+          "Will",
+          "Love"
+        ]
+      },
+      {
+        "id": "UbdVU0FvKI0",
+        "title": "Springtime in Romania",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Springtime",
+          "Romania"
+        ]
+      },
+      {
+        "id": "pSOW18RIzJM",
+        "title": "The Hill That Was Tara",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Hill",
+          "That",
+          "Was",
+          "Tara"
+        ]
+      },
+      {
+        "id": "wsadTliaOLw",
+        "title": "Song of the Nightingale",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Song",
+          "Nightingale"
+        ]
+      },
+      {
+        "id": "l7n9l9VbLGg",
+        "title": "Imogen's Song",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Imogens",
+          "Song"
+        ]
+      },
+      {
+        "id": "AOgBIVsXmZQ",
+        "title": "I Live Without Fear",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Live",
+          "Without",
+          "Fear"
+        ]
+      },
+      {
+        "id": "xAHNai6x5_4",
+        "title": "Have You Seen Sorrento?",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Have",
+          "You",
+          "Seen",
+          "Sorrento"
+        ]
+      },
+      {
+        "id": "3FMyunhwGzc",
+        "title": "In the Spirit",
+        "desc": "Devotional song by Swami Kriyananda (O God Beautiful).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "O God Beautiful",
+          "Spirit"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "soul-songs-kriyananda",
+    "name": "Soul Songs",
+    "description": "Uplifting melodies, folklore, and devotional soul expressions by Swami Kriyananda.",
+    "themeColor": "text-indigo-400",
+    "accentColor": "indigo",
+    "icon": "Music",
+    "artist": "Swami Kriyananda",
+    "tags": [
+      "Swami Kriyananda",
+      "Swamy Kiryananda",
+      "Chants",
+      "Songs"
+    ],
+    "tracks": [
+      {
+        "id": "YJSY28qKSwc",
+        "title": "Mother of Us All",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Mother",
+          "All"
+        ]
+      },
+      {
+        "id": "RNHF19b5D8s",
+        "title": "Memories",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Memories"
+        ]
+      },
+      {
+        "id": "xpV0eG7JHJA",
+        "title": "Deirdre's Sorrows",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Deirdres",
+          "Sorrows"
+        ]
+      },
+      {
+        "id": "lKTD-K5NDUU",
+        "title": "Irish Lullaby",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Irish",
+          "Lullaby"
+        ]
+      },
+      {
+        "id": "jG95RXgLDvE",
+        "title": "Good Night, Sweetheart",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Good",
+          "Night",
+          "Sweetheart"
+        ]
+      },
+      {
+        "id": "mqbQtU4nzRI",
+        "title": "Who Is Silvia?",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Who",
+          "Silvia"
+        ]
+      },
+      {
+        "id": "OOmUYs3QhEM",
+        "title": "Memories of That Isle",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Memories",
+          "That",
+          "Isle"
+        ]
+      },
+      {
+        "id": "L9Gnt1gqZbI",
+        "title": "Dare to Be Different!",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Dare",
+          "Different"
+        ]
+      },
+      {
+        "id": "7F4fZgOdh2Q",
+        "title": "Dublin Town",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Dublin",
+          "Town"
+        ]
+      },
+      {
+        "id": "BSN3yhFY-XY",
+        "title": "Walk Like a Man",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Walk",
+          "Like",
+          "Man"
+        ]
+      },
+      {
+        "id": "fLCkB1ilGcw",
+        "title": "Home Is a Green Hill",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Home",
+          "Green",
+          "Hill"
+        ]
+      },
+      {
+        "id": "1XaomJfDea8",
+        "title": "Peace",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Peace"
+        ]
+      },
+      {
+        "id": "BBVUSaGOkms",
+        "title": "Ra Ma",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Ra Ma"
+        ]
+      },
+      {
+        "id": "gRQUxysVfhc",
+        "title": "Love Is a Magician",
+        "desc": "Devotional song by Swami Kriyananda (Soul Songs).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Soul Songs",
+          "Love",
+          "Magician"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "windows-on-the-world",
+    "name": "Windows on the World",
+    "description": "Global spiritual songs and contemplative musical journeys across sacred traditions.",
+    "themeColor": "text-cyan-400",
+    "accentColor": "cyan",
+    "icon": "Compass",
+    "artist": "Swami Kriyananda",
+    "tags": [
+      "Swami Kriyananda",
+      "Swamy Kiryananda",
+      "Chants",
+      "Songs"
+    ],
+    "tracks": [
+      {
+        "id": "9eTpuOozsMg",
+        "title": "Mother of Us All",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Mother",
+          "All"
+        ]
+      },
+      {
+        "id": "NKdb_RG55lk",
+        "title": "Through Many Lives",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Through",
+          "Many",
+          "Lives"
+        ]
+      },
+      {
+        "id": "dbYtPk0d2Lk",
+        "title": "Krishna’s Flute",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Krishnas",
+          "Flute"
+        ]
+      },
+      {
+        "id": "BSSnbl3ZvOM",
+        "title": "Wander with Thee",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Wander",
+          "Thee"
+        ]
+      },
+      {
+        "id": "WZyJETlxFmU",
+        "title": "Cloisters",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Cloisters"
+        ]
+      },
+      {
+        "id": "cdkRvCe8Fb4",
+        "title": "God’s Call Within",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Gods",
+          "Call",
+          "Within"
+        ]
+      },
+      {
+        "id": "yUrJCGxQ5N4",
+        "title": "I Live Without Fear",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Live",
+          "Without",
+          "Fear"
+        ]
+      },
+      {
+        "id": "oGZtQXjvUpk",
+        "title": "I’ve Passed My Life as a Stranger",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Ive",
+          "Passed",
+          "Life",
+          "Stranger"
+        ]
+      },
+      {
+        "id": "BH0I-WRgCnw",
+        "title": "Lord Most High",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Lord",
+          "Most",
+          "High"
+        ]
+      },
+      {
+        "id": "WB566jWanq8",
+        "title": "Monasteries",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Monasteries"
+        ]
+      },
+      {
+        "id": "YfAfpXeaVcY",
+        "title": "Life Flows on Like a River",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Life",
+          "Flows",
+          "Like",
+          "River"
+        ]
+      },
+      {
+        "id": "fmHDBBn4fsQ",
+        "title": "Farther Away Than the Stars",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Farther",
+          "Away",
+          "Than",
+          "Stars"
+        ]
+      },
+      {
+        "id": "rk25hOuJR1Q",
+        "title": "Christmas Mystery",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Christmas",
+          "Mystery"
+        ]
+      },
+      {
+        "id": "PHtuzSFSLdk",
+        "title": "Peace",
+        "desc": "Devotional song by Swami Kriyananda (Windows on the World).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Windows on the World",
+          "Peace"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "song-of-the-nightingale",
+    "name": "Song of the Nightingale",
+    "description": "Mystical melodies, prayers of peace, and soul poetry by Swami Kriyananda.",
+    "themeColor": "text-emerald-400",
+    "accentColor": "emerald",
+    "icon": "Sun",
+    "artist": "Swami Kriyananda",
+    "tags": [
+      "Swami Kriyananda",
+      "Swamy Kiryananda",
+      "Chants",
+      "Songs"
+    ],
+    "tracks": [
+      {
+        "id": "gtAVN2OED5I",
+        "title": "Song of the Nightingale",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Song",
+          "Nightingale"
+        ]
+      },
+      {
+        "id": "IBZfpIbzAIo",
+        "title": "Lullaby",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Lullaby"
+        ]
+      },
+      {
+        "id": "I43zBnoA4wE",
+        "title": "Irish Lullaby",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Irish",
+          "Lullaby"
+        ]
+      },
+      {
+        "id": "QI1NOwR1NBY",
+        "title": "Go with Love",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Love"
+        ]
+      },
+      {
+        "id": "JchM6jhzRUo",
+        "title": "Chinese Garden",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Chinese",
+          "Garden"
+        ]
+      },
+      {
+        "id": "3FsrlDgKfkA",
+        "title": "Temple of Sleep",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Temple",
+          "Sleep"
+        ]
+      },
+      {
+        "id": "p2zGAxwznOU",
+        "title": "Life Is a Dream",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Life",
+          "Dream"
+        ]
+      },
+      {
+        "id": "h-JsJf5MIQo",
+        "title": "Goodnight, Sweetheart",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Goodnight",
+          "Sweetheart"
+        ]
+      },
+      {
+        "id": "MN-AqPOv2N0",
+        "title": "Galilee",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Galilee"
+        ]
+      },
+      {
+        "id": "LZ7ChCLrfYI",
+        "title": "Canticle of the Creatures",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Canticle",
+          "Creatures"
+        ]
+      },
+      {
+        "id": "5hhnMDE215A",
+        "title": "Desert Solitude",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Desert",
+          "Solitude"
+        ]
+      },
+      {
+        "id": "x1DF_9nCdNI",
+        "title": "Psalm of David",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Psalm",
+          "David"
+        ]
+      },
+      {
+        "id": "Anmf7oi7q08",
+        "title": "Make Us Channels of Thy Peace",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Make",
+          "Channels",
+          "Thy",
+          "Peace"
+        ]
+      },
+      {
+        "id": "5E-MpOhOwwQ",
+        "title": "Cherry Blossoms in Kyoto",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Cherry",
+          "Blossoms",
+          "Kyoto"
+        ]
+      },
+      {
+        "id": "kXeruTp_eJo",
+        "title": "When Thy Shining Foot Shall Pass",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "When",
+          "Thy",
+          "Shining",
+          "Foot",
+          "Shall"
+        ]
+      },
+      {
+        "id": "yKwsJUzLBac",
+        "title": "Life Is the Quest for Joy",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "Life",
+          "Quest",
+          "Joy"
+        ]
+      },
+      {
+        "id": "9kHa8722ddg",
+        "title": "When My Dream's Dream Is Done",
+        "desc": "Devotional song by Swami Kriyananda (Song of the Nightingale).",
+        "icon": "Music",
+        "tags": [
+          "Swami Kriyananda",
+          "Swamy Kiryananda",
+          "Song of the Nightingale",
+          "When",
+          "Dreams",
+          "Dream",
+          "Done"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "samadhi",
+    "name": "Samadhi",
+    "description": "Paramahansa Yogananda's poem 'Samadhi' from Autobiography of a Yogi Chapter 14 recited across Indian languages (12:00 - 17:05).",
+    "themeColor": "text-purple-400",
+    "accentColor": "purple",
+    "icon": "Sparkles",
+    "tracks": [
+      {
+        "id": "D3a5vG5D92o",
+        "title": "Samadhi (Tamil) — பேரண்ட உணர்வின்‌ ஓர்‌ அனுபவம்",
+        "desc": "Autobiography of a Yogi Ch. 14 poem recital (12:00 - 17:05).",
+        "icon": "Sparkles",
+        "url": "https://www.youtube.com/watch?v=D3a5vG5D92o&t=720s&end=1025s",
+        "tags": [
+          "Samadhi",
+          "Tamil",
+          "Autobiography of a Yogi",
+          "YSS",
+          "Paramahansa Yogananda",
+          "Spiritual Album"
+        ]
+      },
+      {
+        "id": "SaXbYL55cBE",
+        "title": "Samadhi (Malayalam) — സമാധിലാഭം",
+        "desc": "Autobiography of a Yogi Ch. 14 poem recital (12:00 - 17:05).",
+        "icon": "Sparkles",
+        "url": "https://www.youtube.com/watch?v=SaXbYL55cBE&t=720s&end=1025s",
+        "tags": [
+          "Samadhi",
+          "Malayalam",
+          "Autobiography of a Yogi",
+          "YSS",
+          "Paramahansa Yogananda",
+          "Spiritual Album"
+        ]
+      },
+      {
+        "id": "px1nfZ02WGk",
+        "title": "Samadhi (Bengali) — সমাধির অনুভূতি",
+        "desc": "Autobiography of a Yogi Ch. 14 poem recital (12:00 - 17:05).",
+        "icon": "Sparkles",
+        "url": "https://www.youtube.com/watch?v=px1nfZ02WGk&t=720s&end=1025s",
+        "tags": [
+          "Samadhi",
+          "Bengali",
+          "Autobiography of a Yogi",
+          "YSS",
+          "Paramahansa Yogananda",
+          "Spiritual Album"
+        ]
+      },
+      {
+        "id": "M1ODi9I2ULk",
+        "title": "Samadhi (Hindi) — समाधि—लाभ",
+        "desc": "Autobiography of a Yogi Ch. 14 poem recital (12:00 - 17:05).",
+        "icon": "Sparkles",
+        "url": "https://www.youtube.com/watch?v=M1ODi9I2ULk&t=720s&end=1025s",
+        "tags": [
+          "Samadhi",
+          "Hindi",
+          "Autobiography of a Yogi",
+          "YSS",
+          "Paramahansa Yogananda",
+          "Spiritual Album"
+        ]
+      }
+    ]
+  }
+]

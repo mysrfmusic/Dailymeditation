@@ -1,0 +1,660 @@
+{
+  "categories": [
+    {
+      "name": "Yoganandas Song Sung by Kriyananda",
+      "icon": "Flame",
+      "description": "Sacred chants and songs of Paramahansa Yogananda, sung by Swami Kriyananda."
+    },
+    {
+      "name": "Kriyananda Songs",
+      "icon": "Music",
+      "description": "Original devotional compositions, folklore, and melodies written and sung by Swami Kriyananda."
+    },
+    {
+      "name": "Spiritual Wisdom Teachings",
+      "icon": "BookOpen",
+      "description": "Original audio discourses and spiritual wisdom by Paramahansa Yogananda."
+    }
+  ],
+  "tracks": [
+    {
+      "id": "hymn-to-brahma-sanscrit",
+      "title": "Hymn to Brahma (Sanskrit)",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Hymn-to-Brahma-Kriyananda-Sanscrit.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "Rig Veda cosmic chant, composed/popularized by Paramahansa Yogananda."
+    },
+    {
+      "id": "he-bhagavan",
+      "title": "He Bhagavan",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/He-Bhagavan-Kriyananda.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "Traditional chant of deep devotion sung by Swami Kriyananda."
+    },
+    {
+      "id": "sitting-in-silence",
+      "title": "Sitting in the Silence",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/07-Sitting-in-the-silence.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "A beautiful song of inner silence and communion."
+    },
+    {
+      "id": "kriyananda-on-chanting-main",
+      "title": "Kriyananda on Chanting",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Kriyananda-on-Chanting.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "Spiritual guidance on the power and practice of devotional chanting."
+    },
+    {
+      "id": "door-of-my-heart",
+      "title": "Door of My Heart",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Door-of-my-heart.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "Devotional chant of Paramahansa Yogananda translating Ramprasad's prayer."
+    },
+    {
+      "id": "light-the-lamp-of-thy-love",
+      "title": "Light the Lamp of Thy Love",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Light-the-Lamp-of-Thy-Love.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "Chant of soulful seeking and prayer for inner illumination."
+    },
+    {
+      "id": "from-this-sleep-lord",
+      "title": "From This Sleep, Lord",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/From_This_Sleep_Lord.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "Prayer to awaken from the deep sleep of cosmic delusion."
+    },
+    {
+      "id": "god-of-beauty",
+      "title": "God of Beauty",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/God_of_Beauty.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "A beautiful song appreciating the divine expression in nature and life."
+    },
+    {
+      "id": "my-soul-is-marching-on",
+      "title": "My Soul Is Marching On",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/My-Soul-Is-Marching-On.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "An uplifting, courageous march of spiritual determination."
+    },
+    {
+      "id": "wink-has-not-touched-my-eyes",
+      "title": "Wink Has Not Touched My Eyes",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Wink-has-not-touched-my-eyes.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "A classic chant of deep meditation and endless divine vigil."
+    },
+    {
+      "id": "thou-art-my-life-shata-mangala",
+      "title": "Thou Art My Life (Shata Mangala)",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Thou-Art-My-Life.Shata-Mangala.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "A beautiful rendering of devotion to the divine presence within."
+    },
+    {
+      "id": "where-is-there-love",
+      "title": "Where Is There Love?",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Where-Is-There-Love.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "Chant of longing for the only true, unconditional divine love."
+    },
+    {
+      "id": "come-listen-to-my-soul-song",
+      "title": "Come Listen to My Soul Song",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Come-listen-to-my-soul-song.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "A deep and soulful chant of inner prayer and devotion."
+    },
+    {
+      "id": "listen-to-my-soul-call",
+      "title": "Listen to My Soul Call",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Listen-to-My-Soul-Call.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "A beautiful request to the Divine Mother to listen to the whisper of the soul."
+    },
+    {
+      "id": "om-song",
+      "title": "Om Song",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/13-13.-Om-Song.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "Chanting of the cosmic vibration of Om."
+    },
+    {
+      "id": "deliver-us-from-delusion",
+      "title": "Deliver Us from Delusion",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/01-Deliver-Us-from-Delusion.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "A sincere prayer for liberation and mental clarity."
+    },
+    {
+      "id": "blue-lotus-feet",
+      "title": "Blue Lotus Feet",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Blue-Lotus-Feet.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "Traditional chant focusing on the lotus feet of Divine Mother."
+    },
+    {
+      "id": "what-lightning-flash",
+      "title": "What Lightning Flash",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/What-Lightning-Flash.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "A poetic chant of lightning flashes of the Divine in meditation."
+    },
+    {
+      "id": "when-my-dreams-dream-is-done",
+      "title": "When My Dream's Dream Is Done",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/When-My-Dreams-Dream-is-Done.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "One of Paramahansa Yogananda's final devotional poems set to music."
+    },
+    {
+      "id": "desire-my-great-enemy",
+      "title": "Desire, My Great Enemy",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Desire_My_Great_Enemy.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "A song of spiritual warfare against earthly attachments."
+    },
+    {
+      "id": "where-is-there-love-bengali-english",
+      "title": "Where Is There Love? (Bengali & English)",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/13-Where-Is-There-Love-Bengali-English.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "YSS/SRF",
+      "category": "Yoganandas Song Sung by Kriyananda",
+      "description": "Longing for divine love sung beautifully in both languages."
+    },
+    {
+      "id": "non-blues",
+      "title": "Non-Blues",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Non-Blues.m4a",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "An original uplifting instrumental and vocal track by Swami Kriyananda."
+    },
+    {
+      "id": "theres-joy-in-the-heavens",
+      "title": "There's Joy in the Heavens",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/03-Theres-Joy-in-the-Heavens.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "An inspiring choral and solo song of celestial happiness."
+    },
+    {
+      "id": "rama-and-sita",
+      "title": "Rama and Sita",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/10-Rama-And-Sita.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "Devotional storytelling song about the divine love of Rama and Sita."
+    },
+    {
+      "id": "what-is-love",
+      "title": "What Is Love?",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/14-What-Is-Love_.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "Swami Kriyananda's beautiful composition reflecting on the nature of love."
+    },
+    {
+      "id": "john-anderson",
+      "title": "John Anderson",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/5-John-Anderson.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A folk-style spiritual ballad sung with warmth and devotion."
+    },
+    {
+      "id": "irish-lullaby",
+      "title": "Irish Lullaby",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/12-Irish-Lullaby.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A calming, ethereal lullaby filled with peaceful blessings."
+    },
+    {
+      "id": "where-has-my-love-gone",
+      "title": "Where Has My Love Gone?",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/06-Where-Has-My-Love-Gone_.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A poignant song of search and ultimate divine surrender."
+    },
+    {
+      "id": "through-many-lives",
+      "title": "Through Many Lives",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/02-Through-Many-Lives.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A soulful song on the eternal journey of the soul toward the Divine."
+    },
+    {
+      "id": "love-is-a-magician",
+      "title": "Love Is a Magician",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/22-Love-Is-A-Magician.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A whimsical yet deep song about how love transforms all things."
+    },
+    {
+      "id": "the-secret-of-laughter",
+      "title": "The Secret of Laughter",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/The-Secret-of-Laughter.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "An uplifting, joyful tune expressing spiritual lightheartedness."
+    },
+    {
+      "id": "manana-friends",
+      "title": "Mañana Friends",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Manana-Friends.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A cheerful song about friendship and timeless divine joy."
+    },
+    {
+      "id": "hawaiiana",
+      "title": "Hawaiiana",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Hawaiiana.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "Warm, peaceful acoustic vibrations celebrating island serenity."
+    },
+    {
+      "id": "come-gather-round",
+      "title": "Come Gather Round",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/01-Come-Gather-Round.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "An inviting folk melody designed for spiritual fellowship."
+    },
+    {
+      "id": "sing-out-with-joy",
+      "title": "Sing Out with Joy",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/14-Sing-Out-With-Joy.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A choral-style song bursting with high-spirited divine joy."
+    },
+    {
+      "id": "the-philosopher-and-the-boatman",
+      "title": "The Philosopher and the Boatman",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/11-The-Philosopher-and-the-Boatman.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A musical adaptation of the famous spiritual story about practical wisdom."
+    },
+    {
+      "id": "go-on-alone",
+      "title": "Go On Alone",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/05-Go-On-Alone.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A deep song calling for inner strength and courage on the path."
+    },
+    {
+      "id": "song-of-the-nightingale",
+      "title": "Song of the Nightingale",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/04-Song-of-the-Nightingale.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "Poetic song mirroring the nightingale's call to the beloved."
+    },
+    {
+      "id": "brothers",
+      "title": "Brothers",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/13-Brothers.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A warm song on brotherhood and unity."
+    },
+    {
+      "id": "smile-millionaire",
+      "title": "Smile Millionaire",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Smile-Millionaire.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A light and happy song about being rich in inner smiles."
+    },
+    {
+      "id": "jim-brown",
+      "title": "Jim Brown",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/12-Jim-Brown.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A storytelling ballad sung by Swami Kriyananda."
+    },
+    {
+      "id": "more-boxes-no-thank-you",
+      "title": "More Boxes? No Thank You!",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/More-Boxes-No-Thank-You.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A playful composition about freedom from mental categorization."
+    },
+    {
+      "id": "if-youre-seeking-freedom",
+      "title": "If You're Seeking Freedom",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/02-If-Youre-Seeking-Freedom.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "Clear guidelines and dynamic music on how to achieve inner liberation."
+    },
+    {
+      "id": "farther-away-than-the-stars",
+      "title": "Farther Away than the Stars",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/12-Farther-Away-than-the-Stars.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "On the mystery of God, who is both incredibly near and infinitely far."
+    },
+    {
+      "id": "mother-of-us-all",
+      "title": "Mother of Us All",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/01-Mother-of-Us-All.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A grand, deeply moving choral prayer to the Divine Mother."
+    },
+    {
+      "id": "christ-lives-1984-oratorio",
+      "title": "Christ Lives (1984 Oratorio)",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Christ-Lives-w-narration-1984-Oratorio.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "An inspired oratorio detailing the life and consciousness of Jesus Christ."
+    },
+    {
+      "id": "in-the-spirit",
+      "title": "In the Spirit",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/05-In-the-Spirit.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A lively song of dynamic dedication and spiritual verve."
+    },
+    {
+      "id": "thy-light-within-us-shining",
+      "title": "Thy Light Within Us Shining",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/41-Thy-Light-Within-Us-Shining.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "An anthem of inner light, dedication, and service."
+    },
+    {
+      "id": "who-is-sylvia",
+      "title": "Who Is Sylvia?",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/01-Who-Is-Sylvia_.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A classical adaptation sung by Swami Kriyananda."
+    },
+    {
+      "id": "gypsy-hoedown",
+      "title": "Gypsy Hoedown",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/13-Gypsy-Hoedown.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A fast-paced, high-energy violin and acoustic guitar hoedown."
+    },
+    {
+      "id": "sail-with-me-to-capri",
+      "title": "Sail with Me to Capri",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/04-Sail-With-Me-to-Capri.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A romantic and joy-filled tune celebrating natural beauty."
+    },
+    {
+      "id": "cantico",
+      "title": "Cantico",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/12-Cantico.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A chant of St. Francis of Assisi praising God's creation."
+    },
+    {
+      "id": "ancient-greece",
+      "title": "Ancient Greece",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/05-Ancient-Greece.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "An instrumental and melodic exploration of Greek spiritual history."
+    },
+    {
+      "id": "psalm-of-david",
+      "title": "Psalm of David",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/04-Psalm-of-David.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A majestic song adapting biblical psalms into devotional singing."
+    },
+    {
+      "id": "in-the-temple-of-isis",
+      "title": "In the Temple of Isis",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/04-In-the-Temple-of-Isis.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A deep and ancient-sounding musical chant evoking Egyptian mysteries."
+    },
+    {
+      "id": "cherry-blossoms",
+      "title": "Cherry Blossoms",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/23-cherry_blossoms_in_csrwb.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A beautiful song of delicate spring blossoms and divine impermanence."
+    },
+    {
+      "id": "peace-song",
+      "title": "Peace",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/20-Peace.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A peaceful, calming choral benediction for international peace."
+    },
+    {
+      "id": "the-rubaiyat-of-omar-khayyam",
+      "title": "The Rubaiyat of Omar Khayyam",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/13-The-Rubaiyat-of-Omar-Khayyam.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "Narrated and musical rendition of the spiritual interpretation of the Rubaiyat."
+    },
+    {
+      "id": "krishnas-flute",
+      "title": "Krishna's Flute",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/09-Krishnas-Flute.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "Listening to the inner sound of the flute of Krishna."
+    },
+    {
+      "id": "through-a-long-and-lonely-night",
+      "title": "Through a Long and Lonely Night",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/1-Through-a-Long-and-Lonely-Night.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "An evocative song describing the seeker's night of seeking and the light of dawn."
+    },
+    {
+      "id": "life-mantra-chant-of-the-angels",
+      "title": "Life Mantra (Chant of the Angels)",
+      "url": "https://yoganandaharmony.com/wp-content/uploads/Life-Mantra-Chant-of-the-Angels.mp3",
+      "speaker": "Swami Kriyananda",
+      "tradition": "Ananda",
+      "category": "Kriyananda Songs",
+      "description": "A sacred and angelic chant to connect with elevated states of light."
+    },
+    {
+      "id": "wisdom-the-great-light-of-god-yogananda-mp4",
+      "title": "The Great Light of God (Video Discourse)",
+      "url": "https://spiritualbooks.eu/wp-content/uploads/2024/11/The-Great-Light-of-God-Paramahansa-Yogananda.mp4",
+      "speaker": "Paramahansa Yogananda",
+      "tradition": "SRF/YSS",
+      "category": "Spiritual Wisdom Teachings",
+      "description": "Paramahansa Yogananda discourse on the Great Light of God."
+    },
+    {
+      "id": "wisdom-awake-in-the-cosmic-dream",
+      "title": "Awake in the Cosmic Dream",
+      "url": "https://spiritualbooks.eu/wp-content/uploads/2024/11/Awake_in_the_Cosmic_Dream.mp3",
+      "speaker": "Paramahansa Yogananda",
+      "tradition": "SRF/YSS",
+      "category": "Spiritual Wisdom Teachings",
+      "description": "Paramahansa Yogananda on awakening from cosmic delusion into supreme reality."
+    },
+    {
+      "id": "wisdom-be-a-smile-millionaire",
+      "title": "Be a Smile Millionaire",
+      "url": "https://spiritualbooks.eu/wp-content/uploads/2024/11/Be_A_Smile_Millionaire.mp3",
+      "speaker": "Paramahansa Yogananda",
+      "tradition": "SRF/YSS",
+      "category": "Spiritual Wisdom Teachings",
+      "description": "Paramahansa Yogananda on radiant inner joy, optimism, and spiritual cheerfulness."
+    },
+    {
+      "id": "wisdom-beholding-the-one-in-all",
+      "title": "Beholding the One in All",
+      "url": "https://spiritualbooks.eu/wp-content/uploads/2024/11/Beholding_the_One_in_All.mp3",
+      "speaker": "Paramahansa Yogananda",
+      "tradition": "SRF/YSS",
+      "category": "Spiritual Wisdom Teachings",
+      "description": "Paramahansa Yogananda on divine omnipresence and unity consciousness."
+    },
+    {
+      "id": "wisdom-follow-the-path-of-christ-krishna-and-the-masters",
+      "title": "Follow the Path of Christ, Krishna and the Masters",
+      "url": "https://spiritualbooks.eu/wp-content/uploads/2024/11/Follow_the_Path_of_Christ_Krishna_and_the_Masters.mp3",
+      "speaker": "Paramahansa Yogananda",
+      "tradition": "SRF/YSS",
+      "category": "Spiritual Wisdom Teachings",
+      "description": "Paramahansa Yogananda on the universal spiritual path taught by Christ and Krishna."
+    },
+    {
+      "id": "wisdom-in-the-glory-of-the-spirit",
+      "title": "In the Glory of the Spirit",
+      "url": "https://spiritualbooks.eu/wp-content/uploads/2024/11/In_the_Glory_of_the_Spirit.mp3",
+      "speaker": "Paramahansa Yogananda",
+      "tradition": "SRF/YSS",
+      "category": "Spiritual Wisdom Teachings",
+      "description": "Paramahansa Yogananda on living immersed in the bliss and glory of Spirit."
+    },
+    {
+      "id": "wisdom-one-life-vs-reincarnation",
+      "title": "One Life Vs. Reincarnation",
+      "url": "https://spiritualbooks.eu/wp-content/uploads/2024/11/One_Life_Vs._Reincarnation.mp3",
+      "speaker": "Paramahansa Yogananda",
+      "tradition": "SRF/YSS",
+      "category": "Spiritual Wisdom Teachings",
+      "description": "Paramahansa Yogananda clarifying cosmic evolution, karma, and reincarnation."
+    },
+    {
+      "id": "wisdom-removing-all-sorrow-and-suffering",
+      "title": "Removing All Sorrow and Suffering",
+      "url": "https://spiritualbooks.eu/wp-content/uploads/2024/11/Removing_All_Sorrow_and_Suffering.mp3",
+      "speaker": "Paramahansa Yogananda",
+      "tradition": "SRF/YSS",
+      "category": "Spiritual Wisdom Teachings",
+      "description": "Paramahansa Yogananda on the spiritual science to eradicate misery and sorrow."
+    },
+    {
+      "id": "wisdom-self-realization-inner-and-outer-path",
+      "title": "Self-Realization — The Inner and the Outer Path",
+      "url": "https://spiritualbooks.eu/wp-content/uploads/2024/11/Self-Realization_-_the_Inner_and_the_Outer_Path.mp3",
+      "speaker": "Paramahansa Yogananda",
+      "tradition": "SRF/YSS",
+      "category": "Spiritual Wisdom Teachings",
+      "description": "Paramahansa Yogananda on balancing meditation and outer duties on the spiritual path."
+    },
+    {
+      "id": "wisdom-the-great-light-of-god-audio",
+      "title": "The Great Light of God (Audio Discourse)",
+      "url": "https://spiritualbooks.eu/wp-content/uploads/2024/11/The_Great_Light_of_God.mp3",
+      "speaker": "Paramahansa Yogananda",
+      "tradition": "SRF/YSS",
+      "category": "Spiritual Wisdom Teachings",
+      "description": "Paramahansa Yogananda on perceiving the divine luminous radiance of God."
+    }
+  ]
+}

@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MeditationStageConfig, StageId, CustomMediaConfig } from '../types/meditation';
 import {
   STAGE_MEDIA_PRESETS,
   StageMediaPreset,
+  DEVOTIONAL_ALBUMS,
+  HARMONIES_CATEGORIES,
+  ALL_SACRED_TRACKS,
+  ALL_DEVOTIONAL_SONGS,
+  ALL_AFFIRMATION_PRESETS,
+  SACRED_VOICE_PRESETS,
   detectMediaType,
   getYouTubeEmbedUrl,
   extractYouTubeId,
@@ -22,6 +28,8 @@ import {
   VolumeX,
   Volume2,
   Play,
+  Search,
+  Disc,
 } from 'lucide-react';
 
 interface CustomMediaModalProps {
@@ -52,7 +60,9 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
   const [urlInput, setUrlInput] = useState<string>('');
   const [titleInput, setTitleInput] = useState<string>('');
   const [affirmationTextInput, setAffirmationTextInput] = useState<string>('');
-  const [presetCategory, setPresetCategory] = useState<'current' | 'chant' | 'affirmation' | 'sacred_voices' | 'prayers'>('current');
+  const [presetCategory, setPresetCategory] = useState<'stage' | 'all_songs' | 'affirmations' | 'harmonies_mp3' | 'albums'>('stage');
+  const [selectedAlbumId, setSelectedAlbumId] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [isEnabled, setIsEnabled] = useState<boolean>(true);
   const [muteSoundscape, setMuteSoundscape] = useState<boolean>(true);
   const [playUntilFinished, setPlayUntilFinished] = useState<boolean>(true);
@@ -116,8 +126,6 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   const currentActiveStage = stages[selectedStageId] || stage || stages['chant'] || Object.values(stages)[0];
   const mediaType = detectMediaType(urlInput);
   const youtubeId = extractYouTubeId(urlInput);
@@ -138,27 +146,49 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
     ])
   );
 
-  // Resolve presets based on selected preset category
-  const getPresetsToDisplay = (): StageMediaPreset[] => {
-    if (presetCategory === 'chant') return STAGE_MEDIA_PRESETS.chant || [];
-    if (presetCategory === 'affirmation') return (STAGE_MEDIA_PRESETS as any).affirmation || [];
-    if (presetCategory === 'sacred_voices') return (STAGE_MEDIA_PRESETS as any).sacred_voices || [];
-    if (presetCategory === 'prayers') {
-      return [
-        ...(STAGE_MEDIA_PRESETS.opening_prayer || []),
-        ...(STAGE_MEDIA_PRESETS.world_prayer || []),
-        ...(STAGE_MEDIA_PRESETS.closing_prayer || []),
-      ];
+  // Resolve tracks to display based on category, album filter, and search query
+  const displayedTracks = useMemo(() => {
+    let pool: StageMediaPreset[] = [];
+    if (presetCategory === 'stage') {
+      const stageKey = currentActiveStage.stageType || selectedStageId;
+      pool =
+        (STAGE_MEDIA_PRESETS as any)[stageKey] ||
+        (STAGE_MEDIA_PRESETS as any)[selectedStageId] ||
+        STAGE_MEDIA_PRESETS.chant ||
+        [];
+    } else if (presetCategory === 'all_songs') {
+      pool = ALL_DEVOTIONAL_SONGS;
+    } else if (presetCategory === 'affirmations') {
+      pool = ALL_AFFIRMATION_PRESETS;
+    } else if (presetCategory === 'harmonies_mp3') {
+      pool = ALL_SACRED_TRACKS.filter((t) => t.type === 'mp3');
+    } else if (presetCategory === 'albums') {
+      pool = ALL_SACRED_TRACKS;
     }
-    // 'current': tailored to selected stage
-    if (currentActiveStage.stageType === 'affirmation' || selectedStageId.startsWith('affirmation')) {
-      return (STAGE_MEDIA_PRESETS as any).affirmation || [];
+
+    if (selectedAlbumId !== 'all') {
+      pool = pool.filter(
+        (t) =>
+          t.albumId === selectedAlbumId ||
+          t.album === selectedAlbumId ||
+          t.category === selectedAlbumId
+      );
     }
-    if (currentActiveStage.stageType === 'sacred_voices' || selectedStageId.startsWith('sacred_voices')) {
-      return (STAGE_MEDIA_PRESETS as any).sacred_voices || [];
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      pool = pool.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          t.subtitle.toLowerCase().includes(q) ||
+          (t.album && t.album.toLowerCase().includes(q)) ||
+          (t.speaker && t.speaker.toLowerCase().includes(q)) ||
+          (t.affirmationText && t.affirmationText.toLowerCase().includes(q))
+      );
     }
-    return (STAGE_MEDIA_PRESETS as any)[selectedStageId] || STAGE_MEDIA_PRESETS.chant || [];
-  };
+
+    return pool;
+  }, [presetCategory, selectedAlbumId, searchQuery, currentActiveStage, selectedStageId]);
 
   const handleApplyPreset = (preset: StageMediaPreset) => {
     setUrlInput(preset.url);
@@ -224,6 +254,8 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
     onSaveMedia(selectedStageId, undefined);
     setPreviewActive(false);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div
@@ -589,30 +621,37 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
             </div>
           )}
 
-          {/* Curated Sacred Presets Library with Category Filter */}
-          <div className="pt-2 border-t border-slate-800 space-y-2">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-              <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>Curated Sacred Presets Library:</span>
+          {/* Curated Sacred Presets Library with Category Filter & Search */}
+          <div className="pt-2 border-t border-slate-800 space-y-2.5">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Sacred Collections Library ({displayedTracks.length} tracks):</span>
+                </div>
+                <span className="text-[10px] text-slate-400">
+                  {DEVOTIONAL_ALBUMS.length} Albums · 324 Total Tracks
+                </span>
               </div>
 
-              {/* Category Pills */}
+              {/* Category Filter Pills */}
               <div className="flex flex-wrap items-center gap-1">
                 {[
-                  { id: 'current', label: `For ${currentActiveStage.title}` },
-                  { id: 'chant', label: 'Chants' },
-                  { id: 'affirmation', label: 'Affirmations' },
-                  { id: 'sacred_voices', label: 'Sacred Voices' },
-                  { id: 'prayers', label: 'Prayers' },
+                  { id: 'stage', label: `For ${currentActiveStage.title}` },
+                  { id: 'all_songs', label: `All Songs (${ALL_DEVOTIONAL_SONGS.length})` },
+                  { id: 'affirmations', label: `Affirmations (${ALL_AFFIRMATION_PRESETS.length})` },
+                  { id: 'harmonies_mp3', label: 'Harmonies MP3s (71)' },
+                  { id: 'albums', label: 'All 21 Albums' },
                 ].map((cat) => (
                   <button
                     key={cat.id}
                     type="button"
-                    onClick={() => setPresetCategory(cat.id as any)}
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all cursor-pointer border ${
+                    onClick={() => {
+                      setPresetCategory(cat.id as any);
+                    }}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all cursor-pointer border ${
                       presetCategory === cat.id
-                        ? 'bg-amber-400 text-slate-950 border-amber-300 font-bold'
+                        ? 'bg-amber-400 text-slate-950 border-amber-300 font-bold shadow-sm'
                         : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:text-white'
                     }`}
                   >
@@ -620,48 +659,126 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
                   </button>
                 ))}
               </div>
+
+              {/* Search & Album Selection Controls */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                {/* Search Input */}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search songs, chants, affirmations, lyrics..."
+                    className="w-full pl-8 pr-7 py-1.5 bg-slate-950/80 border border-slate-700 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Album / Category Filter Dropdown */}
+                <div className="relative">
+                  <select
+                    value={selectedAlbumId}
+                    onChange={(e) => setSelectedAlbumId(e.target.value)}
+                    className="w-full py-1.5 px-2.5 bg-slate-950/80 border border-slate-700 rounded-xl text-xs text-amber-200 focus:outline-none focus:border-amber-400 cursor-pointer"
+                  >
+                    <option value="all">All Albums & Categories ({ALL_SACRED_TRACKS.length} tracks)</option>
+                    <optgroup label="Devotional Albums (21)">
+                      {DEVOTIONAL_ALBUMS.map((album) => (
+                        <option key={album.id} value={album.id}>
+                          {album.name} ({album.tracks.length} tracks)
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Harmonies Audio Categories">
+                      {HARMONIES_CATEGORIES.map((cat) => (
+                        <option key={cat.name} value={cat.name}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-0.5">
-              {getPresetsToDisplay().map((preset) => {
-                const isCurrent = urlInput === preset.url;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => handleApplyPreset(preset)}
-                    className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
-                      isCurrent
-                        ? 'bg-amber-400/20 border-amber-400/70 text-amber-200 shadow-sm'
-                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-200 hover:bg-slate-950'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-start justify-between gap-1">
-                        <span className="font-bold text-xs truncate leading-snug">{preset.title}</span>
-                        {preset.type === 'youtube' && (
-                          <Youtube className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
+            {/* Track Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
+              {displayedTracks.length === 0 ? (
+                <div className="col-span-full py-6 text-center text-xs text-slate-400 bg-slate-950/40 rounded-xl border border-slate-800">
+                  No tracks match "{searchQuery}". Try a different keyword or album filter.
+                </div>
+              ) : (
+                displayedTracks.map((preset) => {
+                  const isCurrent = urlInput === preset.url;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => handleApplyPreset(preset)}
+                      className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
+                        isCurrent
+                          ? 'bg-amber-400/20 border-amber-400/70 text-amber-200 shadow-sm'
+                          : 'bg-slate-950/60 border-slate-800 hover:border-amber-400/50 text-slate-200 hover:bg-slate-950'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-1.5">
+                          <span className="font-bold text-xs truncate leading-snug">{preset.title}</span>
+                          <div className="flex items-center gap-1 shrink-0 mt-0.5">
+                            {preset.type === 'youtube' ? (
+                              <span className="p-0.5 rounded bg-red-950/80 border border-red-500/40 text-red-400" title="YouTube video">
+                                <Youtube className="w-3 h-3" />
+                              </span>
+                            ) : (
+                              <span className="p-0.5 rounded bg-sky-950/80 border border-sky-500/40 text-sky-400" title="High-Res MP3 Audio">
+                                <Music className="w-3 h-3" />
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          {preset.album && (
+                            <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-white/5 text-amber-300/80 truncate max-w-[150px]">
+                              {preset.album}
+                            </span>
+                          )}
+                          {preset.speaker && (
+                            <span className="text-[9.5px] text-slate-400 truncate">
+                              · {preset.speaker}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-400 line-clamp-2 mt-1">
+                          {preset.subtitle}
+                        </span>
+                        {preset.affirmationText && (
+                          <span className="text-[10px] text-amber-300/90 font-serif italic line-clamp-2 mt-1 block">
+                            “{preset.affirmationText.slice(0, 90)}...”
+                          </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-slate-400 line-clamp-2 mt-0.5">
-                        {preset.subtitle}
-                      </span>
-                      {preset.affirmationText && (
-                        <span className="text-[10px] text-amber-300/90 font-serif italic line-clamp-2 mt-1 block">
-                          “{preset.affirmationText.slice(0, 90)}...”
-                        </span>
-                      )}
-                    </div>
 
-                    <div className="flex items-center justify-between text-[10px] text-amber-300 font-semibold pt-1 border-t border-white/5">
-                      <span>{isCurrent ? '✓ Currently Loaded' : '+ Use preset & text'}</span>
-                      {preset.affirmationText && (
-                        <span className="text-[9px] text-emerald-400">Includes Affirmation</span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+                      <div className="flex items-center justify-between text-[10px] text-amber-300 font-semibold pt-1 border-t border-white/5">
+                        <span>{isCurrent ? '✓ Currently Loaded' : '+ Select this track'}</span>
+                        {preset.isAffirmation ? (
+                          <span className="text-[9px] text-sky-400">Affirmation / Wisdom</span>
+                        ) : preset.affirmationText ? (
+                          <span className="text-[9px] text-emerald-400">With Lyrics</span>
+                        ) : null}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

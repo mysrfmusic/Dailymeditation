@@ -136,9 +136,9 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
     (currentStage.customMedia?.playUntilFinished ?? ((isChant || isAffirmation || isSacredVoice) && hasCustomMedia))
   );
 
-  // Affirmation / Sacred Words text
+  // Affirmation / Sacred Words text - STRICTLY scoped to affirmation or sacred voice stage so it never carries over
   const affirmationText = currentStage.customMedia?.affirmationText || currentStage.techniqueGuide?.affirmationText;
-  const hasAffirmation = Boolean(affirmationText);
+  const hasAffirmation = Boolean(affirmationText && (isAffirmation || isSacredVoice));
   const [showAffirmationOverlay, setShowAffirmationOverlay] = useState<boolean>(true);
 
   const [trackElapsedSeconds, setTrackElapsedSeconds] = useState<number>(0);
@@ -151,6 +151,12 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const isIframeReadyRef = useRef<boolean>(false);
   const currentLoadedVideoIdRef = useRef<string | null>(null);
   const hasUserUnlockedRef = useRef<boolean>(false);
+  const youtubeRetryTimersRef = useRef<number[]>([]);
+
+  const clearYouTubeRetryTimers = () => {
+    youtubeRetryTimersRef.current.forEach((t) => window.clearTimeout(t));
+    youtubeRetryTimersRef.current = [];
+  };
 
   // Stable pre-warmed initial YouTube URL so the iframe never reloads its src on stage transitions
   const initialYouTubeUrlRef = useRef<string>(
@@ -175,8 +181,18 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
     }
   };
 
+  const pausePersistentYouTube = () => {
+    clearYouTubeRetryTimers();
+    sendYouTubeCommand('pauseVideo');
+    sendYouTubeCommand('stopVideo');
+    sendYouTubeCommand('mute');
+  };
+
   const triggerPlayCurrentYouTube = () => {
-    if (!isYouTube || !currentStage.customMedia?.url) return;
+    if (!isYouTube || !currentStage.customMedia?.url) {
+      pausePersistentYouTube();
+      return;
+    }
     const targetVideoId = extractYouTubeId(currentStage.customMedia.url);
     const targetStartTime = extractYouTubeStartTime(currentStage.customMedia.url) || 0;
     if (!targetVideoId) return;
@@ -194,10 +210,6 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
       sendYouTubeCommand('setVolume', [100]);
       sendYouTubeCommand('playVideo');
     } catch {}
-  };
-
-  const pausePersistentYouTube = () => {
-    sendYouTubeCommand('pauseVideo');
   };
 
   // Soundscape state for current session
@@ -270,18 +282,18 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
       }
 
       // If YouTube, seamless track playback via loadVideoById on persistent player
+      clearYouTubeRetryTimers();
       if (isYouTube) {
         triggerPlayCurrentYouTube();
-        const t1 = setTimeout(triggerPlayCurrentYouTube, 200);
-        const t2 = setTimeout(triggerPlayCurrentYouTube, 600);
-        const t3 = setTimeout(triggerPlayCurrentYouTube, 1200);
-        return () => {
-          clearTimeout(t1);
-          clearTimeout(t2);
-          clearTimeout(t3);
-        };
+        const t1 = window.setTimeout(triggerPlayCurrentYouTube, 200);
+        const t2 = window.setTimeout(triggerPlayCurrentYouTube, 600);
+        const t3 = window.setTimeout(triggerPlayCurrentYouTube, 1200);
+        youtubeRetryTimersRef.current = [t1, t2, t3];
       } else {
         pausePersistentYouTube();
+        const t1 = window.setTimeout(pausePersistentYouTube, 200);
+        const t2 = window.setTimeout(pausePersistentYouTube, 600);
+        youtubeRetryTimersRef.current = [t1, t2];
       }
 
       // Play starting gong for Breathing Inhale or Temple Bell for standard stages
@@ -293,6 +305,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
         soundEngine.playTempleBell(1);
       }
     } else {
+      clearYouTubeRetryTimers();
       soundEngine.stopSoundscape();
       backgroundKeepalive.releaseWakeLock();
       backgroundKeepalive.stopAudioKeepalive();
@@ -303,6 +316,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
     }
 
     return () => {
+      clearYouTubeRetryTimers();
       soundEngine.stopSoundscape();
       backgroundKeepalive.releaseWakeLock();
       backgroundKeepalive.stopAudioKeepalive();
@@ -332,6 +346,8 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
             );
             if (isYouTube && isRunning) {
               triggerPlayCurrentYouTube();
+            } else if (!isYouTube) {
+              pausePersistentYouTube();
             }
           } catch {}
         }
@@ -344,7 +360,12 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
         }
 
         if (playerState === 1) {
-          // Video is actively playing!
+          // If video started playing while on a non-YouTube stage (e.g. late buffer after affirmation ended), silence immediately!
+          if (!isYouTube) {
+            pausePersistentYouTube();
+            setIsVideoPlaying(false);
+            return;
+          }
           setIsVideoPlaying(true);
           setMobileAutoplayBlocked(false);
           hasUserUnlockedRef.current = true;
@@ -582,14 +603,8 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
     if (audioRef.current) {
       audioRef.current.pause();
     }
-    if (youtubeIframeRef.current?.contentWindow) {
-      try {
-        youtubeIframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
-          '*'
-        );
-      } catch {}
-    }
+    clearYouTubeRetryTimers();
+    pausePersistentYouTube();
 
     if (currentStage.bellAtEnd) {
       soundEngine.playTempleBell(3);
@@ -720,6 +735,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const handlePreviousStage = () => {
     const currentIndex = activeOrder.indexOf(activeStageId);
     if (currentIndex > 0) {
+      clearYouTubeRetryTimers();
       hasUserUnlockedRef.current = true;
       soundEngine.unlockAudio();
       const prevStage = stages[activeOrder[currentIndex - 1]];
@@ -743,6 +759,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
   const handleNextStage = () => {
     const currentIndex = activeOrder.indexOf(activeStageId);
     if (currentIndex < activeOrder.length - 1) {
+      clearYouTubeRetryTimers();
       hasUserUnlockedRef.current = true;
       soundEngine.unlockAudio();
       const nextStage = stages[activeOrder[currentIndex + 1]];
