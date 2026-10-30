@@ -94,7 +94,7 @@ export const SoundscapeSelectorModal: React.FC<SoundscapeSelectorModalProps> = (
       role="dialog"
       aria-modal="true"
       aria-labelledby="soundscape-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
     >
       <div className="relative w-full max-w-lg bg-[#fff8eb] border-2 border-[#7a1215] rounded-[24px] sm:rounded-[28px] shadow-2xl p-4 sm:p-6 max-h-[90dvh] overflow-y-auto">
         {/* Header */}

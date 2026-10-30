@@ -357,23 +357,50 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
   affirmation: ALL_AFFIRMATION_PRESETS,
   sacred_voices: SACRED_VOICE_PRESETS,
   opening_prayer: [
-    ...ALL_SACRED_TRACKS.filter((t) =>
-      t.title.toLowerCase().includes('brahma') ||
-      t.title.toLowerCase().includes('guru') ||
-      t.title.toLowerCase().includes('invocation') ||
-      t.title.toLowerCase().includes('dawn') ||
-      t.title.toLowerCase().includes('glory')
+    {
+      id: 'hymn_to_brahma_c4N3fCg8AR0',
+      title: 'Hymn to Brahma',
+      subtitle: 'Listen to My Soul Song — Sanskrit hymn celebrating cosmic creation & Guru Invocation',
+      url: 'https://www.youtube.com/watch?v=c4N3fCg8AR0',
+      type: 'youtube',
+      album: 'Listen to My Soul Song',
+    },
+    ...ALL_SACRED_TRACKS.filter(
+      (t) =>
+        t.url !== 'https://www.youtube.com/watch?v=c4N3fCg8AR0' &&
+        (t.title.toLowerCase().includes('brahma') ||
+          t.title.toLowerCase().includes('guru') ||
+          t.title.toLowerCase().includes('invocation') ||
+          t.title.toLowerCase().includes('dawn') ||
+          t.title.toLowerCase().includes('glory'))
     ),
     ...DEVOTIONAL_ALBUM_PRESETS.slice(0, 15),
   ],
   closing_prayer: [
-    ...ALL_SACRED_TRACKS.filter((t) =>
-      t.title.toLowerCase().includes('samadhi') ||
-      t.title.toLowerCase().includes('shanti') ||
-      t.title.toLowerCase().includes('peace') ||
-      t.title.toLowerCase().includes('alone') ||
-      t.title.toLowerCase().includes('feet') ||
-      t.title.toLowerCase().includes('ocean of love')
+    {
+      id: 'srf_closing_prayer_god_alone_live',
+      title: 'SRF Closing Prayer & God Alone',
+      subtitle: 'Communion with God Alone, dedication of meditation fruits (Live at 2:54:06)',
+      url: 'https://www.youtube.com/live/JmVnhRu5huk?t=10446&si=lrZxdz4aFMgSrFHr',
+      type: 'youtube',
+      album: 'Self-Realization Fellowship',
+    },
+    {
+      id: 'hymn_to_brahma_closing',
+      title: 'Hymn to Brahma',
+      subtitle: 'Listen to My Soul Song — Sanskrit hymn celebrating cosmic creation',
+      url: 'https://www.youtube.com/watch?v=c4N3fCg8AR0',
+      type: 'youtube',
+      album: 'Listen to My Soul Song',
+    },
+    ...ALL_SACRED_TRACKS.filter(
+      (t) =>
+        t.title.toLowerCase().includes('samadhi') ||
+        t.title.toLowerCase().includes('shanti') ||
+        t.title.toLowerCase().includes('peace') ||
+        t.title.toLowerCase().includes('alone') ||
+        t.title.toLowerCase().includes('feet') ||
+        t.title.toLowerCase().includes('ocean of love')
     ),
     ...DEVOTIONAL_ALBUM_PRESETS.slice(15, 30),
   ],

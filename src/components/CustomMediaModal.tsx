@@ -262,7 +262,7 @@ export const CustomMediaModal: React.FC<CustomMediaModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="custom-media-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn"
+      className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn"
     >
       <div className="relative w-full max-w-xl bg-[#0c1533] text-slate-100 border border-amber-400/50 rounded-[28px] shadow-2xl p-5 sm:p-6 max-h-[92vh] overflow-y-auto">
         {/* Header */}

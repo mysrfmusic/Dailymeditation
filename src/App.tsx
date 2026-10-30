@@ -42,10 +42,10 @@ import {
   Zap,
 } from 'lucide-react';
 
-const STORAGE_KEY = 'kriya_meditation_stages_v17';
-const SEQUENCE_KEY = 'kriya_sequence_order_v17';
-const INCREMENT_KEY = 'kriya_increment_step_v17';
-const THEME_KEY = 'kriya_app_theme_v17';
+const STORAGE_KEY = 'kriya_meditation_stages_v18';
+const SEQUENCE_KEY = 'kriya_sequence_order_v18';
+const INCREMENT_KEY = 'kriya_increment_step_v18';
+const THEME_KEY = 'kriya_app_theme_v18';
 
 export default function App() {
   // Theme state: defaults to spiritual_eye matching the uploaded Spiritual Eye photo
@@ -53,6 +53,7 @@ export default function App() {
     try {
       const saved =
         localStorage.getItem(THEME_KEY) ||
+        localStorage.getItem('kriya_app_theme_v17') ||
         localStorage.getItem('kriya_app_theme_v16') ||
         localStorage.getItem('kriya_app_theme_v15') ||
         localStorage.getItem('kriya_app_theme_v14') ||
@@ -72,9 +73,10 @@ export default function App() {
   // Load saved stages or defaults
   const [stages, setStages] = useState<Record<string, MeditationStageConfig>>(() => {
     try {
-      const isExistingV17 = Boolean(localStorage.getItem(STORAGE_KEY));
+      const isExistingV18 = Boolean(localStorage.getItem(STORAGE_KEY));
       const saved =
         localStorage.getItem(STORAGE_KEY) ||
+        localStorage.getItem('kriya_meditation_stages_v17') ||
         localStorage.getItem('kriya_meditation_stages_v16') ||
         localStorage.getItem('kriya_meditation_stages_v15') ||
         localStorage.getItem('kriya_meditation_stages_v14') ||
@@ -83,18 +85,34 @@ export default function App() {
         const parsed = JSON.parse(saved);
         const merged = { ...INITIAL_STAGES, ...parsed };
 
-        if (!isExistingV17) {
-          // Upgrade to user requested defaults: Opening & Closing Prayer 5 mins, 24 Kriyas, Jyoti Mudra 12-3-12 (3 counts)
+        if (!isExistingV18) {
+          // Upgrade to user requested defaults: Hymn to Brahma c4N3fCg8AR0 for Opening Prayer, Closing Prayer 5 mins with default audio, 24 Kriyas, Jyoti Mudra 12-3-12 (3 counts)
           if (merged.opening_prayer) {
             merged.opening_prayer = {
               ...merged.opening_prayer,
               minutes: 5,
+              customMedia: {
+                enabled: true,
+                type: 'youtube',
+                url: 'https://www.youtube.com/watch?v=c4N3fCg8AR0',
+                title: 'Hymn to Brahma (Opening Invocation)',
+                muteSoundscape: true,
+                playUntilFinished: true,
+              },
             };
           }
           if (merged.closing_prayer) {
             merged.closing_prayer = {
               ...merged.closing_prayer,
               minutes: 5,
+              customMedia: {
+                enabled: true,
+                type: 'youtube',
+                url: 'https://www.youtube.com/live/JmVnhRu5huk?t=10446&si=lrZxdz4aFMgSrFHr',
+                title: 'SRF Closing Prayer & God Alone (Live at 2:54:06)',
+                muteSoundscape: true,
+                playUntilFinished: true,
+              },
             };
           }
           if (merged.kriyas) {
@@ -938,6 +956,13 @@ export default function App() {
         onOpenCustomMediaModal={(stageId: string) => {
           setCustomMediaModalStageId(stageId);
           setCustomMediaModalOpen(true);
+        }}
+        onSaveCustomMedia={handleSaveCustomMedia}
+        onUpdateStageConfig={(stageId: string, updates: Partial<MeditationStageConfig>) => {
+          setStages((prev) => ({
+            ...prev,
+            [stageId]: { ...prev[stageId], ...updates },
+          }));
         }}
       />
     </div>

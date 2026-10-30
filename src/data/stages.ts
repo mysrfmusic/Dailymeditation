@@ -35,9 +35,10 @@ export const INITIAL_STAGES: Record<StageId, MeditationStageConfig> = {
     customMedia: {
       enabled: true,
       type: 'youtube',
-      url: 'https://youtu.be/zPUzuy6hcoE?si=bjAEGU7CqU5t0YM6',
-      title: 'SRF Opening Prayer & Invocation',
+      url: 'https://www.youtube.com/watch?v=c4N3fCg8AR0',
+      title: 'Hymn to Brahma (Opening Invocation)',
       muteSoundscape: true,
+      playUntilFinished: true,
     },
     summary: 'Sacred invocation to the Divine and the Line of Gurus prior to chanting and meditation.',
     techniqueGuide: {
@@ -424,6 +425,7 @@ export const INITIAL_STAGES: Record<StageId, MeditationStageConfig> = {
       url: 'https://www.youtube.com/live/JmVnhRu5huk?t=10446&si=lrZxdz4aFMgSrFHr',
       title: 'SRF Closing Prayer & God Alone (Live at 2:54:06)',
       muteSoundscape: true,
+      playUntilFinished: true,
     },
     summary: 'Communion with God Alone, dedication of meditation fruits, surrender of the soul, and peace for all.',
     techniqueGuide: {
