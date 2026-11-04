@@ -42,10 +42,10 @@ import {
   Zap,
 } from 'lucide-react';
 
-const STORAGE_KEY = 'kriya_meditation_stages_v21';
-const SEQUENCE_KEY = 'kriya_sequence_order_v21';
-const INCREMENT_KEY = 'kriya_increment_step_v21';
-const THEME_KEY = 'kriya_app_theme_v21';
+const STORAGE_KEY = 'kriya_meditation_stages_v22';
+const SEQUENCE_KEY = 'kriya_sequence_order_v22';
+const INCREMENT_KEY = 'kriya_increment_step_v22';
+const THEME_KEY = 'kriya_app_theme_v22';
 
 export default function App() {
   // Theme state: defaults to spiritual_eye matching the uploaded Spiritual Eye photo
@@ -53,6 +53,7 @@ export default function App() {
     try {
       const saved =
         localStorage.getItem(THEME_KEY) ||
+        localStorage.getItem('kriya_app_theme_v21') ||
         localStorage.getItem('kriya_app_theme_v20') ||
         localStorage.getItem('kriya_app_theme_v19') ||
         localStorage.getItem('kriya_app_theme_v18') ||
@@ -76,9 +77,10 @@ export default function App() {
   // Load saved stages or defaults
   const [stages, setStages] = useState<Record<string, MeditationStageConfig>>(() => {
     try {
-      const isExistingV21 = Boolean(localStorage.getItem(STORAGE_KEY));
+      const isExistingV22 = Boolean(localStorage.getItem(STORAGE_KEY));
       const saved =
         localStorage.getItem(STORAGE_KEY) ||
+        localStorage.getItem('kriya_meditation_stages_v21') ||
         localStorage.getItem('kriya_meditation_stages_v20') ||
         localStorage.getItem('kriya_meditation_stages_v19') ||
         localStorage.getItem('kriya_meditation_stages_v18') ||
@@ -180,7 +182,7 @@ export default function App() {
           };
         }
 
-        if (!isExistingV21) {
+        if (!isExistingV22) {
           if (merged.kriyas) {
             merged.kriyas = {
               ...merged.kriyas,
@@ -223,6 +225,14 @@ export default function App() {
               const chantIdx = parsed.indexOf('chant');
               parsed.splice(chantIdx !== -1 ? chantIdx + 1 : parsed.length, 0, 'guided_meditation');
             }
+          }
+          // Ensure Closing Prayer is placed after World Prayer Circle
+          const cpIdx = parsed.indexOf('closing_prayer');
+          const wpIdx = parsed.indexOf('world_prayer');
+          if (cpIdx !== -1 && wpIdx !== -1 && cpIdx < wpIdx) {
+            parsed.splice(cpIdx, 1);
+            const newWpIdx = parsed.indexOf('world_prayer');
+            parsed.splice(newWpIdx + 1, 0, 'closing_prayer');
           }
           return parsed;
         }

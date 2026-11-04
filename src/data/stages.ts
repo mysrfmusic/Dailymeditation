@@ -522,8 +522,8 @@ export const STAGE_ORDER: StageId[] = [
   'presence_kriya',
   'jyoti_mudra',
   'meditation',
-  'closing_prayer',
   'world_prayer',
+  'closing_prayer',
 ];
 
 export function createChantStage(
