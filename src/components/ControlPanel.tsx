@@ -455,7 +455,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   <Wind className="w-3.5 h-3.5 text-amber-300" />
                   <span>
                     {isJyotiMudra
-                      ? 'Jyoti Mudra (3 counts · 12-3-12 default)'
+                      ? 'Jyoti Mudra (3 counts · 12-24-12 default)'
                       : isBreathing1
                       ? 'Breathing Ex 1 (6-6-6 default)'
                       : 'Breathing Ex 2 (8-8-8 default)'}
@@ -465,7 +465,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   type="button"
                   onClick={() => {
                     if (isJyotiMudra) {
-                      onUpdateBreathPattern?.({ inhale: 12, hold: 3, exhale: 12 });
+                      onUpdateBreathPattern?.({ inhale: 12, hold: 24, exhale: 12 });
                       onUpdateBreathRounds?.(3);
                     } else if (isBreathing1) {
                       onUpdateBreathPattern?.({ inhale: 6, hold: 6, exhale: 6 });
@@ -485,10 +485,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <div className="flex flex-wrap items-center gap-1.5">
                 {isJyotiMudra ? (
                   [
-                    { label: '12 · 3 · 12 (Default)', pattern: { inhale: 12, hold: 3, exhale: 12 } },
-                    { label: '10 · 3 · 10', pattern: { inhale: 10, hold: 3, exhale: 10 } },
-                    { label: '15 · 3 · 15', pattern: { inhale: 15, hold: 3, exhale: 15 } },
-                    { label: '8 · 3 · 8', pattern: { inhale: 8, hold: 3, exhale: 8 } },
+                    { label: '12 · 24 · 12 (Default)', pattern: { inhale: 12, hold: 24, exhale: 12 } },
+                    { label: '12 · 15 · 12', pattern: { inhale: 12, hold: 15, exhale: 12 } },
+                    { label: '15 · 24 · 15', pattern: { inhale: 15, hold: 24, exhale: 15 } },
                   ].map((p, idx) => {
                     const isActive =
                       currentPattern.inhale === p.pattern.inhale &&

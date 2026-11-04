@@ -3,8 +3,10 @@ import { SoundscapeType } from '../utils/soundscapes';
 export type StageId =
   | 'exercises'
   | 'opening_prayer'
+  | 'daily_prayer'
   | 'chant'
   | 'affirmation'
+  | 'guided_meditation'
   | 'breathing_1'
   | 'breathing_2'
   | 'hong_sau'

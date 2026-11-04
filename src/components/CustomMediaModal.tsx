@@ -42,8 +42,10 @@ interface CustomMediaModalProps {
 
 const DEFAULT_MEDIA_STAGES: StageId[] = [
   'opening_prayer',
+  'daily_prayer',
   'chant',
   'affirmation',
+  'guided_meditation',
   'sacred_voices',
   'closing_prayer',
   'world_prayer',

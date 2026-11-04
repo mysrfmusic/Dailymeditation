@@ -328,6 +328,16 @@ export const ALL_DEVOTIONAL_SONGS: StageMediaPreset[] = ALL_SACRED_TRACKS.filter
 
 // All affirmations and spiritual wisdom discourses
 export const ALL_AFFIRMATION_PRESETS: StageMediaPreset[] = [
+  {
+    id: 'affirmation_castled_in_gods_presence_xghfntmstjq',
+    title: '“I am castled in God’s presence…”',
+    subtitle: 'Self-Realization Fellowship — Brother Chidananda leads an affirmation by Yogananda',
+    url: 'https://www.youtube.com/watch?v=xghFntmsTjQ',
+    type: 'youtube',
+    album: 'Self-Realization Fellowship',
+    isAffirmation: true,
+    affirmationText: '“I am castled in God’s presence. No harm can reach me. Peace and harmony surround me.” — Paramahansa Yogananda',
+  },
   // 1. Paramahansa Yogananda Spiritual Wisdom Discourses from Harmonies
   ...HARMONIES_PRESETS.filter((t) => t.isAffirmation),
   // 2. Samadhi and sacred poem recitations from Devotional Albums
@@ -348,6 +358,42 @@ export const SACRED_VOICE_PRESETS: StageMediaPreset[] = ALL_SACRED_TRACKS.filter
  * Curated presets mapped per stage ID from the new collections
  */
 export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> = {
+  daily_prayer: [
+    {
+      id: 'daily_prayer_chidananda_mxf7aleqjw',
+      title: 'Daily Prayer: Overcoming Fear With Divine Vibrations',
+      subtitle: 'Self-Realization Fellowship — Brother Chidananda',
+      url: 'https://www.youtube.com/watch?v=-Mxf7alEQjw',
+      type: 'youtube',
+      album: 'Self-Realization Fellowship',
+    },
+    ...ALL_SACRED_TRACKS.filter(
+      (t) =>
+        t.url !== 'https://www.youtube.com/watch?v=-Mxf7alEQjw' &&
+        (t.title.toLowerCase().includes('prayer') ||
+          t.title.toLowerCase().includes('peace') ||
+          t.title.toLowerCase().includes('guru') ||
+          t.title.toLowerCase().includes('divine'))
+    ).slice(0, 20),
+  ],
+  guided_meditation: [
+    {
+      id: 'guided_meditation_temple_of_silence_mjr06v8qakg',
+      title: 'Guided Meditation: In the Temple of Silence',
+      subtitle: 'Self-Realization Fellowship — Brother Chidananda',
+      url: 'https://www.youtube.com/watch?v=MJR06v8qakg',
+      type: 'youtube',
+      album: 'Self-Realization Fellowship',
+    },
+    ...ALL_SACRED_TRACKS.filter(
+      (t) =>
+        t.url !== 'https://www.youtube.com/watch?v=MJR06v8qakg' &&
+        (t.title.toLowerCase().includes('silence') ||
+          t.title.toLowerCase().includes('temple') ||
+          t.title.toLowerCase().includes('meditation') ||
+          t.title.toLowerCase().includes('peace'))
+    ).slice(0, 20),
+  ],
   chant: [
     // Top beloved cosmic chants from Devotional Albums
     ...DEVOTIONAL_ALBUM_PRESETS.slice(0, 40),
@@ -378,29 +424,24 @@ export const STAGE_MEDIA_PRESETS: Partial<Record<StageId, StageMediaPreset[]>> =
   ],
   closing_prayer: [
     {
-      id: 'srf_closing_prayer_god_alone_live',
-      title: 'SRF Closing Prayer & God Alone',
-      subtitle: 'Communion with God Alone, dedication of meditation fruits (Live at 2:54:06)',
-      url: 'https://www.youtube.com/live/JmVnhRu5huk?t=10446&si=lrZxdz4aFMgSrFHr',
+      id: 'namo_namaste_closing_k2ed6umpszc',
+      title: 'Namo Namaste',
+      subtitle: 'Closing Prayer & Surrender — Divine salutations to the infinite',
+      url: 'https://www.youtube.com/watch?v=K2ed6uMPSZc&t=5s',
       type: 'youtube',
-      album: 'Self-Realization Fellowship',
-    },
-    {
-      id: 'hymn_to_brahma_closing',
-      title: 'Hymn to Brahma',
-      subtitle: 'Listen to My Soul Song — Sanskrit hymn celebrating cosmic creation',
-      url: 'https://www.youtube.com/watch?v=c4N3fCg8AR0',
-      type: 'youtube',
-      album: 'Listen to My Soul Song',
+      album: 'Devotional Albums',
     },
     ...ALL_SACRED_TRACKS.filter(
       (t) =>
-        t.title.toLowerCase().includes('samadhi') ||
-        t.title.toLowerCase().includes('shanti') ||
-        t.title.toLowerCase().includes('peace') ||
-        t.title.toLowerCase().includes('alone') ||
-        t.title.toLowerCase().includes('feet') ||
-        t.title.toLowerCase().includes('ocean of love')
+        t.url !== 'https://www.youtube.com/watch?v=K2ed6uMPSZc&t=5s' &&
+        t.url !== 'https://www.youtube.com/watch?v=c4N3fCg8AR0' &&
+        (t.title.toLowerCase().includes('samadhi') ||
+          t.title.toLowerCase().includes('shanti') ||
+          t.title.toLowerCase().includes('peace') ||
+          t.title.toLowerCase().includes('alone') ||
+          t.title.toLowerCase().includes('feet') ||
+          t.title.toLowerCase().includes('surrender') ||
+          t.title.toLowerCase().includes('ocean of love'))
     ),
     ...DEVOTIONAL_ALBUM_PRESETS.slice(15, 30),
   ],

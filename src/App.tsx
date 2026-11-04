@@ -42,10 +42,10 @@ import {
   Zap,
 } from 'lucide-react';
 
-const STORAGE_KEY = 'kriya_meditation_stages_v18';
-const SEQUENCE_KEY = 'kriya_sequence_order_v18';
-const INCREMENT_KEY = 'kriya_increment_step_v18';
-const THEME_KEY = 'kriya_app_theme_v18';
+const STORAGE_KEY = 'kriya_meditation_stages_v21';
+const SEQUENCE_KEY = 'kriya_sequence_order_v21';
+const INCREMENT_KEY = 'kriya_increment_step_v21';
+const THEME_KEY = 'kriya_app_theme_v21';
 
 export default function App() {
   // Theme state: defaults to spiritual_eye matching the uploaded Spiritual Eye photo
@@ -53,6 +53,9 @@ export default function App() {
     try {
       const saved =
         localStorage.getItem(THEME_KEY) ||
+        localStorage.getItem('kriya_app_theme_v20') ||
+        localStorage.getItem('kriya_app_theme_v19') ||
+        localStorage.getItem('kriya_app_theme_v18') ||
         localStorage.getItem('kriya_app_theme_v17') ||
         localStorage.getItem('kriya_app_theme_v16') ||
         localStorage.getItem('kriya_app_theme_v15') ||
@@ -73,9 +76,12 @@ export default function App() {
   // Load saved stages or defaults
   const [stages, setStages] = useState<Record<string, MeditationStageConfig>>(() => {
     try {
-      const isExistingV18 = Boolean(localStorage.getItem(STORAGE_KEY));
+      const isExistingV21 = Boolean(localStorage.getItem(STORAGE_KEY));
       const saved =
         localStorage.getItem(STORAGE_KEY) ||
+        localStorage.getItem('kriya_meditation_stages_v20') ||
+        localStorage.getItem('kriya_meditation_stages_v19') ||
+        localStorage.getItem('kriya_meditation_stages_v18') ||
         localStorage.getItem('kriya_meditation_stages_v17') ||
         localStorage.getItem('kriya_meditation_stages_v16') ||
         localStorage.getItem('kriya_meditation_stages_v15') ||
@@ -85,36 +91,96 @@ export default function App() {
         const parsed = JSON.parse(saved);
         const merged = { ...INITIAL_STAGES, ...parsed };
 
-        if (!isExistingV18) {
-          // Upgrade to user requested defaults: Hymn to Brahma c4N3fCg8AR0 for Opening Prayer, Closing Prayer 5 mins with default audio, 24 Kriyas, Jyoti Mudra 12-3-12 (3 counts)
-          if (merged.opening_prayer) {
-            merged.opening_prayer = {
-              ...merged.opening_prayer,
-              minutes: 5,
-              customMedia: {
-                enabled: true,
-                type: 'youtube',
-                url: 'https://www.youtube.com/watch?v=c4N3fCg8AR0',
-                title: 'Hymn to Brahma (Opening Invocation)',
-                muteSoundscape: true,
-                playUntilFinished: true,
-              },
-            };
-          }
-          if (merged.closing_prayer) {
-            merged.closing_prayer = {
-              ...merged.closing_prayer,
-              minutes: 5,
-              customMedia: {
-                enabled: true,
-                type: 'youtube',
-                url: 'https://www.youtube.com/live/JmVnhRu5huk?t=10446&si=lrZxdz4aFMgSrFHr',
-                title: 'SRF Closing Prayer & God Alone (Live at 2:54:06)',
-                muteSoundscape: true,
-                playUntilFinished: true,
-              },
-            };
-          }
+        // Ensure Daily Prayer stage exists
+        if (!merged.daily_prayer) {
+          merged.daily_prayer = INITIAL_STAGES.daily_prayer;
+        }
+
+        // Ensure Guided Meditation stage exists
+        if (!merged.guided_meditation) {
+          merged.guided_meditation = INITIAL_STAGES.guided_meditation;
+        }
+
+        // Unconditionally guarantee Default Affirmation: “I am castled in God’s presence…” (Brother Chidananda, xghFntmsTjQ)
+        if (
+          !merged.affirmation?.customMedia?.url ||
+          !merged.affirmation.customMedia.url.includes('xghFntmsTjQ')
+        ) {
+          merged.affirmation = {
+            ...INITIAL_STAGES.affirmation,
+            ...merged.affirmation,
+            subtitle: '“I am castled in God’s presence…”',
+            customMedia: {
+              enabled: true,
+              type: 'youtube',
+              url: 'https://www.youtube.com/watch?v=xghFntmsTjQ',
+              title: '“I am castled in God’s presence…” (Brother Chidananda)',
+              affirmationText:
+                '“I am castled in God’s presence. No harm can reach me. Peace and harmony surround me.” — Paramahansa Yogananda',
+              muteSoundscape: true,
+              playUntilFinished: true,
+            },
+          };
+        }
+
+        // Unconditionally guarantee Closing Prayer defaults to Namo Namaste K2ed6uMPSZc (5 mins, playUntilFinished: true)
+        if (
+          !merged.closing_prayer?.customMedia?.url ||
+          !merged.closing_prayer.customMedia.url.includes('K2ed6uMPSZc')
+        ) {
+          merged.closing_prayer = {
+            ...merged.closing_prayer,
+            minutes: 5,
+            playUntilFinished: true,
+            customMedia: {
+              enabled: true,
+              type: 'youtube',
+              url: 'https://www.youtube.com/watch?v=K2ed6uMPSZc&t=5s',
+              title: 'Namo Namaste (Closing Prayer & Surrender)',
+              muteSoundscape: true,
+              playUntilFinished: true,
+            },
+          };
+        }
+
+        // Unconditionally guarantee Opening Prayer defaults to Hymn to Brahma c4N3fCg8AR0 (5 mins, playUntilFinished: true)
+        if (
+          !merged.opening_prayer?.customMedia?.url ||
+          !merged.opening_prayer.customMedia.url.includes('c4N3fCg8AR0')
+        ) {
+          merged.opening_prayer = {
+            ...merged.opening_prayer,
+            minutes: 5,
+            playUntilFinished: true,
+            customMedia: {
+              enabled: true,
+              type: 'youtube',
+              url: 'https://www.youtube.com/watch?v=c4N3fCg8AR0',
+              title: 'Hymn to Brahma (Opening Invocation)',
+              muteSoundscape: true,
+              playUntilFinished: true,
+            },
+          };
+        }
+
+        // Unconditionally guarantee Jyoti Mudra defaults to 12-24-12 (3 counts)
+        if (
+          !merged.jyoti_mudra?.breathPattern ||
+          merged.jyoti_mudra.breathPattern.hold !== 24
+        ) {
+          merged.jyoti_mudra = {
+            ...merged.jyoti_mudra,
+            subtitle: 'Light & Spiritual Eye (3 Counts • 12-24-12)',
+            isCountBased: true,
+            breathRounds: 3,
+            kriyaCount: 3,
+            secondsPerKriya: 48,
+            breathPattern: { inhale: 12, hold: 24, exhale: 12 },
+            minutes: 3,
+          };
+        }
+
+        if (!isExistingV21) {
           if (merged.kriyas) {
             merged.kriyas = {
               ...merged.kriyas,
@@ -124,20 +190,6 @@ export default function App() {
               isCountBased: true,
               breathPattern: merged.kriyas.breathPattern || { inhale: 10, hold: 3, exhale: 10 },
             };
-          }
-          if (merged.jyoti_mudra) {
-            merged.jyoti_mudra = {
-              ...merged.jyoti_mudra,
-              isCountBased: true,
-              breathRounds: 3,
-              kriyaCount: 3,
-              secondsPerKriya: 27,
-              breathPattern: { inhale: 12, hold: 3, exhale: 12 },
-              minutes: 2,
-            };
-          }
-          if (!merged.affirmation) {
-            merged.affirmation = INITIAL_STAGES.affirmation;
           }
         }
         return merged;
@@ -153,13 +205,23 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Ensure affirmation is present right after chant if not already present
-          if (!parsed.includes('affirmation')) {
-            const chantIdx = parsed.indexOf('chant');
-            if (chantIdx !== -1) {
-              parsed.splice(chantIdx + 1, 0, 'affirmation');
+          // Ensure Daily Prayer is present in the sequence
+          if (!parsed.includes('daily_prayer')) {
+            const opIdx = parsed.indexOf('opening_prayer');
+            if (opIdx !== -1) {
+              parsed.splice(opIdx + 1, 0, 'daily_prayer');
             } else {
-              parsed.push('affirmation');
+              parsed.unshift('daily_prayer');
+            }
+          }
+          // Ensure Guided Meditation is present right after affirmation
+          if (!parsed.includes('guided_meditation')) {
+            const affIdx = parsed.indexOf('affirmation');
+            if (affIdx !== -1) {
+              parsed.splice(affIdx + 1, 0, 'guided_meditation');
+            } else {
+              const chantIdx = parsed.indexOf('chant');
+              parsed.splice(chantIdx !== -1 ? chantIdx + 1 : parsed.length, 0, 'guided_meditation');
             }
           }
           return parsed;

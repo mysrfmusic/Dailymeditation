@@ -171,17 +171,30 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
     youtubeRetryTimersRef.current = [];
   };
 
-  // Stable pre-warmed initial YouTube URL so the iframe never reloads its src on stage transitions
-  const initialYouTubeUrlRef = useRef<string>(
-    (stages[activeStageId]?.customMedia?.enabled &&
-      stages[activeStageId]?.customMedia?.url &&
-      extractYouTubeId(stages[activeStageId]!.customMedia!.url) &&
-      stages[activeStageId]!.customMedia!.url) ||
+  // Pre-warmed YouTube embed URL. Dynamically aligns with current stage when opening a session
+  const [iframeSrc, setIframeSrc] = useState<string>(() => {
+    const stageUrl = stages[activeStageId]?.customMedia?.url;
+    const initialUrl =
+      (stages[activeStageId]?.customMedia?.enabled && stageUrl && extractYouTubeId(stageUrl) && stageUrl) ||
       activeOrder
         .map((id) => stages[id]?.customMedia?.url)
         .find((u) => u && extractYouTubeId(u)) ||
-      'https://www.youtube.com/watch?v=c4N3fCg8AR0'
-  );
+      'https://www.youtube.com/watch?v=K2ed6uMPSZc&t=5s';
+    return getYouTubeEmbedUrl(initialUrl, false, false) || '';
+  });
+
+  // When modal is closed, sync iframeSrc to the selected stage so launching single session starts with the exact track immediately
+  useEffect(() => {
+    if (!isOpen) {
+      const stageUrl = stages[activeStageId]?.customMedia?.url;
+      if (stageUrl && extractYouTubeId(stageUrl)) {
+        const nextEmbed = getYouTubeEmbedUrl(stageUrl, false, false);
+        if (nextEmbed && nextEmbed !== iframeSrc) {
+          setIframeSrc(nextEmbed);
+        }
+      }
+    }
+  }, [isOpen, activeStageId, stages, iframeSrc]);
 
   const sendYouTubeCommand = (func: string, args: any[] = []) => {
     if (youtubeIframeRef.current?.contentWindow) {
@@ -201,7 +214,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
     sendYouTubeCommand('mute');
   };
 
-  const triggerPlayCurrentYouTube = () => {
+  const triggerPlayCurrentYouTube = (forceLoad: boolean = false) => {
     if (!isYouTube || !currentStage.customMedia?.url) {
       pausePersistentYouTube();
       return;
@@ -215,9 +228,9 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
         JSON.stringify({ event: 'listening', id: 1 }),
         '*'
       );
-      if (currentLoadedVideoIdRef.current !== targetVideoId) {
+      // Reliably load the target video if forced, if not yet matching, or if player is not yet active
+      if (forceLoad || currentLoadedVideoIdRef.current !== targetVideoId || !isVideoPlaying) {
         sendYouTubeCommand('loadVideoById', [targetVideoId, targetStartTime]);
-        currentLoadedVideoIdRef.current = targetVideoId;
       }
       sendYouTubeCommand('unMute');
       sendYouTubeCommand('setVolume', [100]);
@@ -436,10 +449,11 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
       // If YouTube, seamless track playback via loadVideoById on persistent player
       clearYouTubeRetryTimers();
       if (isYouTube) {
-        triggerPlayCurrentYouTube();
-        const t1 = window.setTimeout(triggerPlayCurrentYouTube, 200);
-        const t2 = window.setTimeout(triggerPlayCurrentYouTube, 600);
-        const t3 = window.setTimeout(triggerPlayCurrentYouTube, 1200);
+        currentLoadedVideoIdRef.current = null;
+        triggerPlayCurrentYouTube(true);
+        const t1 = window.setTimeout(() => triggerPlayCurrentYouTube(true), 250);
+        const t2 = window.setTimeout(() => triggerPlayCurrentYouTube(true), 700);
+        const t3 = window.setTimeout(() => triggerPlayCurrentYouTube(false), 1400);
         youtubeRetryTimersRef.current = [t1, t2, t3];
       } else {
         pausePersistentYouTube();
@@ -497,11 +511,24 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
               '*'
             );
             if (isYouTube && isRunning) {
-              triggerPlayCurrentYouTube();
+              triggerPlayCurrentYouTube(true);
             } else if (!isYouTube) {
               pausePersistentYouTube();
             }
           } catch {}
+        }
+
+        // Automatic Mismatch Guard: If player reports playing a video that is NOT targetVideoId (e.g. stale track or fallback), switch immediately!
+        if (isYouTube && currentStage.customMedia?.url) {
+          const targetVideoId = extractYouTubeId(currentStage.customMedia.url);
+          const targetStartTime = extractYouTubeStartTime(currentStage.customMedia.url) || 0;
+          const playingVideoId = data.info?.videoData?.video_id;
+          if (targetVideoId && playingVideoId && playingVideoId !== targetVideoId) {
+            sendYouTubeCommand('loadVideoById', [targetVideoId, targetStartTime]);
+            sendYouTubeCommand('unMute');
+            sendYouTubeCommand('setVolume', [100]);
+            sendYouTubeCommand('playVideo');
+          }
         }
 
         let playerState: number | undefined;
@@ -517,6 +544,12 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
             pausePersistentYouTube();
             setIsVideoPlaying(false);
             return;
+          }
+          if (currentStage.customMedia?.url) {
+            const targetVid = extractYouTubeId(currentStage.customMedia.url);
+            if (targetVid) {
+              currentLoadedVideoIdRef.current = targetVid;
+            }
           }
           setIsVideoPlaying(true);
           setMobileAutoplayBlocked(false);
@@ -1181,7 +1214,7 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
           >
             <iframe
               ref={youtubeIframeRef}
-              src={getYouTubeEmbedUrl(initialYouTubeUrlRef.current, false, false) || ''}
+              src={iframeSrc}
               title={customMedia?.title || 'Sacred YouTube Player'}
               className="w-full h-full border-0"
               allow="accelerometer; autoplay *; clipboard-write; encrypted-media *; gyroscope; picture-in-picture *; web-share"
@@ -1190,9 +1223,9 @@ export const ActiveSessionModal: React.FC<ActiveSessionModalProps> = ({
               onLoad={() => {
                 isIframeReadyRef.current = true;
                 if (isYouTube) {
-                  triggerPlayCurrentYouTube();
-                  setTimeout(triggerPlayCurrentYouTube, 300);
-                  setTimeout(triggerPlayCurrentYouTube, 800);
+                  triggerPlayCurrentYouTube(true);
+                  setTimeout(() => triggerPlayCurrentYouTube(true), 300);
+                  setTimeout(() => triggerPlayCurrentYouTube(false), 800);
                 }
               }}
             />
